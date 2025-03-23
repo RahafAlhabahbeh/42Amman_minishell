@@ -6,7 +6,7 @@
 /*   By: ral-haba <ral-haba@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/19 13:24:34 by ral-haba          #+#    #+#             */
-/*   Updated: 2025/03/19 14:01:34 by ral-haba         ###   ########.fr       */
+/*   Updated: 2025/03/23 11:13:23 by ral-haba         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ void handle_sigint(int sig)
 void setup_signals(void)
 {
     signal(SIGINT, handle_sigint); // Handle Ctrl-C
-    signal(SIGQUIT, SIG_IGN);      // Ignore Ctrl-\
+    signal(SIGQUIT, SIG_IGN);      // Ignore Ctrl-\"
     signal(SIGTSTP, SIG_IGN);      // Ignore Ctrl-Z
 }
 

@@ -6,7 +6,7 @@
 /*   By: ral-haba <ral-haba@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/04 12:44:30 by ral-haba          #+#    #+#             */
-/*   Updated: 2025/03/19 14:05:43 by ral-haba         ###   ########.fr       */
+/*   Updated: 2025/03/23 11:24:50 by ral-haba         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,11 +38,12 @@ void	redirect_input(char *filename);
 void	heredoc(char *delimiter);
 void	process_redirections(char **cmd);
 void	execute_with_redirections(char **cmd, char **envp);
-void shell_loop(char **envp);
-void handle_sigint(int sig);
+void	shell_loop(char **envp);
+void	handle_sigint(int sig);
 void setup_signals(void);
 void handle_eof(void);
 int	open_file(char *filename, int flags, int mode);
 void	free_str_array(char **arr);
+void	ft_free_split_recursive(char **array, int index);
 
 #endif

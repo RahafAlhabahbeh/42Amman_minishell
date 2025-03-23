@@ -6,7 +6,7 @@
 /*   By: ral-haba <ral-haba@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/19 11:42:41 by ral-haba          #+#    #+#             */
-/*   Updated: 2025/03/19 12:48:28 by ral-haba         ###   ########.fr       */
+/*   Updated: 2025/03/23 11:01:09 by ral-haba         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,9 +63,9 @@ char	*join_path(char *dir, char *cmd)
 	full_cmd = malloc(len);
 	if (!full_cmd)
 		return (NULL);
-	ft_strcpy(full_cmd, dir);
-	ft_strcat(full_cmd, "/");
-	ft_strcat(full_cmd, cmd);
+	ft_strlcpy(full_cmd, dir, ft_strlen(dir));
+	ft_strlcat(full_cmd, "/", ft_strlen(full_cmd));
+	ft_strlcat(full_cmd, cmd, ft_strlen(full_cmd));
 	return (full_cmd);
 }
 
