@@ -10,7 +10,8 @@ LIBFT_DIR = libft
 
 # Source Files
 SRC = main.c pipe.c redirections.c shell.c \
-signal_handling.c utils.c
+signal_handling.c utils.c tokenizer.c \
+tokenizer_utils.c 
 OBJ = $(SRC:%.c=$(OBJ_DIR)/%.o)
 
 # Library
@@ -22,7 +23,7 @@ all: $(LIBFT) $(NAME)
 
 # Compile Minishell
 $(NAME): $(OBJ)
-	$(CC) $(CFLAGS) $(OBJ) $(LIBFT) -o $(NAME) -lreadline
+	$(CC) $(CFLAGS) $(OBJ) $(LIBFT) -o $(NAME) -lreadline -lncurses
 
 # Compile Object Files
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ral-haba <ral-haba@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/04 12:44:30 by ral-haba          #+#    #+#             */
-/*   Updated: 2025/03/23 11:24:50 by ral-haba         ###   ########.fr       */
+/*   Updated: 2025/07/03 16:00:50 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,24 @@
 #include <readline/readline.h>  // For readline()
 #include <readline/history.h>   // For add_history()
 #include "../libft/libft.h"
+
+typedef enum e_token_type
+{
+    TOK_WORD,
+    TOK_PIPE,
+    TOK_RED_IN,
+    TOK_RED_OUT,
+    TOK_HEREDOC,
+    TOK_APPEND,
+    TOK_EOF
+} t_token_type;
+
+typedef struct s_token
+{
+    t_token_type type;
+    char *value;
+    struct s_token *next;
+} t_token;
 
 void redirect_output(char *filename, int append);
 void redirect_input(char *filename);
@@ -45,5 +63,10 @@ void handle_eof(void);
 int	open_file(char *filename, int flags, int mode);
 void	free_str_array(char **arr);
 void	ft_free_split_recursive(char **array, int index);
+t_token			*lexer(char *input);
+t_token_type	get_token_type(char *str);
+void			token_add_back(t_token **lst, t_token *new);
+void	free_tokens(t_token *head);
+void	free_split(char **parts);
 
 #endif
