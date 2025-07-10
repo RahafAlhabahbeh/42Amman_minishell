@@ -3,70 +3,109 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
+/*   By: aaljazza <aaljazza@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/03/04 12:44:30 by ral-haba          #+#    #+#             */
-/*   Updated: 2025/07/03 16:00:50 by rahaf            ###   ########.fr       */
+/*   Created: 2025/07/02 22:14:59 by aaljazza          #+#    #+#             */
+/*   Updated: 2025/07/03 00:35:30 by aaljazza        ####  ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef MINISHELL_H
-#define MINISHELL_H
+#ifndef ANTSHELL_H
+#define ANTSHELL_H
 
-#include <signal.h>
-#include <string.h>
-#include <fcntl.h>  // open()
-#include <stdio.h>   // For printf, perror
-#include <stdlib.h>  // For malloc, free, exit
-#include <unistd.h>  // For fork, execve
-#include <sys/types.h>  // For pid_t
-#include <sys/wait.h>   // For wait
-#include <readline/readline.h>  // For readline()
-#include <readline/history.h>   // For add_history()
-#include "../libft/libft.h"
+#include "../libft/includes/libft.h"
+#include <sys/wait.h>
+#include <readline/readline.h>
+#include <readline/history.h>
+#include <fcntl.h>
 
-typedef enum e_token_type
-{
-    TOK_WORD,
-    TOK_PIPE,
-    TOK_RED_IN,
-    TOK_RED_OUT,
-    TOK_HEREDOC,
-    TOK_APPEND,
-    TOK_EOF
-} t_token_type;
+#define PROMPT "\033[33mantshell\033[32m$ \033[0m"
 
-typedef struct s_token
-{
-    t_token_type type;
-    char *value;
-    struct s_token *next;
-} t_token;
+extern char **environ;
 
-void redirect_output(char *filename, int append);
-void redirect_input(char *filename);
-void heredoc(char *delimiter);
-void	child_process(int *pipe_fd, char **cmd, char **envp, int in_out);
-void execute_pipe(char **cmd1, char **cmd2, char **envp);
-char	*join_path(char *dir, char *cmd);
-char	*get_cmd_path(char *cmd, char **paths);
-void	execute_command(char *cmd, char **args, char **envp);
-void redirect_output(char *filename, int append);
-void	redirect_input(char *filename);
-void	heredoc(char *delimiter);
-void	process_redirections(char **cmd);
-void	execute_with_redirections(char **cmd, char **envp);
-void	shell_loop(char **envp);
-void	handle_sigint(int sig);
-void setup_signals(void);
-void handle_eof(void);
-int	open_file(char *filename, int flags, int mode);
-void	free_str_array(char **arr);
-void	ft_free_split_recursive(char **array, int index);
-t_token			*lexer(char *input);
-t_token_type	get_token_type(char *str);
-void			token_add_back(t_token **lst, t_token *new);
-void	free_tokens(t_token *head);
-void	free_split(char **parts);
+typedef struct s_minishell {
+	char *input;
+	char **cmd;
+	char ***cmdList;
+	int i;
+	int j;
+	int count;
+	char **tok;
+	int fd_in;
+	int fd_out;
+	int fd_app;
+	char buff[1024];
+}	t_minishell;
+
+//! New Struct asmaa
+// //Todo need to init
+// typedef struct s_cmd_node
+// {
+// 	char **cmd;
+// 	struct s_cmd *next;
+	
+// } t_cmd_node;
+
+// t_antshell {
+// 	char *input;
+// 	// char **cmd;
+// 	// char ***cmdList;
+// 	t_cmd_node	*cmd;
+// 	int i;
+// 	int j;
+// 	int count;
+// 	char **tok;
+// 	int fd_in;
+// 	int fd_out;
+// 	int fd_app;
+// 	char buff[1024];
+// };
+//! End
+
+//* #### Initialize some of elements in the antshell structure. ####
+//- 	integer values
+//- 	tokens array
+void init(t_minishell *minishell);
+//
+//* #### Display prompt, take an input, and initialize other structure elements.
+//- It is also count the number of tokens
+//- exit if error occured
+void init_shell(t_minishell *minishell);
+//
+//* #### loop over tokens array to check for redirections ###
+void redirection(t_minishell *minishell);
+//
+void redir_compare1(t_minishell *minishell);
+void redir_compare2(t_minishell *minishell);
+void child_re(t_minishell *minishell);
+void parent_re(t_minishell *minishell);
+void call_echo(t_minishell *minishell, int op);
+void call_pwd(t_minishell *minishell);
+void call_env(t_minishell *minishell);
+//
+// - write an error message
+// - free minishell
+// - exit with specific status
+void ft_exit(t_minishell *minishell, char *str, int status);
+//
+void free_2d(char **arr);
+void    redir_op1 (char **tokens, int *k, const char *input, int *i);
+void	redir_op2(char **tokens, int *k, const char *input, int *i);
+void quoted(char **tokens, int *k, const char *input, int *i);
+void normal_string(char **tokens, int *k, const char *input, int *i);
+//
+//* #### Do the first fork in the program
+void main_fork (t_minishell *minishell,int pid);
+//
+void compare_commands (t_minishell *minishell);
+//
+//* #### 1. free all allocated memore 
+// - Commands array
+// - Tokens array
+// - Input String
+//* #### 2. Exit from the program if the input is [ exit ]
+void check_to_free (t_minishell *minishell);
+char **get_tokens (const char *input);
+
 
 #endif
