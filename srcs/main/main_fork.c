@@ -17,12 +17,12 @@
 // Compare the command in commands array to execute them
 // Redirection in child.
 
-void main_fork(t_minishell *minishell, int pid)
+void main_fork(t_minishell *minishell, int pid, char **envp)
 {
     if (pid == 0)
     {
         child_re(minishell);
-        compare_commands (minishell);
+        compare_commands (minishell, envp);
     }
     else
     {

@@ -19,18 +19,24 @@
 //* 4. Forking.
 //* 5. Free if allocated or exit.
 
-int main(void)
+// get path function
+// update call_env function
+
+int main(int ac, char **av, char **envp)
 {
+	(void) ac;
+	(void) av;
 	t_minishell minishell;
 	int pid;
 
-	init(&minishell);	
+	init(&minishell);
+	init_promp(&minishell, envp);	
 	while (1)
 	{
 		init_shell(&minishell);
 		redirection(&minishell);
 		pid = fork();
-		main_fork (&minishell, pid);
+		main_fork (&minishell, pid, envp);
 		check_to_free (&minishell);
 	}
 	return (0);

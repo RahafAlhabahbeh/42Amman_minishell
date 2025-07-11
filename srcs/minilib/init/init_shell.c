@@ -23,7 +23,11 @@
 
 void init_shell(t_minishell *minishell)
 {
-	minishell->input = readline(PROMPT);
+	//minishell->input = readline(PROMPT);
+	char *promp = NULL;
+	promp = minishell_promp(minishell);
+	minishell->input = readline(promp);
+	free(promp);
 	if (!minishell->input)
 		ft_exit(minishell, "ERROR\nNULL input", EXIT_FAILURE);
 	if (*minishell->input)

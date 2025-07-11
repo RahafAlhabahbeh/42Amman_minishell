@@ -19,9 +19,9 @@
 #include <readline/history.h>
 #include <fcntl.h>
 
-#define PROMPT "\033[33mantshell\033[32m$ \033[0m"
+//#define PROMPT "\033[33mantshell\033[32m$ \033[0m"
 
-extern char **environ;
+// extern char **environ;
 
 typedef struct s_minishell {
 	char *input;
@@ -35,6 +35,11 @@ typedef struct s_minishell {
 	int fd_out;
 	int fd_app;
 	char buff[1024];
+	// pointer to envp var
+	char *path;
+	char *user;
+	char *pwd;
+	char *pwd_old;
 }	t_minishell;
 
 //! New Struct asmaa
@@ -81,7 +86,15 @@ void child_re(t_minishell *minishell);
 void parent_re(t_minishell *minishell);
 void call_echo(t_minishell *minishell, int op);
 void call_pwd(t_minishell *minishell);
-void call_env(t_minishell *minishell);
+void call_env(t_minishell *minishell, char **envp);
+void call_cd(t_minishell *minishell, char **envp);
+char	*my_getenv(char *name, char **env);
+char **call_export(char **envp, char *new_env_var);
+char **call_unset(char **envp, char *del_name);
+/*
+void call_export(t_minishell *minishell, char **envp);
+void call_unset(t_minishell *minishell, char **envp);
+*/
 //
 // - write an error message
 // - free minishell
@@ -95,9 +108,9 @@ void quoted(char **tokens, int *k, const char *input, int *i);
 void normal_string(char **tokens, int *k, const char *input, int *i);
 //
 //* #### Do the first fork in the program
-void main_fork (t_minishell *minishell,int pid);
+void main_fork(t_minishell *minishell, int pid, char **envp);
 //
-void compare_commands (t_minishell *minishell);
+void compare_commands (t_minishell *minishell, char **envp);
 //
 //* #### 1. free all allocated memore 
 // - Commands array
@@ -106,6 +119,8 @@ void compare_commands (t_minishell *minishell);
 //* #### 2. Exit from the program if the input is [ exit ]
 void check_to_free (t_minishell *minishell);
 char **get_tokens (const char *input);
+void init_promp(t_minishell *shell, char **envp);
+char *minishell_promp(t_minishell *shell);
 
 
 #endif
