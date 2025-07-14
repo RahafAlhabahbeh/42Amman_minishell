@@ -13,7 +13,7 @@
 #ifndef ANTSHELL_H
 #define ANTSHELL_H
 
-#include "../libft/includes/libft.h"
+#include "../libft/libft.h"
 #include <sys/wait.h>
 #include <readline/readline.h>
 #include <readline/history.h>

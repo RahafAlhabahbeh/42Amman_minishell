@@ -24,7 +24,7 @@ void call_env(t_minishell *minishell, char **envp)
     	i++;
     }
 }
-
+/*
 void call_cd(t_minishell *minishell, char **envp)
 {
 	printf("call cd with relative or absolute path only\n");
@@ -55,6 +55,53 @@ void call_cd(t_minishell *minishell, char **envp)
 	printf("updated pwd from minishell %s\n", minishell->pwd);
 	minishell->fd_out = -1;
 }
+*/
+void call_cd(t_minishell *minishell, char **envp)
+{
+    printf("call cd with relative or absolute path only\n");
+    printf("Path you put %s\n", minishell->cmd[1]);
+    printf("current pwd function call my_getenv %s\n", my_getenv("PWD", envp));
+    printf("current pwd from minishell %s\n", minishell->pwd);
+
+    if (minishell->fd_out < 0)
+        minishell->fd_out = STDOUT_FILENO;
+
+    char *old_pwd = getcwd(NULL, 0); // Get current directory
+    char *new_pwd;
+
+    if (chdir(minishell->cmd[1]) == -1)
+    {
+        perror("cd");
+        free(old_pwd);
+        return;
+    }
+
+    new_pwd = getcwd(NULL, 0); // Get new directory after `chdir`
+
+    // Create "OLDPWD=value" string and export
+    char *oldpwd_var = malloc(strlen("OLDPWD=") + strlen(old_pwd) + 1);
+    sprintf(oldpwd_var, "OLDPWD=%s", old_pwd);
+    envp = call_export(envp, oldpwd_var);
+    free(oldpwd_var);
+
+    // Create "PWD=value" string and export
+    char *pwd_var = malloc(strlen("PWD=") + strlen(new_pwd) + 1);
+    sprintf(pwd_var, "PWD=%s", new_pwd);
+    envp = call_export(envp, pwd_var);
+    free(pwd_var);
+
+    // Update internal minishell pwd
+    minishell->pwd = ft_strdup(new_pwd);
+
+    free(old_pwd);
+    free(new_pwd);
+
+    printf("updated pwd function call my_getenv %s\n", my_getenv("PWD", envp));
+    printf("updated pwd from minishell %s\n", minishell->pwd);
+
+    minishell->fd_out = -1;
+}
+
 
 
 char **call_export(char **envp, char *new_env_var)

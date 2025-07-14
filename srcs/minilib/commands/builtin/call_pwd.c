@@ -15,12 +15,15 @@
 void call_pwd(t_minishell *minishell)
 {
 	printf("call pwd\n");
+	int fd;
+	
+    	fd = minishell->fd_out;
+    	if (fd == -1)
+		fd = 1;
 	if (getcwd(minishell->buff, sizeof(minishell->buff)) != NULL) 
 	{
-		if (minishell->fd_out == -1)
-			minishell->fd_out = STDOUT_FILENO;
-		write(minishell->fd_out, minishell->buff, ft_strlen(minishell->buff));
-		write(minishell->fd_out, "\n", 1);
+		write(fd, minishell->buff, ft_strlen(minishell->buff));
+		write(fd, "\n", 1);
 	}
 	else
 	{
