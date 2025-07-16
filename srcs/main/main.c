@@ -3,14 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aaljazza <aaljazza@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/02 22:14:22 by aaljazza          #+#    #+#             */
-/*   Updated: 2025/07/02 22:14:23 by aaljazza         ###   ########.fr       */
+/*   Updated: 2025/07/14 23:46:36 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "minishell.h"
+#include "../../include/minishell.h"
 
 //? Steps:
 //* 1. Initialize some of elements in the structure.
@@ -22,22 +22,55 @@
 // get path function
 // update call_env function
 
+// Simple main to test the tokenizer
 int main(int ac, char **av, char **envp)
 {
-	(void) ac;
-	(void) av;
-	t_minishell minishell;
-	int pid;
+    t_minishell minishell;
 
-	init(&minishell);
-	init_promp(&minishell, envp);	
-	while (1)
-	{
-		init_shell(&minishell);
-		redirection(&minishell);
-		pid = fork();
-		main_fork (&minishell, pid, envp);
-		check_to_free (&minishell);
-	}
-	return (0);
+    (void)ac;
+    (void)av;
+
+
+    init(&minishell);
+    // minishell.envp = envp; // Save original envp
+
+    while (1)
+    {
+        init_shell(&minishell);
+
+        minishell.token = tokenize(&minishell);
+        if (!minishell.token)
+            exit(1);
+
+        // Save old token list and replace it with expanded one
+        t_token *old = minishell.token;
+        minishell.token = expand(&minishell, envp);
+        free_tokens(old);
+
+        t_token *cur = minishell.token;
+        while (cur)
+        {
+            printf("Token type %u, value '%s'\n", cur->type, cur->value);
+            cur = cur->next;
+        }
+
+        // count_pipe(minishell);
+    
+        // // Allocate command array
+        // minishell.cmd = malloc(sizeof(t_cmd) * (minishell.pipex_count + 1));
+        // if (!minishell.cmd)
+        //     ft_exit(minishell, "ERROR\nNULL CMD", EXIT_FAILURE);
+            
+        // // Initialize each command structure
+        // init_cmmands(minishell);
+
+        free_tokens(minishell.token);
+        minishell.token = NULL;
+
+        free(minishell.promp_input);
+        minishell.promp_input = NULL;
+    }
+
+
+    return 0;
 }

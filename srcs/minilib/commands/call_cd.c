@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   commands.c                                         :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: aaljazza <aaljazza@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/07/09 07:12:10 by aaljazza          #+#    #+#             */
-/*   Updated: 2025/07/09 07:12:53 by aaljazza         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "minishell.h"
 // char *getenv(const char *name);
 void call_env(t_minishell *minishell, char **envp)
@@ -199,4 +187,3 @@ char **call_unset(char **envp, char *del_name)
 
     return new_env;
 }
-

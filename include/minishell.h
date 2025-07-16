@@ -3,124 +3,93 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aaljazza <aaljazza@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/07/02 22:14:59 by aaljazza          #+#    #+#             */
-/*   Updated: 2025/07/03 00:35:30 by aaljazza        ####  ########.fr       */
+/*   Created: 2025/07/14 00:00:00 by rahaf             #+#    #+#             */
+/*   Updated: 2025/07/14 23:47:56 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef ANTSHELL_H
-#define ANTSHELL_H
+#ifndef MINISHELL_H
+# define MINISHELL_H
+
+# include <unistd.h>
+# include <stdlib.h>
+# include <stdio.h>
+# include <fcntl.h>
+# include <sys/wait.h>
+# include <readline/readline.h>
+# include <readline/history.h>
 
 #include "../libft/libft.h"
-#include <sys/wait.h>
-#include <readline/readline.h>
-#include <readline/history.h>
-#include <fcntl.h>
 
-//#define PROMPT "\033[33mantshell\033[32m$ \033[0m"
-
-// extern char **environ;
-
-typedef struct s_minishell {
-	char *input;
-	char **cmd;
-	char ***cmdList;
-	int i;
-	int j;
-	int count;
-	char **tok;
-	int fd_in;
-	int fd_out;
-	int fd_app;
-	char buff[1024];
-	// pointer to envp var
-	char *path;
-	char *user;
-	char *pwd;
-	char *pwd_old;
-}	t_minishell;
-
-//! New Struct asmaa
-// //Todo need to init
-// typedef struct s_cmd_node
+// typedef struct s_env
 // {
-// 	char **cmd;
-// 	struct s_cmd *next;
-	
-// } t_cmd_node;
+//     int index;
+//     char *key;
+//     char *value;
+//     struct s_env *next;
+// }   t_env;
 
-// t_antshell {
-// 	char *input;
-// 	// char **cmd;
-// 	// char ***cmdList;
-// 	t_cmd_node	*cmd;
-// 	int i;
-// 	int j;
-// 	int count;
-// 	char **tok;
-// 	int fd_in;
-// 	int fd_out;
-// 	int fd_app;
-// 	char buff[1024];
-// };
-//! End
 
-//* #### Initialize some of elements in the antshell structure. ####
-//- 	integer values
-//- 	tokens array
-void init(t_minishell *minishell);
-//
-//* #### Display prompt, take an input, and initialize other structure elements.
-//- It is also count the number of tokens
-//- exit if error occured
+typedef enum e_token_type
+{
+    WORD,
+    PIPE,
+    REDIR_IN,
+    REDIR_OUT,
+    REDIR_APPEND,
+    HERE_DOC
+}               t_token_type;
+
+typedef struct s_token
+{
+    char            *value;
+    t_token_type    type;
+    struct s_token  *next;
+}               t_token;
+
+typedef struct s_cmd {
+    char **argv;           // ["cat"]
+    t_token_type in_type;     // NONE / REDIR_IN / HEREDOC / PIPE_IN
+    t_token_type out_type;    // NONE / REDIR_OUT / APPEND / PIPE_OUT
+    char *input_file_name;
+    char *output_file_name;
+    struct s_cmd *next;  // Next command in pipe sequence
+    struct s_cmd *prev;  // Prev command in pipe sequence
+    // t_env *env;
+} t_cmd;
+
+typedef struct s_minishell
+{
+    char *promp_input;
+    t_cmd *cmd;
+    int token_count;
+    int pipex_count;
+    t_token *token;
+    char buff[1024];
+    char **envp;
+    // t_env *env_list;
+    int fd_out;
+}   t_minishell;
+
+/* tokenizer */
+t_token *tokenize(t_minishell *minishell);
+void free_tokens(t_token *head);
 void init_shell(t_minishell *minishell);
-//
-//* #### loop over tokens array to check for redirections ###
-void redirection(t_minishell *minishell);
-//
-void redir_compare1(t_minishell *minishell);
-void redir_compare2(t_minishell *minishell);
-void child_re(t_minishell *minishell);
-void parent_re(t_minishell *minishell);
-void call_echo(t_minishell *minishell, int op);
-void call_pwd(t_minishell *minishell);
-void call_env(t_minishell *minishell, char **envp);
-void call_cd(t_minishell *minishell, char **envp);
+void init(t_minishell *mini);
+t_cmd *init_cmd(void);
+// t_token *new_token(const char *value, t_token_type type);
+// t_env *init_env(const char *key, const char *value, int index);
 char	*my_getenv(char *name, char **env);
-char **call_export(char **envp, char *new_env_var);
-char **call_unset(char **envp, char *del_name);
-/*
-void call_export(t_minishell *minishell, char **envp);
-void call_unset(t_minishell *minishell, char **envp);
-*/
-//
-// - write an error message
-// - free minishell
-// - exit with specific status
-void ft_exit(t_minishell *minishell, char *str, int status);
-//
-void free_2d(char **arr);
-void    redir_op1 (char **tokens, int *k, const char *input, int *i);
-void	redir_op2(char **tokens, int *k, const char *input, int *i);
-void quoted(char **tokens, int *k, const char *input, int *i);
-void normal_string(char **tokens, int *k, const char *input, int *i);
-//
-//* #### Do the first fork in the program
-void main_fork(t_minishell *minishell, int pid, char **envp);
-//
-void compare_commands (t_minishell *minishell, char **envp);
-//
-//* #### 1. free all allocated memore 
-// - Commands array
-// - Tokens array
-// - Input String
-//* #### 2. Exit from the program if the input is [ exit ]
-void check_to_free (t_minishell *minishell);
-char **get_tokens (const char *input);
-void init_promp(t_minishell *shell, char **envp);
-char *minishell_promp(t_minishell *shell);
+// t_env *init_env_list(char **envp);
+// void free_env_list(t_env *env);
+void call_env(t_minishell *minishell, char **envp);
+t_token *expand(t_minishell *minishell, char **envp);
+char *replace_var(const char *str, char **envp);
+// char *get_env_value(const char *var, t_minishell *minishell);
+
+
 
 
 #endif

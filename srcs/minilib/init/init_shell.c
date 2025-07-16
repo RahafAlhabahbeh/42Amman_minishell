@@ -1,16 +1,5 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   init_shell.c                                       :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: aaljazza <aaljazza@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/07/02 22:14:35 by aaljazza          #+#    #+#             */
-/*   Updated: 2025/07/03 00:48:50 by aaljazza         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
 
-#include "minishell.h"
+#include "../../../include/minishell.h"
 
 // 1. Display the prompt.
 // 2. Read the input line into a buffer. 
@@ -24,21 +13,24 @@
 void init_shell(t_minishell *minishell)
 {
 	//minishell->input = readline(PROMPT);
-	char *promp = NULL;
-	promp = minishell_promp(minishell);
-	minishell->input = readline(promp);
-	free(promp);
-	if (!minishell->input)
-		ft_exit(minishell, "ERROR\nNULL input", EXIT_FAILURE);
-	if (*minishell->input)
-		add_history(minishell->input);
-	minishell->tok = get_tokens (minishell->input);
-	if (!minishell->tok)
-    		ft_exit(minishell, "ERROR\nNULL tok", EXIT_FAILURE);
-	minishell->count = 0;
-	while (minishell->tok[minishell->count])
-		minishell->count++;
-	minishell->cmd = malloc(sizeof(char *) * (minishell->count + 1));
-	if (!minishell->cmd)
-		ft_exit(minishell, "ERROR\nNULL CMD", EXIT_FAILURE);
+	// char *promp = NULL;
+	// promp = minishell_promp(minishell);
+	minishell->promp_input = readline("minishell> ");
+    // free(promp);
+    if (!minishell->promp_input)
+    {
+        printf("EXIT");
+        //ft_exit(); // free everything
+        exit(EXIT_SUCCESS);
+    }
+
+	if (*minishell->promp_input)
+		add_history(minishell->promp_input);
+    
+    if (!*minishell->promp_input)
+    {
+        free(minishell->promp_input);
+        minishell->promp_input = NULL;
+        return;
+    }
 }
