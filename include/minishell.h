@@ -23,13 +23,13 @@
 
 #include "../libft/libft.h"
 
-// typedef struct s_env
-// {
-//     int index;
-//     char *key;
-//     char *value;
-//     struct s_env *next;
-// }   t_env;
+typedef struct s_env
+{
+    int index;
+    char *key;
+    char *value;
+    struct s_env *next;
+}   t_env;
 
 
 typedef enum e_token_type
@@ -44,10 +44,12 @@ typedef enum e_token_type
 
 typedef struct s_token
 {
-    char            *value;
-    t_token_type    type;
-    struct s_token  *next;
-}               t_token;
+    char *value;
+    t_token_type type;
+    char quote;
+    struct s_token *next;
+} t_token;
+
 
 typedef struct s_cmd {
     char **argv;           // ["cat"]
@@ -69,7 +71,7 @@ typedef struct s_minishell
     t_token *token;
     char buff[1024];
     char **envp;
-    // t_env *env_list;
+    t_env *env_list;
     int fd_out;
 }   t_minishell;
 
@@ -82,14 +84,15 @@ t_cmd *init_cmd(void);
 // t_token *new_token(const char *value, t_token_type type);
 // t_env *init_env(const char *key, const char *value, int index);
 char	*my_getenv(char *name, char **env);
-// t_env *init_env_list(char **envp);
-// void free_env_list(t_env *env);
 void call_env(t_minishell *minishell, char **envp);
 t_token *expand(t_minishell *minishell, char **envp);
-char *replace_var(const char *str, char **envp);
+char *replace_var(const char *str, char **envp, char quote);
 // char *get_env_value(const char *var, t_minishell *minishell);
-
-
+t_env   *init_env_list(char **envp);
+char    *get_env_value(const char *key, t_env *env);
+void    set_env_value(t_env **env, const char *key, const char *value);
+void    unset_env(t_env **env, const char *key);
+void    free_env_list(t_env *env);
 
 
 #endif

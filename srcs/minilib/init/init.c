@@ -47,6 +47,9 @@ char	*my_getenv(char *name, char **env)
 	int		i;
 	size_t	len;
 
+	if (!name || !env)
+		return NULL;
+		
 	len = ft_strlen(name);
 	i = 0;
 	while (env[i])
@@ -57,6 +60,7 @@ char	*my_getenv(char *name, char **env)
 	}
 	return (NULL);
 }
+
  
 // t_env *init_env_list(char **envp)
 // {

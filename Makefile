@@ -16,7 +16,9 @@ SRC = \
     $(MAIN_DIR)/main.c \
 	$(SRC_DIR)/init/init_shell.c \
 	$(SRC_DIR)/init/init.c \
-	$(SRC_DIR)/commands/call_env.c
+	$(SRC_DIR)/commands/call_env.c \
+	$(SRC_DIR)/init/init_env.c
+
 
 # Object files (mirror the SRC tree under obj/)
 OBJ = $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SRC))

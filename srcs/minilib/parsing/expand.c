@@ -14,16 +14,27 @@
 //     return "";
 // }
 
-char *replace_var(const char *str, char **envp)
+char *replace_var(const char *str, char **envp, char quote)
 {
-    char result[1024] = {0};  // Final expanded string
+    if (quote == '\'') // no expansion in single quotes
+        return strdup(str);
+
+    char result[1024] = {0};
     int i = 0, j = 0;
 
     while (str[i])
     {
-        if (str[i] == '$' && str[i + 1] && (ft_isalpha(str[i + 1]) || str[i + 1] == '_'))
+        if (str[i] == '$' && str[i + 1])
         {
-            i++; // skip '$'
+            i++;
+            // Skip '$?' for now
+            if (str[i] == '?')
+            {
+                // Handle $? if you want (not covered here)
+                i++;
+                continue;
+            }
+
             char var[256] = {0};
             int k = 0;
 
@@ -33,29 +44,25 @@ char *replace_var(const char *str, char **envp)
             var[k] = '\0';
 
             const char *val = my_getenv(var, envp);
-            // printf("VAR: %s\n", var);
-            // printf("ENV: %s\n", minishell->envp[0]);
-            // printf("VALUE: %s\n", val);
-            if (val)
+            if (!val)
+                val = "";
+
+            size_t len = strlen(val);
+            if (j + len < sizeof(result))
             {
-                size_t len = ft_strlen(val);
-                if (j + len < sizeof(result))
-                {
-                    ft_strlcat(result, val, sizeof(result));
-                    j += len; // <-- THIS was missing
-                }
+                strcat(result, val);
+                j += len;
             }
         }
         else
         {
-            // Copy character if there's space
             if (j < (int)(sizeof(result) - 1))
                 result[j++] = str[i++];
         }
     }
 
     result[j] = '\0';
-    return ft_strdup(result);
+    return strdup(result);
 }
 
 
@@ -68,10 +75,14 @@ t_token *expand(t_minishell *minishell, char **envp)
 
     while (cur)
     {
-        char *expanded = replace_var(cur->value, envp);
+        char *expanded = replace_var(cur->value, envp, cur->quote);
         t_token *new_tok = malloc(sizeof(t_token));
+        if (!new_tok)
+            return NULL;
+
         new_tok->value = expanded;
         new_tok->type = cur->type;
+        new_tok->quote = cur->quote;
         new_tok->next = NULL;
 
         if (!new_list)
@@ -85,3 +96,4 @@ t_token *expand(t_minishell *minishell, char **envp)
 
     return new_list;
 }
+

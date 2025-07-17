@@ -32,19 +32,20 @@ int main(int ac, char **av, char **envp)
 
 
     init(&minishell);
-    // minishell.envp = envp; // Save original envp
+	minishell.envp = envp;
+    minishell.env_list = init_env_list(envp);
 
     while (1)
     {
         init_shell(&minishell);
-
+        
         minishell.token = tokenize(&minishell);
         if (!minishell.token)
             exit(1);
 
         // Save old token list and replace it with expanded one
         t_token *old = minishell.token;
-        minishell.token = expand(&minishell, envp);
+        minishell.token = expand(&minishell, minishell.envp);
         free_tokens(old);
 
         t_token *cur = minishell.token;
