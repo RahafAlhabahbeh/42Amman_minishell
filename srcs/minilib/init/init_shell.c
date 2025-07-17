@@ -10,27 +10,28 @@
 // 7. After Each initialize check for Null.
 // 8. exit if error occured
 
+#include "../../../include/minishell.h"
+
 void init_shell(t_minishell *minishell)
 {
-	//minishell->input = readline(PROMPT);
-	// char *promp = NULL;
-	// promp = minishell_promp(minishell);
-	minishell->promp_input = readline("minishell> ");
-    // free(promp);
+    minishell->promp_input = readline("minishell> ");
+
+    // Handle EOF (Ctrl+D) - exit shell cleanly
     if (!minishell->promp_input)
     {
-        printf("EXIT");
-        //ft_exit(); // free everything
-        exit(EXIT_SUCCESS);
+        printf("exit\n");
+        exit(0);
     }
 
-	if (*minishell->promp_input)
-		add_history(minishell->promp_input);
-    
-    if (!*minishell->promp_input)
+    // Handle empty input (just Enter pressed) - skip processing
+    if (minishell->promp_input[0] == '\0')
     {
         free(minishell->promp_input);
         minishell->promp_input = NULL;
         return;
     }
+
+    // Add non-empty input to history
+    add_history(minishell->promp_input);
 }
+

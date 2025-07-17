@@ -13,11 +13,19 @@ LIBFT_DIR  = libft
 SRC = \
     $(SRC_DIR)/parsing/get_tokens.c  \
     $(SRC_DIR)/parsing/expand.c  \
+    $(SRC_DIR)/parsing/get_commands.c \
     $(MAIN_DIR)/main.c \
 	$(SRC_DIR)/init/init_shell.c \
 	$(SRC_DIR)/init/init.c \
 	$(SRC_DIR)/commands/call_env.c \
-	$(SRC_DIR)/init/init_env.c
+	$(SRC_DIR)/commands/call_echo.c \
+	$(SRC_DIR)/commands/call_pwd.c \
+	$(SRC_DIR)/init/init_env.c \
+	$(SRC_DIR)/pipe/count_pipe.c \
+	$(SRC_DIR)/execution/execute_command.c \
+	$(SRC_DIR)/redirection/redirection.c
+	
+	#$(SRC_DIR)/commands/call_cd.c \
 
 
 # Object files (mirror the SRC tree under obj/)

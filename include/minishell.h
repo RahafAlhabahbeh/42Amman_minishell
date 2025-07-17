@@ -84,7 +84,6 @@ t_cmd *init_cmd(void);
 // t_token *new_token(const char *value, t_token_type type);
 // t_env *init_env(const char *key, const char *value, int index);
 char	*my_getenv(char *name, char **env);
-void call_env(t_minishell *minishell, char **envp);
 t_token *expand(t_minishell *minishell, char **envp);
 char *replace_var(const char *str, char **envp, char quote);
 // char *get_env_value(const char *var, t_minishell *minishell);
@@ -93,6 +92,25 @@ char    *get_env_value(const char *key, t_env *env);
 void    set_env_value(t_env **env, const char *key, const char *value);
 void    unset_env(t_env **env, const char *key);
 void    free_env_list(t_env *env);
+
+void count_pipe(t_minishell *minishell);
+int count_args_for_command(t_token *start);
+void put_token_to_commands(t_minishell *minishell);
+
+void execute_command(t_minishell *minishell, char **envp);
+int is_builtin(char *cmd);
+void execute_builtin(t_minishell *minishell, int i, char **envp);
+void redirect_input(const char *file);
+void redirect_output(const char *file);
+void execute_command(t_minishell *minishell, char **envp);
+void execute_builtin(t_minishell *minishell, int i, char **envp);
+void call_env(t_minishell *minishell, char **envp);
+//void call_cd(t_minishell *minishell, char **envp);
+//char **call_export(char **envp, char *new_env_var);
+//char **call_unset(char **envp, char *del_name);
+//void call_echo(t_minishell *minishell, int op);
+void call_echo(char **argv);
+void call_pwd();
 
 
 #endif

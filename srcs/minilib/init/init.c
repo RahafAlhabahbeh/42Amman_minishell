@@ -41,7 +41,7 @@ void init(t_minishell *mini)
 
 //     return env;
 // }
-
+/*
 char	*my_getenv(char *name, char **env)
 {
 	int		i;
@@ -60,7 +60,7 @@ char	*my_getenv(char *name, char **env)
 	}
 	return (NULL);
 }
-
+*/
  
 // t_env *init_env_list(char **envp)
 // {
