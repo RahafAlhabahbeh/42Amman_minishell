@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
+/*   By: dal-mahr <dal-mahr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/14 00:00:00 by rahaf             #+#    #+#             */
-/*   Updated: 2025/07/14 23:47:56 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/07/21 12:53:32 by dal-mahr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -111,6 +111,18 @@ void call_env(t_minishell *minishell, char **envp);
 //void call_echo(t_minishell *minishell, int op);
 void call_echo(char **argv);
 void call_pwd();
+
+char *join_path(const char *dir, const char *cmd);
+char *resolve_cmd_path(char *cmd, char **envp);
+void free_minishell(t_minishell *mini);
+void free_tokens(t_token *head);
+void free_cmds_array(t_cmd *cmd_array, int count);
+void free_commands(t_minishell *minishell);
+void execute_piped_commands(t_minishell *minishell, char **envp);
+
+
+
+
 
 
 #endif

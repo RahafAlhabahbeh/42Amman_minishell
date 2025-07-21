@@ -36,26 +36,36 @@ void execute_command(t_minishell *minishell, char **envp)
             if (i < minishell->pipex_count)
                 close(pipefd[0]);
             if (!minishell->cmd[i].argv || !minishell->cmd[i].argv[0])
-		{
-		    fprintf(stderr, "No command to execute\n");
-		    return;
-		}
+            {
+                fprintf(stderr, "No command to execute\n");
+                return;
+            }
 
             // Execute command
             if (is_builtin(minishell->cmd[0].argv[0]) && minishell->pipex_count == 0)
-		{
-		    execute_builtin(minishell, 0, envp);
-		    continue;
-		}            
+            {
+                execute_builtin(minishell, 0, envp);
+                continue;
+            }
             else
             {
-                char *path = my_getenv(minishell->cmd[i].argv[0], minishell->envp);
-                if (!path || execve(path, minishell->cmd[i].argv, envp) == -1)
+                char *path = resolve_cmd_path(minishell->cmd[i].argv[0], minishell->envp);
+                int j = i;
+                for (int h = 0; minishell->cmd[j].argv[h]; h++)
+                {
+                    printf("PATH: %s, CMD ARGV[%d][%d] = %s\n", path, j, h, minishell->cmd[j].argv[h]);
+                }
+                if (!path)
+                {
+                    fprintf(stderr, "%s: command not found\n", minishell->cmd[i].argv[0]);
+                    exit(127);
+                }
+
+                if (execve(path, minishell->cmd[i].argv, envp) == -1)
                 {
                     perror("execve");
-                    exit(EXIT_FAILURE);
+                    exit(126); // permission denied or other exec error
                 }
-                
             }
         }
         else if (pid < 0)
@@ -74,28 +84,31 @@ void execute_command(t_minishell *minishell, char **envp)
         }
     }
 
-    while (wait(NULL) > 0);
+    while (wait(NULL) > 0)
+        ;
 }
 
 int is_builtin(char *cmd)
 {
     /*return (!strcmp(cmd, "echo") || !strcmp(cmd, "cd") || !strcmp(cmd, "pwd") ||
             !strcmp(cmd, "env") || !strcmp(cmd, "export") || !strcmp(cmd, "unset"));*/
-    printf("BUILD IN COMMAND\n");
-    if (!cmd) return 0;
+    // printf("BUILD IN COMMAND\n");
+    if (!cmd)
+        return 0;
     return (!strcmp(cmd, "echo") || !strcmp(cmd, "pwd") || !strcmp(cmd, "env"));
 }
 
 void execute_builtin(t_minishell *minishell, int i, char **envp)
 {
+    printf("BUILD IN COMMAND\n");
     char *cmd = minishell->cmd[i].argv[0];
     if (strcmp(minishell->cmd[i].argv[0], "echo") == 0)
     {
-    	call_echo(minishell->cmd[i].argv);
-}
+        call_echo(minishell->cmd[i].argv);
+    }
 
-    //if (!strcmp(cmd, "echo"))
-        //call_echo(minishell, minishell->cmd[i].argv[1] && !strcmp(minishell->cmd[i].argv[1], "-n"));
+    // if (!strcmp(cmd, "echo"))
+    // call_echo(minishell, minishell->cmd[i].argv[1] && !strcmp(minishell->cmd[i].argv[1], "-n"));
     else if (!strcmp(cmd, "pwd"))
         call_pwd();
     else if (!strcmp(cmd, "env"))
@@ -110,3 +123,50 @@ void execute_builtin(t_minishell *minishell, int i, char **envp)
     exit(0);
 }
 
+/*
+
+dal-mahr@c1r6s5:~/Desktop/minihell$ jdfkl
+jdfkl: command not found
+dal-mahr@c1r6s5:~/Desktop/minihell$
+exit
+dal-mahr@c1r6s5 ~/Desktop/minihell
+ % echo $?
+127
+dal-mahr@c1r6s5 ~/Desktop/minihell
+ % bash
+dal-mahr@c1r6s5:~/Desktop/minihell$ ls
+include  libft	Makefile  minishell  Notes  obj  out.txt  readline.supp  srcs
+dal-mahr@c1r6s5:~/Desktop/minihell$
+exit
+dal-mahr@c1r6s5 ~/Desktop/minihell
+ % echo $?
+0
+dal-mahr@c1r6s5 ~/Desktop/minihell
+ % bash
+dal-mahr@c1r6s5:~/Desktop/minihell$ jdfslk
+jdfslk: command not found
+dal-mahr@c1r6s5:~/Desktop/minihell$ exit
+exit
+dal-mahr@c1r6s5 ~/Desktop/minihell
+ % echo $?
+127
+dal-mahr@c1r6s5 ~/Desktop/minihell
+ % bash
+dal-mahr@c1r6s5:~/Desktop/minihell$ ls jfdlk
+ls: cannot access 'jfdlk': No such file or directory
+dal-mahr@c1r6s5:~/Desktop/minihell$
+exit
+dal-mahr@c1r6s5 ~/Desktop/minihell
+ % echo $?
+2
+dal-mahr@c1r6s5 ~/Desktop/minihell
+ % bash
+dal-mahr@c1r6s5:~/Desktop/minihell$ ^C
+dal-mahr@c1r6s5:~/Desktop/minihell$ echo $?
+130
+dal-mahr@c1r6s5:~/Desktop/minihell$ cat
+^\Quit (core dumped)
+dal-mahr@c1r6s5:~/Desktop/minihell$ echo $?
+131
+dal-mahr@c1r6s5:~/Desktop/minihell$
+*/

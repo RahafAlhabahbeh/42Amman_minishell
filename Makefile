@@ -21,11 +21,11 @@ SRC = \
 	$(SRC_DIR)/commands/call_echo.c \
 	$(SRC_DIR)/commands/call_pwd.c \
 	$(SRC_DIR)/init/init_env.c \
-	$(SRC_DIR)/pipe/count_pipe.c \
+	$(SRC_DIR)/pipe/pipe.c \
 	$(SRC_DIR)/execution/execute_command.c \
-	$(SRC_DIR)/redirection/redirection.c
+	$(SRC_DIR)/redirection/redirection.c \
+	$(SRC_DIR)/free/free_minishell.c
 	
-	#$(SRC_DIR)/commands/call_cd.c \
 
 
 # Object files (mirror the SRC tree under obj/)

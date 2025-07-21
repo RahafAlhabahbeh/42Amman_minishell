@@ -1,0 +1,97 @@
+#include "../../../include/minishell.h"
+
+void count_pipe(t_minishell *minishell)
+{
+    int count = 0;
+    t_token *cur = minishell->token;
+
+    while (cur)
+    {
+        if (cur->type == PIPE)
+            count++;
+        cur = cur->next;
+    }
+    minishell->pipex_count = count;
+}
+
+void execute_piped_commands(t_minishell *minishell, char **envp)
+{
+    printf("PIPE EXE\n");
+    int n = minishell->pipex_count + 1; // number of commands
+    int pipefds[2 * (n - 1)];
+    pid_t pid;
+    int i;
+
+    // Create pipes
+    for (i = 0; i < n - 1; i++)
+    {
+        if (pipe(pipefds + i * 2) == -1)
+        {
+            perror("pipe");
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    for (i = 0; i < n; i++)
+    {
+        pid = fork();
+        if (pid == -1)
+        {
+            perror("fork");
+            exit(EXIT_FAILURE);
+        }
+        else if (pid == 0)
+        {
+            // Child process
+
+            // Redirect input if not first command
+            if (i != 0)
+            {
+                if (dup2(pipefds[(i - 1) * 2], STDIN_FILENO) == -1)
+                {
+                    perror("dup2");
+                    exit(EXIT_FAILURE);
+                }
+            }
+
+            // Redirect output if not last command
+            if (i != n - 1)
+            {
+                if (dup2(pipefds[i * 2 + 1], STDOUT_FILENO) == -1)
+                {
+                    perror("dup2");
+                    exit(EXIT_FAILURE);
+                }
+            }
+
+            // Close all pipe fds in child
+            for (int j = 0; j < 2 * (n - 1); j++)
+                close(pipefds[j]);
+
+            // Handle input/output redirection from minishell->cmd[i]
+            if (minishell->cmd[i].input_file_name)
+            {
+                freopen(minishell->cmd[i].input_file_name, "r", stdin);
+            }
+            if (minishell->cmd[i].output_file_name)
+            {
+                freopen(minishell->cmd[i].output_file_name, "w", stdout);
+            }
+
+            // Execute command
+            execve(minishell->cmd[i].argv[0], minishell->cmd[i].argv, envp);
+
+            // If execve returns, there was an error
+            perror("execve");
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    // Parent closes all pipe fds
+    for (i = 0; i < 2 * (n - 1); i++)
+        close(pipefds[i]);
+
+    // Parent waits for all children
+    for (i = 0; i < n; i++)
+        wait(NULL);
+}

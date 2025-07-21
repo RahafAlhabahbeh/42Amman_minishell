@@ -31,3 +31,60 @@ char	*my_getenv(char *name, char **env)
 	}
 	return (NULL);
 }
+
+char *join_path(const char *dir, const char *cmd)
+{
+    char *full = malloc(strlen(dir) + strlen(cmd) + 2); // '/' + '\0'
+    if (!full) return NULL;
+    sprintf(full, "%s/%s", dir, cmd);
+    return full;
+}
+
+char *resolve_cmd_path(char *cmd, char **envp)
+{
+    if (!cmd)
+        return NULL;
+
+    // If command contains a slash, try to exec directly
+    if (strchr(cmd, '/'))
+    {
+        if (access(cmd, X_OK) == 0)
+            return strdup(cmd);
+        else
+            return NULL;
+    }
+
+    // Get PATH
+    char *path_var = NULL;
+    for (int i = 0; envp[i]; i++)
+    {
+        if (strncmp(envp[i], "PATH=", 5) == 0)
+        {
+            path_var = envp[i] + 5;
+            break;
+        }
+    }
+
+    if (!path_var)
+        return NULL;
+
+    // Split PATH and check each dir
+    char *paths = strdup(path_var);
+    char *token = strtok(paths, ":");
+
+    while (token)
+    {
+        char *full = join_path(token, cmd);
+        if (full && access(full, X_OK) == 0)
+        {
+            free(paths);
+            return full; // success
+        }
+        free(full);
+        token = strtok(NULL, ":");
+    }
+
+    free(paths);
+    return NULL;
+}
+

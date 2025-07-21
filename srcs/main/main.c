@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
+/*   By: dal-mahr <dal-mahr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/02 22:14:22 by aaljazza          #+#    #+#             */
-/*   Updated: 2025/07/14 23:46:36 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/07/21 13:44:59 by dal-mahr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,27 +30,25 @@ int main(int ac, char **av, char **envp)
     (void)ac;
     (void)av;
 
-
     init(&minishell);
-	minishell.envp = envp;
-    minishell.env_list = init_env_list(envp);
-	//call_env(&minishell, envp);
+    minishell.envp = envp;
+
     while (1)
     {
-            init_shell(&minishell);
+        init_shell(&minishell);
 
-	    if (!minishell.promp_input || minishell.promp_input[0] == '\0')
-	    {
-		//free(minishell.promp_input);
-		continue;
-	    }
+        if (!minishell.promp_input || minishell.promp_input[0] == '\0')
+        {
+            // free(minishell.promp_input);
+            continue;
+        }
 
-	    minishell.token = tokenize(&minishell);
-	    if (!minishell.token)
-	    {
-		//free(minishell.promp_input);
-		continue;
-	    }
+        minishell.token = tokenize(&minishell);
+        if (!minishell.token)
+        {
+            // free(minishell.promp_input);
+            continue;
+        }
 
         // Save old token list and replace it with expanded one
         t_token *old = minishell.token;
@@ -66,45 +64,48 @@ int main(int ac, char **av, char **envp)
 
         count_pipe(&minishell);
         printf("PIPE COUNT: %d", minishell.pipex_count);
-    
+
         // // Allocate command array
+        if (minishell.cmd)
+            free_commands(&minishell);
         minishell.cmd = malloc(sizeof(t_cmd) * (minishell.pipex_count + 1));
+
         if (!minishell.cmd)
-        	exit(1);
-            
+            exit(1);
+
         put_token_to_commands(&minishell);
-        
+
         t_cmd *curr_cmd = minishell.cmd;
-	for (int i = 0; i <= minishell.pipex_count; i++) {
-	    printf("\nCommand %d:\n", i);
-	    char **args = curr_cmd[i].argv;
-	    for (int j = 0; args && args[j]; j++) {
-		printf("  argv[%d]: %s\n", j, args[j]);
-	    }
-	    if (curr_cmd[i].input_file_name)
-		printf("  input: %s\n", curr_cmd[i].input_file_name);
-	    if (curr_cmd[i].output_file_name)
-		printf("  output: %s\n", curr_cmd[i].output_file_name);
-	}
-	
-	// check error IMP
-	for (int i = 0; i <= minishell.pipex_count; i++) {
-    printf("\nCommand %d:\n", i);
-    if (!minishell.cmd[i].argv)
-    {
-        printf("  argv is NULL!\n");
-        continue;
-    }
-    for (int j = 0; minishell.cmd[i].argv[j]; j++) {
-        printf("  argv[%d]: %s\n", j, minishell.cmd[i].argv[j]);
-    }
-}
+        for (int i = 0; i <= minishell.pipex_count; i++)
+        {
+            printf("\nCommand %d:\n", i);
+            char **args = curr_cmd[i].argv;
+            for (int j = 0; args && args[j]; j++)
+            {
+                printf("  argv[%d]: %s\n", j, args[j]);
+            }
+            if (curr_cmd[i].input_file_name)
+                printf("  input: %s\n", curr_cmd[i].input_file_name);
+            if (curr_cmd[i].output_file_name)
+                printf("  output: %s\n", curr_cmd[i].output_file_name);
+        }
 
-	
-	
-	execute_command(&minishell, envp);
+        // check error IMP
+        for (int i = 0; i <= minishell.pipex_count; i++)
+        {
+            printf("\nCommand %d:\n", i);
+            if (!minishell.cmd[i].argv)
+            {
+                printf("  argv is NULL!\n");
+                continue;
+            }
+            for (int j = 0; minishell.cmd[i].argv[j]; j++)
+            {
+                printf("  argv[%d]: %s\n", j, minishell.cmd[i].argv[j]);
+            }
+        }
 
-        
+        execute_command(&minishell, envp);
 
         free_tokens(minishell.token);
         minishell.token = NULL;
@@ -112,6 +113,8 @@ int main(int ac, char **av, char **envp)
         free(minishell.promp_input);
         minishell.promp_input = NULL;
     }
-
+    rl_clear_history();
+    free_minishell(&minishell);
+    printf("TEST LEAK\n");
     return 0;
 }

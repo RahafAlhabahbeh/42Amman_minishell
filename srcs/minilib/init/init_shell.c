@@ -2,7 +2,7 @@
 #include "../../../include/minishell.h"
 
 // 1. Display the prompt.
-// 2. Read the input line into a buffer. 
+// 2. Read the input line into a buffer.
 // 3. Add this line to the history.
 // 4. Parsing the input.
 // 5. Split it into tokens.
@@ -20,6 +20,8 @@ void init_shell(t_minishell *minishell)
     if (!minishell->promp_input)
     {
         printf("exit\n");
+        rl_clear_history();
+        free_minishell(minishell);
         exit(0);
     }
 
@@ -34,4 +36,3 @@ void init_shell(t_minishell *minishell)
     // Add non-empty input to history
     add_history(minishell->promp_input);
 }
-
