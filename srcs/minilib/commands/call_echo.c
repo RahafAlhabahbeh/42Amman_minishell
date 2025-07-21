@@ -1,28 +1,21 @@
 #include "../../../include/minishell.h"
-/*
-void call_echo(t_minishell *minishell, int op)
-{
-    int i = (op == 1) ? 2 : 1;  // skip -n if needed
 
-    while (minishell->cmd->argv[i])
-    {
-        printf("%s", minishell->cmd->argv[i]);
-        if (minishell->cmd->argv[i + 1])
-            printf(" ");
-        i++;
-    }
-    if (!op)
-        printf("\n");
-}
-*/
 void call_echo(char **argv)
 {
     int i = 1;
     int newline = 1;
-    if (argv[1] && strcmp(argv[1], "-n") == 0)
+
+    while (argv[i] && argv[i][0] == '-' && argv[i][1] == 'n')
     {
-        newline = 0;
-        i++;
+        int j = 2;
+        while (argv[i][j] == 'n') j++;
+        if (argv[i][j] == '\0')
+        {
+            newline = 0;
+            i++;
+        }
+        else
+            break;
     }
 
     while (argv[i])
@@ -32,8 +25,8 @@ void call_echo(char **argv)
             printf(" ");
         i++;
     }
+
     if (newline)
         printf("\n");
+
 }
-
-

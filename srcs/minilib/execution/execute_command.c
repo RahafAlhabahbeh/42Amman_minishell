@@ -105,12 +105,7 @@ void execute_builtin(t_minishell *minishell, int i, char **envp)
     printf("BUILD IN COMMAND\n");
     char *cmd = minishell->cmd[i].argv[0];
     if (strcmp(minishell->cmd[i].argv[0], "echo") == 0)
-    {
         call_echo(minishell->cmd[i].argv);
-    }
-
-    // if (!strcmp(cmd, "echo"))
-    // call_echo(minishell, minishell->cmd[i].argv[1] && !strcmp(minishell->cmd[i].argv[1], "-n"));
     else if (!strcmp(cmd, "pwd"))
         call_pwd();
     else if (!strcmp(cmd, "env"))
