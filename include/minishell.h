@@ -77,7 +77,6 @@ typedef struct s_minishell
 
 /* tokenizer */
 t_token *tokenize(t_minishell *minishell);
-void free_tokens(t_token *head);
 void init_shell(t_minishell *minishell);
 void init(t_minishell *mini);
 t_cmd *init_cmd(void);

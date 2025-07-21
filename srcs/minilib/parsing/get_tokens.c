@@ -123,6 +123,12 @@ t_token *tokenize(t_minishell *minishell)
         buf[buf_i] = '\0';
         append_token(&head, &tail, new_token(buf, WORD, token_quote));
     }
+    if (current_quote != 0)
+    {
+        fprintf(stderr, "Syntax error: unmatched %c quote\n", current_quote);
+        free_tokens(head); // this must be implemented
+        return NULL;
+    }
 
     return head;
 }
