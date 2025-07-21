@@ -35,6 +35,7 @@ int main(int ac, char **av, char **envp)
 
     while (1)
     {
+        setup_signals();
         init_shell(&minishell);
 
         if (!minishell.promp_input || minishell.promp_input[0] == '\0')

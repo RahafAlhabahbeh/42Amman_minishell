@@ -18,6 +18,8 @@ void execute_command(t_minishell *minishell, char **envp)
         pid = fork();
         if (pid == 0)
         {
+            signal(SIGINT, SIG_DFL);
+            signal(SIGQUIT, SIG_DFL);
             // Input redirection
             if (minishell->cmd[i].input_file_name)
                 redirect_input(minishell->cmd[i].input_file_name);

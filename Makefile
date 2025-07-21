@@ -24,8 +24,8 @@ SRC = \
 	$(SRC_DIR)/pipe/pipe.c \
 	$(SRC_DIR)/execution/execute_command.c \
 	$(SRC_DIR)/redirection/redirection.c \
-	$(SRC_DIR)/free/free_minishell.c
-	
+	$(SRC_DIR)/free/free_minishell.c	\
+	$(SRC_DIR)/signal/signals.c
 
 
 # Object files (mirror the SRC tree under obj/)

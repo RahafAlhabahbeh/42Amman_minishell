@@ -120,8 +120,8 @@ void free_cmds_array(t_cmd *cmd_array, int count);
 void free_commands(t_minishell *minishell);
 void execute_piped_commands(t_minishell *minishell, char **envp);
 
-
-
+void handle_sigint(int sig);
+void setup_signals(void);
 
 
 
