@@ -1,35 +1,40 @@
 #include "../../../include/minishell.h"
 
-void call_env(t_minishell *minishell, char **envp)
+void call_env(t_minishell *mini)
 {
-    printf("call env\n");
-    int i = 0;
-    int fd = (minishell->fd_out == -1) ? STDOUT_FILENO : minishell->fd_out;
-
-    while (envp[i])
-    {
-        write(fd, envp[i], ft_strlen(envp[i]));
-        write(fd, "\n", 1);
-        i++;
-    }
+    print_env_list(mini->env_list);
 }
-char	*my_getenv(char *name, char **env)
-{
-	int		i;
-	size_t	len;
 
-	if (!name || !env)
-		return NULL;
+// char	*my_getenv(char *name, char **env)
+// {
+// 	int		i;
+// 	size_t	len;
+
+// 	if (!name || !env)
+// 		return NULL;
 		
-	len = ft_strlen(name);
-	i = 0;
-	while (env[i])
-	{
-		if (ft_strncmp(env[i], name, len) == 0 && env[i][len] == '=')
-			return (env[i] + len + 1);
-		i++;
-	}
-	return (NULL);
+// 	len = ft_strlen(name);
+// 	i = 0;
+// 	while (env[i])
+// 	{
+// 		if (ft_strncmp(env[i], name, len) == 0 && env[i][len] == '=')
+// 			return (env[i] + len + 1);
+// 		i++;
+// 	}
+// 	return (NULL);
+// }
+
+char *get_value_env(t_minishell *mini, const char *key)
+{
+    t_env *cur = mini->env_list;
+
+    while (cur)
+    {
+        if (ft_strcmp(cur->key, key) == 0)
+            return cur->value;  // return the value pointer (do not free it)
+        cur = cur->next;
+    }
+    return NULL; // not found
 }
 
 char *join_path(const char *dir, const char *cmd)

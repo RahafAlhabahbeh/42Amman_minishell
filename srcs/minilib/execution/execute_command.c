@@ -1,123 +1,131 @@
 #include "../../../include/minishell.h"
 
-void execute_command(t_minishell *minishell, char **envp)
+void execute_command(t_minishell *mini, char **envp)
 {
-    int i;
-    int pipefd[2];
-    int prev_fd = -1;
+    int pipe_fds[2];
     pid_t pid;
+    int prev_fd = -1; // For input of current command
 
-    for (i = 0; i <= minishell->pipex_count; i++)
+    for (int i = 0; i <= mini->pipex_count; i++)
     {
-        if (i < minishell->pipex_count && pipe(pipefd) == -1)
+        // Create pipe for all but the last command
+        if (i < mini->pipex_count)
         {
-            perror("pipe");
-            exit(EXIT_FAILURE);
+            if (pipe(pipe_fds) == -1)
+            {
+                perror("pipe");
+                exit(EXIT_FAILURE);
+            }
         }
 
-        pid = fork();
-        if (pid == 0)
+        if (is_builtin(mini->cmd[i].argv[0]))
         {
-            signal(SIGINT, SIG_DFL);
-            signal(SIGQUIT, SIG_DFL);
-            // Input redirection
-            if (minishell->cmd[i].input_file_name)
-                redirect_input(minishell->cmd[i].input_file_name);
-            else if (prev_fd != -1)
-                dup2(prev_fd, STDIN_FILENO);
-
-            // Output redirection
-            if (minishell->cmd[i].output_file_name)
-                redirect_output(minishell->cmd[i].output_file_name);
-            else if (i < minishell->pipex_count)
-                dup2(pipefd[1], STDOUT_FILENO);
-
-            // Close unused fds
+            // Builtins run in parent process but handle input/output redirection
             if (prev_fd != -1)
-                close(prev_fd);
-            if (i < minishell->pipex_count)
-                close(pipefd[0]);
-            if (!minishell->cmd[i].argv || !minishell->cmd[i].argv[0])
             {
-                fprintf(stderr, "No command to execute\n");
-                return;
+                // Duplicate input fd if necessary
+                dup2(prev_fd, STDIN_FILENO);
+                close(prev_fd);
             }
 
-            // Execute command
-            if (is_builtin(minishell->cmd[0].argv[0]) && minishell->pipex_count == 0)
+            if (i < mini->pipex_count)
             {
-                execute_builtin(minishell, 0, envp);
-                continue;
+                close(pipe_fds[0]); // Close unused read end
+                dup2(pipe_fds[1], STDOUT_FILENO);
+                close(pipe_fds[1]);
+            }
+
+            execute_builtin(mini, i);
+            prev_fd = (i < mini->pipex_count) ? pipe_fds[0] : -1;
+        }
+        else
+        {
+            // External commands executed in child process
+            pid = fork();
+            if (pid == -1)
+            {
+                perror("fork");
+                exit(EXIT_FAILURE);
+            }
+            else if (pid == 0)
+            {
+                // Child process
+
+                if (prev_fd != -1)
+                {
+                    dup2(prev_fd, STDIN_FILENO);
+                    close(prev_fd);
+                }
+
+                if (i < mini->pipex_count)
+                {
+                    close(pipe_fds[0]);
+                    dup2(pipe_fds[1], STDOUT_FILENO);
+                    close(pipe_fds[1]);
+                }
+
+                // Reset signals in child
+                signal(SIGINT, SIG_DFL);
+                signal(SIGQUIT, SIG_DFL);
+
+                char *path = resolve_cmd_path(mini->cmd[i].argv[0], envp);
+                if (!path)
+                {
+                    fprintf(stderr, "minishell: command not found: %s\n", mini->cmd[i].argv[0]);
+                    exit(127);
+                }
+                execve(path, mini->cmd[i].argv, envp); // Change this
+                perror("execve");
+                exit(EXIT_FAILURE);
             }
             else
             {
-                char *path = resolve_cmd_path(minishell->cmd[i].argv[0], minishell->envp);
-                int j = i;
-                for (int h = 0; minishell->cmd[j].argv[h]; h++)
-                {
-                    printf("PATH: %s, CMD ARGV[%d][%d] = %s\n", path, j, h, minishell->cmd[j].argv[h]);
-                }
-                if (!path)
-                {
-                    fprintf(stderr, "%s: command not found\n", minishell->cmd[i].argv[0]);
-                    exit(127);
-                }
+                // Parent process
+                if (prev_fd != -1)
+                    close(prev_fd);
+                if (i < mini->pipex_count)
+                    close(pipe_fds[1]);
 
-                if (execve(path, minishell->cmd[i].argv, envp) == -1)
-                {
-                    perror("execve");
-                    exit(126); // permission denied or other exec error
-                }
+                prev_fd = (i < mini->pipex_count) ? pipe_fds[0] : -1;
             }
-        }
-        else if (pid < 0)
-        {
-            perror("fork");
-            exit(EXIT_FAILURE);
-        }
-
-        // Parent process
-        if (prev_fd != -1)
-            close(prev_fd);
-        if (i < minishell->pipex_count)
-        {
-            close(pipefd[1]);
-            prev_fd = pipefd[0];
         }
     }
 
+    // Wait for all children
     while (wait(NULL) > 0)
         ;
 }
 
 int is_builtin(char *cmd)
 {
-    /*return (!strcmp(cmd, "echo") || !strcmp(cmd, "cd") || !strcmp(cmd, "pwd") ||
-            !strcmp(cmd, "env") || !strcmp(cmd, "export") || !strcmp(cmd, "unset"));*/
-    // printf("BUILD IN COMMAND\n");
     if (!cmd)
         return 0;
-    return (!strcmp(cmd, "echo") || !strcmp(cmd, "pwd") || !strcmp(cmd, "env"));
+    return (!strcmp(cmd, "echo") || !strcmp(cmd, "cd") || !strcmp(cmd, "pwd") ||
+            !strcmp(cmd, "env") || !strcmp(cmd, "export") || !strcmp(cmd, "unset"));
 }
 
-void execute_builtin(t_minishell *minishell, int i, char **envp)
+void execute_builtin(t_minishell *minishell, int i)
 {
     printf("BUILD IN COMMAND\n");
     char *cmd = minishell->cmd[i].argv[0];
+
+    for (int j = 0; minishell->cmd[i].argv[j] != NULL; j++) {
+        printf("TEST EXPORT: argv[%d]: %s\n", j, minishell->cmd[i].argv[j]);
+    }
     if (strcmp(minishell->cmd[i].argv[0], "echo") == 0)
         call_echo(minishell->cmd[i].argv);
     else if (!strcmp(cmd, "pwd"))
         call_pwd();
     else if (!strcmp(cmd, "env"))
-        call_env(minishell, envp);
+        call_env(minishell);
+    else if (!strcmp(cmd, "export"))
+        call_export(minishell, minishell->cmd[i].argv);
+    else if (!strcmp(cmd, "unset"))
+        call_unset(minishell, minishell->cmd[i].argv);
     /*else if (!strcmp(cmd, "cd"))
         call_cd(minishell, envp);
-    else if (!strcmp(cmd, "export"))
-        call_export(envp, minishell->cmd[i].argv[1]);
-    else if (!strcmp(cmd, "unset"))
-        call_unset(envp, minishell->cmd[i].argv[1]);
     */
-    exit(0);
+    //exit(0);
 }
 
 /*

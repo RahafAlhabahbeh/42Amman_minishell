@@ -1,89 +1,78 @@
 #include "../../../include/minishell.h"
 
-t_env *init_env_list(char **envp)
+void init_env_list(t_minishell *mini, char **envp)
 {
-    t_env *head = NULL;
-    t_env *tail = NULL;
-
+    mini->env_list = NULL;
     for (int i = 0; envp[i]; i++)
     {
-        char *equal = ft_strchr(envp[i], '=');
-        if (!equal)
+        char *eq = ft_strchr(envp[i], '=');
+        if (!eq)
             continue;
 
-        size_t key_len = equal - envp[i];
+        int key_len = eq - envp[i];
         char *key = ft_substr(envp[i], 0, key_len);
-        char *val = ft_strdup(equal + 1);
+        char *value = ft_strdup(eq + 1);
 
-        t_env *node = malloc(sizeof(t_env));
-        node->key = key;
-        node->value = val;
-        node->next = NULL;
+        mini->env_list = set_env_value(mini, key, value);
 
-        if (!head)
-            head = node;
-        else
-            tail->next = node;
-        tail = node;
+        free(key);
+        free(value);
     }
-
-    return head;
 }
 
 char *get_env_value(const char *key, t_env *env)
 {
     while (env)
     {
-        if (ft_strncmp(env->key, key, ft_strlen(env->key) + 1) == 0)
+        if (ft_strcmp(env->key, key) == 0)
             return env->value;
         env = env->next;
     }
     return NULL;
 }
 
-void set_env_value(t_env **env, const char *key, const char *value)
+t_env *set_env_value(t_minishell *mini, char *key, char *value)
 {
-    t_env *cur = *env;
+    t_env *cur = mini->env_list;
 
+    // If key exists, update value
     while (cur)
     {
-        if (ft_strncmp((*env)->key, key, ft_strlen((*env)->key)) == 0)
+        if (ft_strcmp(cur->key, key) == 0)
         {
             free(cur->value);
-            cur->value = ft_strdup(value);
-            return;
-        }
-        cur = cur->next;
-    }
-
-    t_env *new_node = malloc(sizeof(t_env));
-    new_node->key = ft_strdup(key);
-    new_node->value = ft_strdup(value);
-    new_node->next = *env;
-    *env = new_node;
-}
-
-void unset_env(t_env **env, const char *key)
-{
-    t_env *cur = *env;
-    t_env *prev = NULL;
-
-    while (cur)
-    {
-        if (ft_strncmp((*env)->key, key, ft_strlen((*env)->key)) == 0
-    && ft_strlen((*env)->key) == ft_strlen(key))
-        {
-            if (prev)
-                prev->next = cur->next;
+            if (value)
+                cur->value = ft_strdup(value);
             else
-                *env = cur->next;
-            free(cur->key);
-            free(cur->value);
-            free(cur);
-            return;
+                cur->value = NULL;
+            return mini->env_list;
         }
-        prev = cur;
         cur = cur->next;
     }
-}
 
+    // If key not found, add new node at the end
+    t_env *new_node = malloc(sizeof(t_env));
+    if (!new_node)
+        return mini->env_list; // handle malloc failure better if needed
+
+    new_node->key = ft_strdup(key);
+    if (value)
+        new_node->value = ft_strdup(value);
+    else
+        new_node->value = NULL;
+    new_node->next = NULL;
+
+    if (!mini->env_list)
+    {
+        mini->env_list = new_node;
+    }
+    else
+    {
+        t_env *last = mini->env_list;
+        while (last->next)
+            last = last->next;
+        last->next = new_node;
+    }
+
+    return mini->env_list;
+}
