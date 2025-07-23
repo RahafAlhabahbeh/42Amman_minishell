@@ -15,9 +15,16 @@ char *replace_var(t_minishell *minishell, const char *str, char quote)
             if (str[i] == '?')
             {
                 i++;
+                char status_str[12]; // Enough for any int
+                snprintf(status_str, sizeof(status_str), "%d", minishell->exit_status);
+
+                if (j + strlen(status_str) < sizeof(result))
+                {
+                    strcat(result, status_str);
+                    j += strlen(status_str);
+                }
                 continue;
             }
-
             char var[256] = {0};
             int k = 0;
 

@@ -4,6 +4,8 @@ void execute_command(t_minishell *mini, char **envp)
 {
     int pipe_fds[2];
     pid_t pid;
+    int status;
+    pid_t wpid;
     int prev_fd = -1; // For input of current command
 
     for (int i = 0; i <= mini->pipex_count; i++)
@@ -91,9 +93,15 @@ void execute_command(t_minishell *mini, char **envp)
         }
     }
 
-    // Wait for all children
-    while (wait(NULL) > 0)
-        ;
+
+    while ((wpid = wait(&status)) > 0)
+    {
+        if (WIFEXITED(status))
+            mini->exit_status = WEXITSTATUS(status);
+        else if (WIFSIGNALED(status))
+            mini->exit_status = 128 + WTERMSIG(status);
+    }
+
 }
 
 int is_builtin(char *cmd)
@@ -101,7 +109,8 @@ int is_builtin(char *cmd)
     if (!cmd)
         return 0;
     return (!strcmp(cmd, "echo") || !strcmp(cmd, "cd") || !strcmp(cmd, "pwd") ||
-            !strcmp(cmd, "env") || !strcmp(cmd, "export") || !strcmp(cmd, "unset"));
+            !strcmp(cmd, "env") || !strcmp(cmd, "export") || !strcmp(cmd, "unset") ||
+            !strcmp(cmd, "exit"));
 }
 
 void execute_builtin(t_minishell *minishell, int i)
@@ -122,6 +131,17 @@ void execute_builtin(t_minishell *minishell, int i)
         call_export(minishell, minishell->cmd[i].argv);
     else if (!strcmp(cmd, "unset"))
         call_unset(minishell, minishell->cmd[i].argv);
+    else if (!strcmp(cmd, "env")) {
+        call_env(minishell);
+        minishell->exit_status = 0; // success
+    }
+    else if (!strcmp(cmd, "unset")) {
+        call_unset(minishell, minishell->cmd[i].argv);
+        minishell->exit_status = 0; // or handle invalid identifiers and return 1
+    }
+    else if (!strcmp(cmd, "exit"))
+        call_exit(minishell, minishell->cmd[i].argv);
+
     /*else if (!strcmp(cmd, "cd"))
         call_cd(minishell, envp);
     */

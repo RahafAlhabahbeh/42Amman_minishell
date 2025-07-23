@@ -24,7 +24,7 @@ char *get_env_value(const char *key, t_env *env)
 {
     while (env)
     {
-        if (ft_strcmp(env->key, key) == 0)
+        if (ft_strncmp(env->key, key, ft_strlen(env->key)) == 0)
             return env->value;
         env = env->next;
     }
@@ -38,7 +38,7 @@ t_env *set_env_value(t_minishell *mini, char *key, char *value)
     // If key exists, update value
     while (cur)
     {
-        if (ft_strcmp(cur->key, key) == 0)
+        if (ft_strncmp(cur->key, key, ft_strlen(cur->key)) == 0)
         {
             free(cur->value);
             if (value)

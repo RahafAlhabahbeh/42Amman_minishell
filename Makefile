@@ -22,6 +22,7 @@ SRC = \
 	$(SRC_DIR)/commands/call_pwd.c \
 	$(SRC_DIR)/commands/call_export.c \
 	$(SRC_DIR)/commands/call_unset.c \
+	$(SRC_DIR)/commands/call_exit.c \
 	$(SRC_DIR)/init/init_env.c \
 	$(SRC_DIR)/pipe/pipe.c \
 	$(SRC_DIR)/execution/execute_command.c \

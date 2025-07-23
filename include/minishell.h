@@ -73,15 +73,13 @@ typedef struct s_minishell
     char **envp;
     t_env *env_list;
     int fd_out;
+    int exit_status;
 }   t_minishell;
 
 /* tokenizer */
 t_token *tokenize(t_minishell *minishell);
 void init_shell(t_minishell *minishell);
 void init(t_minishell *mini);
-t_cmd *init_cmd(void);
-t_token *expand(t_minishell *minishell);
-char *replace_var(t_minishell *minishell, const char *str, char quote);
 void init_env_list(t_minishell *mini, char **envp);
 char *get_value_env(t_minishell *mini, const char *key);
 void print_export_list(t_env *env_list);
@@ -89,7 +87,6 @@ void print_env_list(t_env *env_list);
 // void set_env_value(t_minishell *mini, const char *key, const char *value);
 t_env *set_env_value(t_minishell *mini, char *key, char *value);
 void    unset_env(t_env **env, const char *key);
-void    free_env_list(t_env *env);
 
 void count_pipe(t_minishell *minishell);
 int count_args_for_command(t_token *start);
@@ -117,7 +114,8 @@ void execute_piped_commands(t_minishell *minishell, char **envp);
 
 void handle_sigint(int sig);
 void setup_signals(void);
-
+t_token *expand(t_minishell *minishell);
+void	call_exit(t_minishell *mini, char **argv);
 
 
 #endif

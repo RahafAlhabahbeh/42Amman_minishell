@@ -30,7 +30,7 @@ char *get_value_env(t_minishell *mini, const char *key)
 
     while (cur)
     {
-        if (ft_strcmp(cur->key, key) == 0)
+        if (ft_strncmp(cur->key, key, ft_strlen(cur->key)) == 0)
             return cur->value;  // return the value pointer (do not free it)
         cur = cur->next;
     }
