@@ -23,9 +23,11 @@ SRC = \
 	$(SRC_DIR)/commands/call_export.c \
 	$(SRC_DIR)/commands/call_unset.c \
 	$(SRC_DIR)/commands/call_exit.c \
+	$(SRC_DIR)/commands/call_cd.c \
 	$(SRC_DIR)/init/init_env.c \
 	$(SRC_DIR)/pipe/pipe.c \
 	$(SRC_DIR)/execution/execute_command.c \
+	$(SRC_DIR)/execution/execute_builtin.c \
 	$(SRC_DIR)/redirection/redirection.c \
 	$(SRC_DIR)/free/free_minishell.c	\
 	$(SRC_DIR)/signal/signals.c

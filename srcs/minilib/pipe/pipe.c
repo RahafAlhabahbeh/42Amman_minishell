@@ -1,4 +1,25 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   pipe.c                                             :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/07/24 08:52:38 by dal-mahr          #+#    #+#             */
+/*   Updated: 2025/07/24 09:15:29 by dal-mahr         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../../../include/minishell.h"
+
+void safe_pipe(int pipe_fds[2])
+{
+    if (pipe(pipe_fds) == -1)
+    {
+        perror("pipe");
+        exit(EXIT_FAILURE); // Or handle error as you want
+    }
+}
 
 void count_pipe(t_minishell *minishell)
 {

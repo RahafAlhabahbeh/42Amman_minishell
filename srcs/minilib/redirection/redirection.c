@@ -23,3 +23,39 @@ void redirect_output(const char *file)
     dup2(fd, STDOUT_FILENO);
     close(fd);
 }
+
+void redirect_output_append(const char *file)
+{
+    int fd = open(file, O_WRONLY | O_CREAT | O_APPEND, 0644);
+    if (fd < 0)
+    {
+        perror("open output append");
+        exit(EXIT_FAILURE);
+    }
+    dup2(fd, STDOUT_FILENO);
+    close(fd);
+}
+
+void handle_redirections(t_cmd *cmd, int prev_fd, int *pipe_fds, int is_last)
+{
+    if (prev_fd != -1)
+    {
+        dup2(prev_fd, STDIN_FILENO);
+        close(prev_fd);
+    }   
+    if (cmd->input_file_name)
+        redirect_input(cmd->input_file_name);
+    if (cmd->output_file_name)
+    {
+        if (cmd->out_type == REDIR_APPEND)
+            redirect_output_append(cmd->output_file_name);
+        else
+            redirect_output(cmd->output_file_name);
+    }
+    if (!is_last)
+    {
+        close(pipe_fds[0]);
+        dup2(pipe_fds[1], STDOUT_FILENO);
+        close(pipe_fds[1]);
+    }
+}

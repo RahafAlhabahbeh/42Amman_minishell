@@ -132,3 +132,49 @@ t_token *tokenize(t_minishell *minishell)
 
     return head;
 }
+
+
+/*
+
+user@debian:~/Desktop/42Amman_minishell$ echo ""'$USER'""
+$USER
+user@debian:~/Desktop/42Amman_minishell$ echo ""''$USER''""
+user
+user@debian:~/Desktop/42Amman_minishell$ echo ""''$USER''""
+user
+user@debian:~/Desktop/42Amman_minishell$ echo ""'''$USER'''""
+$USER
+user@debian:~/Desktop/42Amman_minishell$ echo ""''''$USER''''""
+user
+user@debian:~/Desktop/42Amman_minishell$ echo """''''$USER''''"""
+''''user''''
+user@debian:~/Desktop/42Amman_minishell$ echo "''''$USER''''"
+''''user''''
+user@debian:~/Desktop/42Amman_minishell$ echo "'''$USER'''"
+'''user'''
+user@debian:~/Desktop/42Amman_minishell$ echo "''$USER''"
+''user''
+user@debian:~/Desktop/42Amman_minishell$ echo "'$USER'"
+'user'
+user@debian:~/Desktop/42Amman_minishell$ echo "$USER"
+user
+user@debian:~/Desktop/42Amman_minishell$ echo "'"$USER"'"
+'user'
+user@debian:~/Desktop/42Amman_minishell$ echo "'""$USER""'"
+'user'
+user@debian:~/Desktop/42Amman_minishell$ echo "'"'"$USER"'"'"
+'"$USER"'
+user@debian:~/Desktop/42Amman_minishell$ echo '"'"$USER"'"'
+"user"
+user@debian:~/Desktop/42Amman_minishell$ echo '"$USER"'
+"$USER"
+user@debian:~/Desktop/42Amman_minishell$ echo '""$USER""'
+""$USER""
+user@debian:~/Desktop/42Amman_minishell$ echo '"'"$USER"'"'
+"user"
+user@debian:~/Desktop/42Amman_minishell$ echo '"'"'$USER'"'"'
+"'user'"
+user@debian:~/Desktop/42Amman_minishell$ 
+
+
+*/

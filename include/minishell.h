@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dal-mahr <dal-mahr@student.42.fr>          +#+  +:+       +#+        */
+/*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/14 00:00:00 by rahaf             #+#    #+#             */
-/*   Updated: 2025/07/21 12:53:32 by dal-mahr         ###   ########.fr       */
+/*   Updated: 2025/07/24 08:52:52 by dal-mahr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,6 +89,7 @@ t_env *set_env_value(t_minishell *mini, char *key, char *value);
 void    unset_env(t_env **env, const char *key);
 
 void count_pipe(t_minishell *minishell);
+void safe_pipe(int pipe_fds[2]);
 int count_args_for_command(t_token *start);
 void put_token_to_commands(t_minishell *minishell);
 
@@ -96,12 +97,15 @@ int is_builtin(char *cmd);
 void execute_builtin(t_minishell *minishell, int i);
 void redirect_input(const char *file);
 void redirect_output(const char *file);
+void redirect_output_append(const char *file);
+void handle_redirections(t_cmd *cmd, int prev_fd, int *pipe_fds, int is_last);
 void execute_command(t_minishell *minishell, char **envp);
 void call_env(t_minishell *mini);
 void call_export(t_minishell *mini, char **argv);
 void call_unset(t_minishell *mini, char **argv);
 void call_echo(char **argv);
 void call_pwd();
+void call_cd(t_minishell *mini, char **argv);
 int is_valid_identifier(const char *s);
 
 char *join_path(const char *dir, const char *cmd);

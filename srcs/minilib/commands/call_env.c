@@ -1,28 +1,32 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   call_env.c                                         :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/07/24 08:54:23 by dal-mahr          #+#    #+#             */
+/*   Updated: 2025/07/24 08:54:24 by dal-mahr         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../../../include/minishell.h"
+
+void print_env_list(t_env *env_list)
+{
+    t_env *cur = env_list;
+    while (cur)
+    {
+        if (cur->value != NULL)
+            printf("%s=%s\n", cur->key, cur->value);
+        cur = cur->next;
+    }
+}
 
 void call_env(t_minishell *mini)
 {
     print_env_list(mini->env_list);
 }
-
-// char	*my_getenv(char *name, char **env)
-// {
-// 	int		i;
-// 	size_t	len;
-
-// 	if (!name || !env)
-// 		return NULL;
-		
-// 	len = ft_strlen(name);
-// 	i = 0;
-// 	while (env[i])
-// 	{
-// 		if (ft_strncmp(env[i], name, len) == 0 && env[i][len] == '=')
-// 			return (env[i] + len + 1);
-// 		i++;
-// 	}
-// 	return (NULL);
-// }
 
 char *get_value_env(t_minishell *mini, const char *key)
 {
