@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   execute_command.c                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
+/*   By: dal-mahr <dal-mahr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:52:02 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/07/24 09:17:33 by dal-mahr         ###   ########.fr       */
+/*   Updated: 2025/07/27 14:16:54 by dal-mahr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,74 +89,3 @@ void execute_command(t_minishell *mini, char **envp)
             mini->exit_status = 128 + WTERMSIG(status);
     }
 }
-
-
-
-/*
-void execute_command(t_minishell *mini, char **envp)
-{
-    int pipe_fds[2];
-    pid_t pid;
-    int status;
-    pid_t wpid;
-    int prev_fd = -1;
-
-    t_cmd *cmd = mini->cmd;
-    int i = 0;
-
-    while (cmd && i <= mini->pipex_count)
-    {
-        if (i < mini->pipex_count)
-            safe_pipe(pipe_fds);
-
-        if (is_builtin(cmd->argv[0]))
-        {
-            handle_redirections(cmd, prev_fd, pipe_fds, i == mini->pipex_count);
-            execute_builtin(mini, i);
-            prev_fd = (i < mini->pipex_count) ? pipe_fds[0] : -1;
-        }
-        else
-        {
-            pid = fork();
-            if (pid == -1)
-            {
-                perror("fork");
-                exit(EXIT_FAILURE);
-            }
-            else if (pid == 0)
-            {
-                handle_redirections(cmd, prev_fd, pipe_fds, i == mini->pipex_count);
-                signal(SIGINT, SIG_DFL);
-                signal(SIGQUIT, SIG_DFL);
-
-                char *path = resolve_cmd_path(cmd->argv[0], envp);
-                if (!path)
-                {
-                    fprintf(stderr, "minishell: command not found: %s\n", cmd->argv[0]);
-                    exit(127);
-                }
-                execve(path, cmd->argv, envp);
-                perror("execve");
-                exit(EXIT_FAILURE);
-            }
-            else
-            {
-                if (prev_fd != -1)
-                    close(prev_fd);
-                if (i < mini->pipex_count)
-                    close(pipe_fds[1]);
-                prev_fd = (i < mini->pipex_count) ? pipe_fds[0] : -1;
-            }
-        }
-        cmd = cmd->next;
-        i++;
-    }
-    while ((wpid = wait(&status)) > 0)
-    {
-        if (WIFEXITED(status))
-            mini->exit_status = WEXITSTATUS(status);
-        else if (WIFSIGNALED(status))
-            mini->exit_status = 128 + WTERMSIG(status);
-    }
-}
-*/
