@@ -101,7 +101,6 @@ void put_token_to_commands(t_minishell *minishell)
 		if (cur->type == PIPE)
 		{
 			minishell->cmd[cmd_index].argv[arg_index] = NULL;
-			
 			cmd_index++;
 			arg_index = 0;
 
@@ -110,7 +109,6 @@ void put_token_to_commands(t_minishell *minishell)
 				fprintf(stderr, "minishell: internal error: too many commands\n");
 				exit(EXIT_FAILURE);
 			}
-
 		}
 		else if (cur->type == REDIR_IN || cur->type == REDIR_OUT ||
 				 cur->type == REDIR_APPEND || cur->type == HERE_DOC)
@@ -118,29 +116,56 @@ void put_token_to_commands(t_minishell *minishell)
 			if (!cur->next || cur->next->type != WORD)
 			{
 				fprintf(stderr, "minishell: syntax error near redirection\n");
-				exit(1);
+				exit(EXIT_FAILURE);
 			}
+
+			const char *filename = cur->next->value;
+
+			// Open file to mimic Bash behavior (create/truncate/append)
+			int fd = -1;
+			if (cur->type == REDIR_OUT)
+				fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+			else if (cur->type == REDIR_APPEND)
+				fd = open(filename, O_WRONLY | O_CREAT | O_APPEND, 0644);
+			else if (cur->type == REDIR_IN)
+				fd = open(filename, O_RDONLY);
+			// HERE_DOC is handled separately, skip open()
+
+			if ((cur->type != HERE_DOC) && fd < 0)
+			{
+				perror(filename);
+				exit(EXIT_FAILURE);
+			}
+			if (fd >= 0)
+				close(fd);
+
+			// Store only the last redirection
 			if (cur->type == REDIR_IN)
 			{
+				free(minishell->cmd[cmd_index].input_file_name);
+				minishell->cmd[cmd_index].input_file_name = ft_strdup(filename);
 				minishell->cmd[cmd_index].in_type = REDIR_IN;
-				minishell->cmd[cmd_index].input_file_name = ft_strdup(cur->next->value);
 			}
 			else if (cur->type == HERE_DOC)
 			{
+				free(minishell->cmd[cmd_index].input_file_name);
+				minishell->cmd[cmd_index].input_file_name = ft_strdup(filename);
 				minishell->cmd[cmd_index].in_type = HERE_DOC;
-				minishell->cmd[cmd_index].input_file_name = ft_strdup(cur->next->value);
 			}
 			else if (cur->type == REDIR_OUT)
 			{
+				free(minishell->cmd[cmd_index].output_file_name);
+				minishell->cmd[cmd_index].output_file_name = ft_strdup(filename);
 				minishell->cmd[cmd_index].out_type = REDIR_OUT;
-				minishell->cmd[cmd_index].output_file_name = ft_strdup(cur->next->value);
 			}
 			else if (cur->type == REDIR_APPEND)
 			{
+				free(minishell->cmd[cmd_index].output_file_name);
+				minishell->cmd[cmd_index].output_file_name = ft_strdup(filename);
 				minishell->cmd[cmd_index].out_type = REDIR_APPEND;
-				minishell->cmd[cmd_index].output_file_name = ft_strdup(cur->next->value);
 			}
-			cur = cur->next; // Skip the filename
+
+			cur = cur->next; // skip the filename
 		}
 		else if (cur->type == WORD)
 		{
@@ -149,6 +174,6 @@ void put_token_to_commands(t_minishell *minishell)
 		cur = cur->next;
 	}
 
-	// Null terminate last argv
+	// Null-terminate last command argv
 	minishell->cmd[cmd_index].argv[arg_index] = NULL;
 }
