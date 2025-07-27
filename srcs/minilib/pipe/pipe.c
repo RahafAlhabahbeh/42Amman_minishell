@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   pipe.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
+/*   By: dal-mahr <dal-mahr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:52:38 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/07/24 09:15:29 by dal-mahr         ###   ########.fr       */
+/*   Updated: 2025/07/27 13:38:33 by dal-mahr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,11 +92,33 @@ void execute_piped_commands(t_minishell *minishell, char **envp)
             // Handle input/output redirection from minishell->cmd[i]
             if (minishell->cmd[i].input_file_name)
             {
-                freopen(minishell->cmd[i].input_file_name, "r", stdin);
+                int fd_in = open(minishell->cmd[i].input_file_name, O_RDONLY);
+                if (fd_in == -1)
+                {
+                    perror("open input file");
+                    exit(EXIT_FAILURE);
+                }
+                if (dup2(fd_in, STDIN_FILENO) == -1)
+                {
+                    perror("dup2 input");
+                    exit(EXIT_FAILURE);
+                }
+                close(fd_in);
             }
             if (minishell->cmd[i].output_file_name)
             {
-                freopen(minishell->cmd[i].output_file_name, "w", stdout);
+                int fd_out = open(minishell->cmd[i].output_file_name, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+                if (fd_out == -1)
+                {
+                    perror("open output file");
+                    exit(EXIT_FAILURE);
+                }
+                if (dup2(fd_out, STDOUT_FILENO) == -1)
+                {
+                    perror("dup2 output");
+                    exit(EXIT_FAILURE);
+                }
+                close(fd_out);
             }
 
             // Execute command

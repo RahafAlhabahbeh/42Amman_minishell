@@ -15,46 +15,59 @@ void free_tokens(t_token *head)
 }
 void free_cmds_array(t_cmd *cmd_array, int count)
 {
-    int i, j;
-
-    if (!cmd_array)
-        return;
-
-    for (i = 0; i <= count; i++) // count is pipex_count
+    if (!cmd_array) return;
+    for (int i = 0; i <= count; i++)
     {
         if (cmd_array[i].argv)
         {
-            for (j = 0; cmd_array[i].argv[j]; j++)
+            for (int j = 0; cmd_array[i].argv[j]; j++)
                 free(cmd_array[i].argv[j]);
             free(cmd_array[i].argv);
         }
-        if (cmd_array[i].input_file_name)
-            free(cmd_array[i].input_file_name);
-        if (cmd_array[i].output_file_name)
-            free(cmd_array[i].output_file_name);
+        free(cmd_array[i].input_file_name);
+        free(cmd_array[i].output_file_name);
     }
     free(cmd_array);
 }
-
-
-void free_commands(t_minishell *mini)
+void free_commands(t_cmd *cmds, int count)
 {
-	int i = 0;
-	while (i <= mini->pipex_count)
-	{
-		if (mini->cmd[i].argv)
-		{
-			for (int j = 0; mini->cmd[i].argv[j]; j++)
-				free(mini->cmd[i].argv[j]);
-			free(mini->cmd[i].argv);
-		}
-		free(mini->cmd[i].input_file_name);
-		free(mini->cmd[i].output_file_name);
-		i++;
-	}
-	free(mini->cmd);
-	mini->cmd = NULL;
+    for (int i = 0; i < count; i++)
+    {
+        // Free argv array strings
+        for (int j = 0; cmds[i].argv && cmds[i].argv[j]; j++)
+            free(cmds[i].argv[j]);
+        free(cmds[i].argv);
+
+        // Free input/output filenames if allocated
+        if (cmds[i].input_file_name)
+            free(cmds[i].input_file_name);
+        if (cmds[i].output_file_name)
+            free(cmds[i].output_file_name);
+    }
+    free(cmds);
 }
+
+
+// void free_commands(t_minishell *mini)
+// {
+// 	if (!mini->cmd)
+// 		return;
+
+// 	for (int i = 0; i <= mini->pipex_count; i++)
+// 	{
+// 		if (mini->cmd[i].argv)
+// 		{
+// 			for (int j = 0; mini->cmd[i].argv[j]; j++)
+// 				free(mini->cmd[i].argv[j]);
+// 			free(mini->cmd[i].argv);
+// 		}
+// 		free(mini->cmd[i].input_file_name);
+// 		free(mini->cmd[i].output_file_name);
+// 	}
+// 	free(mini->cmd);
+// 	mini->cmd = NULL;
+// }
+
 
 
 

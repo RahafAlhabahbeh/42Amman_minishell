@@ -101,8 +101,16 @@ void put_token_to_commands(t_minishell *minishell)
 		if (cur->type == PIPE)
 		{
 			minishell->cmd[cmd_index].argv[arg_index] = NULL;
+			
 			cmd_index++;
 			arg_index = 0;
+
+			if (cmd_index > minishell->pipex_count)
+			{
+				fprintf(stderr, "minishell: internal error: too many commands\n");
+				exit(EXIT_FAILURE);
+			}
+
 		}
 		else if (cur->type == REDIR_IN || cur->type == REDIR_OUT ||
 				 cur->type == REDIR_APPEND || cur->type == HERE_DOC)

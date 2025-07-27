@@ -6,7 +6,7 @@
 /*   By: dal-mahr <dal-mahr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/02 22:14:22 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/07/27 13:07:48 by dal-mahr         ###   ########.fr       */
+/*   Updated: 2025/07/27 13:49:25 by dal-mahr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -106,7 +106,7 @@ int main(int ac, char **av, char **envp)
         count_pipe(&minishell);
 
         if (minishell.cmd)
-            free_commands(&minishell);
+            free_commands(minishell.cmd, minishell.cmd_count);
 
         minishell.cmd = malloc(sizeof(t_cmd) * (minishell.pipex_count + 1));
         if (!minishell.cmd)
@@ -114,6 +114,7 @@ int main(int ac, char **av, char **envp)
 
         ft_bzero(minishell.cmd, sizeof(t_cmd) * (minishell.pipex_count + 1));
         put_token_to_commands(&minishell);
+        
         print_commands(minishell.cmd);
 
         execute_command(&minishell, envp);

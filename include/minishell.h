@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
+/*   By: dal-mahr <dal-mahr@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/14 00:00:00 by rahaf             #+#    #+#             */
-/*   Updated: 2025/07/24 08:52:52 by dal-mahr         ###   ########.fr       */
+/*   Updated: 2025/07/27 13:41:47 by dal-mahr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,6 +66,7 @@ typedef struct s_minishell
 {
     char *promp_input;
     t_cmd *cmd;
+    int cmd_count;
     int token_count;
     int pipex_count;
     t_token *token;
@@ -113,7 +114,8 @@ char *resolve_cmd_path(char *cmd, char **envp);
 void free_minishell(t_minishell *mini);
 void free_tokens(t_token *head);
 void free_cmds_array(t_cmd *cmd_array, int count);
-void free_commands(t_minishell *minishell);
+// void free_commands(t_minishell *minishell);
+void free_commands(t_cmd *cmds, int count);
 void execute_piped_commands(t_minishell *minishell, char **envp);
 
 void handle_sigint(int sig);
