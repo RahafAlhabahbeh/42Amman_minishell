@@ -35,25 +35,48 @@ void free_cmds_array(t_cmd *cmd_array, int count)
     }
     free(cmd_array);
 }
-void free_commands(t_minishell *minishell)
+
+
+void free_commands(t_minishell *mini)
 {
-    for (int i = 0; i <= minishell->pipex_count; i++)
-    {
-        char **argv = minishell->cmd[i].argv;
-        if (argv)
-        {
-            for (int j = 0; argv[j]; j++)
-                free(argv[j]);
-            free(argv);
-        }
-        if (minishell->cmd[i].input_file_name)
-            free(minishell->cmd[i].input_file_name);
-        if (minishell->cmd[i].output_file_name)
-            free(minishell->cmd[i].output_file_name);
-    }
-    free(minishell->cmd);
-    minishell->cmd = NULL;
+	int i = 0;
+	while (i <= mini->pipex_count)
+	{
+		if (mini->cmd[i].argv)
+		{
+			for (int j = 0; mini->cmd[i].argv[j]; j++)
+				free(mini->cmd[i].argv[j]);
+			free(mini->cmd[i].argv);
+		}
+		free(mini->cmd[i].input_file_name);
+		free(mini->cmd[i].output_file_name);
+		i++;
+	}
+	free(mini->cmd);
+	mini->cmd = NULL;
 }
+
+
+
+// void free_commands(t_minishell *minishell)
+// {
+//     for (int i = 0; i <= minishell->pipex_count; i++)
+//     {
+//         char **argv = minishell->cmd[i].argv;
+//         if (argv)
+//         {
+//             for (int j = 0; argv[j]; j++)
+//                 free(argv[j]);
+//             free(argv);
+//         }
+//         if (minishell->cmd[i].input_file_name)
+//             free(minishell->cmd[i].input_file_name);
+//         if (minishell->cmd[i].output_file_name)
+//             free(minishell->cmd[i].output_file_name);
+//     }
+//     free(minishell->cmd);
+//     minishell->cmd = NULL;
+// }
 
 void free_minishell(t_minishell *mini)
 {
