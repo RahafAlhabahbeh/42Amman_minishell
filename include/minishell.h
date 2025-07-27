@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dal-mahr <dal-mahr@student.42.fr>          +#+  +:+       +#+        */
+/*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/14 00:00:00 by rahaf             #+#    #+#             */
-/*   Updated: 2025/07/27 13:41:47 by dal-mahr         ###   ########.fr       */
+/*   Updated: 2025/07/27 14:16:31 by dal-mahr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,60 @@ typedef enum e_token_type
     HERE_DOC
 }               t_token_type;
 
+/*
+// Delay between characters (500 microseconds = 0.5ms)
+void print_slowly(const char *line)
+{
+    int i;
+    i = 0;
+    while (line[i])
+    {
+        write(1, &line[i], 1);
+        usleep(500);
+        i++;
+    }
+}
+void print_banner(void)
+{
+    const char *banner[] = {
+        "\n",
+        "\033[1;35m",
+        "███╗   ███╗██╗███╗   ██╗██╗███████╗██╗  ██╗███████╗██╗     ██╗     \n",
+        "████╗ ████║██║████╗  ██║██║██╔════╝██║  ██║██╔════╝██║     ██║     \n",
+        "██╔████╔██║██║██╔██╗ ██║██║███████╗███████║█████╗  ██║     ██║     \n",
+        "██║╚██╔╝██║██║██║╚██╗██║██║╚════██║██╔══██║██╔══╝  ██║     ██║     \n",
+        "██║ ╚═╝ ██║██║██║ ╚████║██║███████║██║  ██║███████╗███████╗███████╗\n",
+        "╚═╝     ╚═╝╚═╝╚═╝  ╚═══╝╚═╝╚══════╝╚══════╝╚═╝  ╚═╝╚══════╝╚══════╝\n",
+        "\033[0m",
+        "\n",
+        NULL
+    };
+    int i = 0;
+    while (banner[i])
+    {
+        print_slowly(banner[i]);
+        usleep(80000); // 80ms between each line
+        i++;
+    }
+}
+*/
+
+/*
+typedef enum e_type
+{
+    INPUT_NONE,
+    INPUT_FILE,
+    INPUT_PIPE,
+    INUPT_WORD,
+    INPUT_END, //? May delete
+    INPUT_HEREDOC,
+    OUTPUT_NONE,
+    OUTPUT_FILE,
+    OUTPUT_APPEND,
+    OUTPUT_PIPE
+} t_type;
+*/
+
 typedef struct s_token
 {
     char *value;
@@ -57,6 +111,8 @@ typedef struct s_cmd {
     t_token_type out_type;    // NONE / REDIR_OUT / APPEND / PIPE_OUT
     char *input_file_name;
     char *output_file_name;
+    // char **input_files;
+    // char **output_files;
     struct s_cmd *next;  // Next command in pipe sequence
     struct s_cmd *prev;  // Prev command in pipe sequence
     // t_env *env;
