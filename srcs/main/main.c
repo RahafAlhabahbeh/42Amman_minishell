@@ -12,68 +12,6 @@
 
 #include "../../include/minishell.h"
 
-void print_tokens(t_token *token)
-{
-    printf("\n🧩 Token List:\n");
-    while (token)
-    {
-        const char *type_str;
-        switch (token->type)
-        {
-            case WORD: type_str = "WORD"; break;
-            case PIPE: type_str = "PIPE"; break;
-            case REDIR_IN: type_str = "REDIR_IN"; break;
-            case REDIR_OUT: type_str = "REDIR_OUT"; break;
-            case REDIR_APPEND: type_str = "REDIR_APPEND"; break;
-            case HERE_DOC: type_str = "HERE_DOC"; break;
-            default: type_str = "UNKNOWN"; break;
-        }
-
-        printf("  [%s] \"%s\" (quote: %c)\n", type_str, token->value, token->quote ? token->quote : '-');
-        token = token->next;
-    }
-    printf("🔚 End of Tokens\n");
-}
-
-void print_commands(t_cmd *cmd)
-{
-    int i = 0;
-    printf("\n🚀 Command List:\n");
-    while (cmd)
-    {
-        printf("  Cmd[%d]:\n", i);
-        if (cmd->argv)
-        {
-            for (int j = 0; cmd->argv[j]; j++)
-                printf("    argv[%d]: [%s]\n", j, cmd->argv[j]);
-        }
-        else
-        {
-            printf("    (no argv)\n");
-        }
-
-        switch (cmd->in_type)
-        {
-            case REDIR_IN: printf("    input: REDIR_IN <%s>\n", cmd->input_file_name); break;
-            case HERE_DOC: printf("    input: HERE_DOC\n"); break;
-            case PIPE:     printf("    input: PIPE\n"); break;
-            default:       printf("    input: none\n"); break;
-        }
-
-        switch (cmd->out_type)
-        {
-            case REDIR_OUT:    printf("    output: REDIR_OUT >%s\n", cmd->output_file_name); break;
-            case REDIR_APPEND: printf("    output: APPEND >>%s\n", cmd->output_file_name); break;
-            case PIPE:         printf("    output: PIPE\n"); break;
-            default:           printf("    output: none\n"); break;
-        }
-
-        cmd = cmd->next;
-        i++;
-    }
-    printf("🔚 End of Commands\n");
-}
-
 int main(int ac, char **av, char **envp)
 {
     t_minishell minishell;
@@ -88,10 +26,36 @@ int main(int ac, char **av, char **envp)
     while (1)
     {
         setup_signals();
-        init_shell(&minishell);
+        if (minishell.token)
+        {
+            free_tokens(minishell.token);
+            minishell.token = NULL;
+        }
+        if (minishell.cmd)
+        {
+            free_commands(minishell.cmd, minishell.cmd_count);
+            minishell.cmd = NULL;
+            minishell.cmd_count = 0;
+        }
 
+
+        // printf("Start 1\n");
+        // print_tokens(minishell.token);
+        // print_commands(minishell.cmd);
+        // printf("Start 2\n");
+
+        init_shell(&minishell);
+        // printf("DEBUG: raw input = [%s]\n", minishell.promp_input);
+        // if (!minishell.promp_input || minishell.promp_input[0] == '\0')
+        //     continue;
         if (!minishell.promp_input || minishell.promp_input[0] == '\0')
+        {
+            free(minishell.promp_input);
+            minishell.promp_input = NULL;
             continue;
+        }
+        // printf("DEBUG: raw input = [%s]\n", minishell.promp_input);
+
 
         minishell.token = tokenize(&minishell);
         if (!minishell.token)
@@ -101,7 +65,7 @@ int main(int ac, char **av, char **envp)
         minishell.token = expand(&minishell);
         free_tokens(old);
 
-        print_tokens(minishell.token);
+        // print_tokens(minishell.token);
 
         count_pipe(&minishell);
 
@@ -117,7 +81,7 @@ int main(int ac, char **av, char **envp)
         ft_bzero(minishell.cmd, sizeof(t_cmd) * (minishell.pipex_count + 1));
         put_token_to_commands(&minishell);
         
-        print_commands(minishell.cmd);
+        // print_commands(minishell.cmd);
 
         execute_command(&minishell, envp);
 

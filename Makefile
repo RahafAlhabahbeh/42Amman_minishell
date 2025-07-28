@@ -15,6 +15,7 @@ SRC = \
     $(SRC_DIR)/parsing/expand.c  \
     $(SRC_DIR)/parsing/get_commands.c \
     $(MAIN_DIR)/main.c \
+    $(MAIN_DIR)/print.c \
 	$(SRC_DIR)/init/init_shell.c \
 	$(SRC_DIR)/init/init.c \
 	$(SRC_DIR)/commands/call_env.c \

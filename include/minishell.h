@@ -180,4 +180,16 @@ t_token *expand(t_minishell *minishell);
 void	call_exit(t_minishell *mini, char **argv);
 
 
+void execute_builtin_cmd(t_cmd *cmd);        // <-- Add this
+int is_str_in_set(char *s, char *set[]);     // <-- Add this
+void execute_builtin(t_minishell *minishell, int i);
+int ft_strcmp(const char *s1, const char *s2);
+
+
+
+// NO
+void print_tokens(t_token *token);
+void print_commands(t_cmd *cmd);
+
+
 #endif
