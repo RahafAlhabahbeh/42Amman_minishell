@@ -1,5 +1,5 @@
 CC         = cc
-CFLAGS     = -Wall -Werror -Wextra -fsanitize=address -g
+CFLAGS     = -Wall -Werror -Wextra # -fsanitize=address -g
 
 # Directories
 OBJ_DIR    = obj
@@ -31,6 +31,7 @@ SRC = \
 	$(SRC_DIR)/execution/execute_builtin.c \
 	$(SRC_DIR)/redirection/redirection.c \
 	$(SRC_DIR)/free/free_minishell.c	\
+	$(SRC_DIR)/check_error/syntax_error.c	\
 	$(SRC_DIR)/signal/signals.c
 
 

@@ -170,8 +170,9 @@ char *resolve_cmd_path(char *cmd, char **envp);
 void free_minishell(t_minishell *mini);
 void free_tokens(t_token *head);
 void free_cmds_array(t_cmd *cmd_array, int count);
-// void free_commands(t_minishell *minishell);
+void free_env_list(t_env *env);
 void free_commands(t_cmd *cmds, int count);
+void reset_minishell(t_minishell *mini);
 void execute_piped_commands(t_minishell *minishell, char **envp);
 
 void handle_sigint(int sig);
@@ -190,6 +191,10 @@ int ft_strcmp(const char *s1, const char *s2);
 // NO
 void print_tokens(t_token *token);
 void print_commands(t_cmd *cmd);
+
+
+int is_invalid_token(t_token_type type);
+int	is_valid_syntax(t_token *tokens);
 
 
 #endif

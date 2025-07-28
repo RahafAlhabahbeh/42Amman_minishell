@@ -1,0 +1,52 @@
+#include "../../../include/minishell.h"
+
+int is_invalid_token(t_token_type type)
+{
+	return (type == PIPE || type == REDIR_IN || type == REDIR_OUT || 
+			type == REDIR_APPEND || type == HERE_DOC);
+}
+
+int	is_valid_syntax(t_token *tokens)
+{
+	t_token *curr = tokens;
+
+	if (!curr)
+		return (1);
+
+	// Start with pipe: syntax error
+	if (curr->type == PIPE)
+	{
+		ft_putstr_fd("minishell: syntax error near unexpected token `|'\n", 2);
+		return (0);
+	}
+
+	while (curr)
+	{
+		if (is_invalid_token(curr->type))
+		{
+			if (!curr->next || is_invalid_token(curr->next->type))
+			{
+				ft_putstr_fd("minishell: syntax error near unexpected token `", 2);
+				if (!curr->next)
+					ft_putstr_fd("newline", 2);
+				else
+					ft_putstr_fd(curr->next->value, 2);
+				ft_putstr_fd("'\n", 2);
+				return (0);
+			}
+		}
+		curr = curr->next;
+	}
+
+	// Ends with pipe: syntax error
+	curr = tokens;
+	while (curr && curr->next)
+		curr = curr->next;
+	if (curr && curr->type == PIPE)
+	{
+		ft_putstr_fd("minishell: syntax error near unexpected token `|'\n", 2);
+		return (0);
+	}
+
+	return (1);
+}

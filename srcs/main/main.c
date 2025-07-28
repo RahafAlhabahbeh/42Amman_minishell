@@ -38,7 +38,6 @@ int main(int ac, char **av, char **envp)
             minishell.cmd_count = 0;
         }
 
-
         // printf("Start 1\n");
         // print_tokens(minishell.token);
         // print_commands(minishell.cmd);
@@ -56,10 +55,16 @@ int main(int ac, char **av, char **envp)
         }
         // printf("DEBUG: raw input = [%s]\n", minishell.promp_input);
 
-
         minishell.token = tokenize(&minishell);
         if (!minishell.token)
             continue;
+
+        if (!is_valid_syntax(minishell.token))
+        {
+            minishell.exit_status = 258;
+            reset_minishell(&minishell);
+            continue;
+        }
 
         t_token *old = minishell.token;
         minishell.token = expand(&minishell);
@@ -71,7 +76,7 @@ int main(int ac, char **av, char **envp)
 
         if (minishell.cmd)
             free_commands(minishell.cmd, minishell.cmd_count);
-        
+
         minishell.cmd_count = minishell.pipex_count + 1;
         minishell.cmd = malloc(sizeof(t_cmd) * minishell.cmd_count);
 
@@ -80,7 +85,7 @@ int main(int ac, char **av, char **envp)
 
         ft_bzero(minishell.cmd, sizeof(t_cmd) * (minishell.pipex_count + 1));
         put_token_to_commands(&minishell);
-        
+
         // print_commands(minishell.cmd);
 
         execute_command(&minishell, envp);

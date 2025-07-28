@@ -45,15 +45,73 @@ void free_commands(t_cmd *cmd, int count)
     free(cmd);
 }
 
+// void free_minishell(t_minishell *mini)
+// {
+//     if (mini->promp_input)
+//         free(mini->promp_input);
+
+//     free_tokens(mini->token);
+
+//     // If you use an array of commands, free accordingly:
+//     free_cmds_array(mini->cmd, mini->pipex_count);
+
+//     // free_env_list(mini->env_list); // uncomment if you use env_list
+// }
+
 void free_minishell(t_minishell *mini)
 {
     if (mini->promp_input)
         free(mini->promp_input);
 
-    free_tokens(mini->token);
+    if (mini->token)
+        free_tokens(mini->token);
 
-    // If you use an array of commands, free accordingly:
-    free_cmds_array(mini->cmd, mini->pipex_count);
+    if (mini->cmd)
+        free_cmds_array(mini->cmd, mini->pipex_count);
 
-    // free_env_list(mini->env_list); // uncomment if you use env_list
+    if (mini->env_list)
+        free_env_list(mini->env_list); // You must implement this
 }
+
+void free_env_list(t_env *env)
+{
+    t_env *tmp;
+    while (env)
+    {
+        tmp = env->next;
+        free(env->key);
+        free(env->value);
+        free(env);
+        env = tmp;
+    }
+}
+
+
+// void reset_minishell(t_minishell *mini)
+// {
+//     if (mini->promp_input)
+//         free(mini->promp_input);
+//     free_tokens(mini->token);
+//     free_cmds_array(mini->cmd, mini->pipex_count);
+//     mini->promp_input = NULL;
+//     mini->token = NULL;
+//     mini->cmd = NULL;
+//     mini->pipex_count = 0;
+// }
+
+void reset_minishell(t_minishell *mini)
+{
+    if (mini->promp_input)
+        free(mini->promp_input);
+    if (mini->token)
+        free_tokens(mini->token);
+    if (mini->cmd)
+        free_cmds_array(mini->cmd, mini->pipex_count);
+
+    mini->promp_input = NULL;
+    mini->token = NULL;
+    mini->cmd = NULL;
+    mini->cmd_count = 0;
+    mini->pipex_count = 0;
+}
+
