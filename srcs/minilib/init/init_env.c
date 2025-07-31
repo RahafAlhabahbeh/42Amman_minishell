@@ -38,7 +38,7 @@ t_env *set_env_value(t_minishell *mini, char *key, char *value)
     // If key exists, update value
     while (cur)
     {
-        if (ft_strncmp(cur->key, key, ft_strlen(cur->key)) == 0)
+        if (ft_strcmp(cur->key, key) == 0)
         {
             free(cur->value);
             if (value)

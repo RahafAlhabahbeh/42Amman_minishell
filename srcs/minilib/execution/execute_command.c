@@ -12,7 +12,7 @@
 
 #include "../../../include/minishell.h"
 
-void execute_builtin_cmd(t_cmd *cmd)
+void execute_builtin_cmd(t_minishell *mini, t_cmd *cmd)
 {
     if (!cmd || !cmd->argv || !cmd->argv[0])
         return;
@@ -20,11 +20,11 @@ void execute_builtin_cmd(t_cmd *cmd)
     char *name = cmd->argv[0];
 
     if (!ft_strcmp(name, "echo"))
-        call_echo(cmd->argv);
+        call_echo(mini, cmd->argv);
     else if (!ft_strcmp(name, "pwd"))
-        call_pwd();
+        call_pwd(mini);
     else if (!ft_strcmp(name, "env"))
-        call_env(NULL); // modify if env access is needed
+        call_env(mini, cmd->argv);
 }
 
 
@@ -73,7 +73,7 @@ static void execute_child_process(t_minishell *mini, t_cmd *cmd, int prev_fd,
     {
         fprintf(stdout, "Build in child\n");
         handle_redirections(cmd, prev_fd, pipe_fds, is_last);
-        execute_builtin_cmd(cmd);
+        execute_builtin_cmd(mini, cmd);
         free_commands(mini->cmd, mini->pipex_count);
         free_tokens(mini->token);
         free(mini->promp_input);

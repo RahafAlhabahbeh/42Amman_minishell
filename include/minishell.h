@@ -6,7 +6,7 @@
 /*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/14 00:00:00 by rahaf             #+#    #+#             */
-/*   Updated: 2025/07/27 14:16:31 by dal-mahr         ###   ########.fr       */
+/*   Updated: 2025/07/31 01:11:13 by dal-mahr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,60 +41,6 @@ typedef enum e_token_type
     REDIR_APPEND,
     HERE_DOC
 }               t_token_type;
-
-/*
-// Delay between characters (500 microseconds = 0.5ms)
-void print_slowly(const char *line)
-{
-    int i;
-    i = 0;
-    while (line[i])
-    {
-        write(1, &line[i], 1);
-        usleep(500);
-        i++;
-    }
-}
-void print_banner(void)
-{
-    const char *banner[] = {
-        "\n",
-        "\033[1;35m",
-        "███╗   ███╗██╗███╗   ██╗██╗███████╗██╗  ██╗███████╗██╗     ██╗     \n",
-        "████╗ ████║██║████╗  ██║██║██╔════╝██║  ██║██╔════╝██║     ██║     \n",
-        "██╔████╔██║██║██╔██╗ ██║██║███████╗███████║█████╗  ██║     ██║     \n",
-        "██║╚██╔╝██║██║██║╚██╗██║██║╚════██║██╔══██║██╔══╝  ██║     ██║     \n",
-        "██║ ╚═╝ ██║██║██║ ╚████║██║███████║██║  ██║███████╗███████╗███████╗\n",
-        "╚═╝     ╚═╝╚═╝╚═╝  ╚═══╝╚═╝╚══════╝╚══════╝╚═╝  ╚═╝╚══════╝╚══════╝\n",
-        "\033[0m",
-        "\n",
-        NULL
-    };
-    int i = 0;
-    while (banner[i])
-    {
-        print_slowly(banner[i]);
-        usleep(80000); // 80ms between each line
-        i++;
-    }
-}
-*/
-
-/*
-typedef enum e_type
-{
-    INPUT_NONE,
-    INPUT_FILE,
-    INPUT_PIPE,
-    INUPT_WORD,
-    INPUT_END, //? May delete
-    INPUT_HEREDOC,
-    OUTPUT_NONE,
-    OUTPUT_FILE,
-    OUTPUT_APPEND,
-    OUTPUT_PIPE
-} t_type;
-*/
 
 typedef struct s_token
 {
@@ -157,11 +103,14 @@ void redirect_output(const char *file);
 void redirect_output_append(const char *file);
 void handle_redirections(t_cmd *cmd, int prev_fd, int *pipe_fds, int is_last);
 void execute_command(t_minishell *minishell, char **envp);
-void call_env(t_minishell *mini);
+// void call_env(t_minishell *mini);
+void call_env(t_minishell *mini, char **argv);
 void call_export(t_minishell *mini, char **argv);
 void call_unset(t_minishell *mini, char **argv);
-void call_echo(char **argv);
-void call_pwd();
+// void call_echo(char **argv);
+// void call_pwd();
+void call_echo(t_minishell *mini, char **argv);
+void call_pwd(t_minishell *mini);
 void call_cd(t_minishell *mini, char **argv);
 int is_valid_identifier(const char *s);
 
@@ -181,7 +130,8 @@ t_token *expand(t_minishell *minishell);
 void	call_exit(t_minishell *mini, char **argv);
 
 
-void execute_builtin_cmd(t_cmd *cmd);        // <-- Add this
+// void execute_builtin_cmd(t_cmd *cmd);        // <-- Add this
+void execute_builtin_cmd(t_minishell *mini, t_cmd *cmd);
 int is_str_in_set(char *s, char *set[]);     // <-- Add this
 void execute_builtin(t_minishell *minishell, int i);
 int ft_strcmp(const char *s1, const char *s2);

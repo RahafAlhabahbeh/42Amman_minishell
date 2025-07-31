@@ -6,7 +6,7 @@
 /*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:54:23 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/07/24 08:54:24 by dal-mahr         ###   ########.fr       */
+/*   Updated: 2025/07/31 01:17:27 by dal-mahr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,10 +23,39 @@ void print_env_list(t_env *env_list)
     }
 }
 
-void call_env(t_minishell *mini)
+// void call_env(t_minishell *mini)
+// {
+//     print_env_list(mini->env_list);
+// }
+
+
+void call_env(t_minishell *shell, char **argv)
 {
-    print_env_list(mini->env_list);
+    int fd = shell->fd_out;
+    if(fd == -1)
+        fd = 1;
+
+    if (argv[1])
+    {
+        ft_putstr_fd("env: too many arguments\n", STDERR_FILENO);
+        return ;
+    }
+
+    t_env *curr = shell->env_list;
+    while (curr)
+    {
+        if (curr->value)
+        {
+            ft_putstr_fd(curr->key, fd);
+            ft_putchar_fd('=', fd);
+            ft_putstr_fd(curr->value, fd);
+            ft_putchar_fd('\n', fd);
+        }
+        curr = curr->next;
+    }
 }
+
+
 
 char *get_value_env(t_minishell *mini, const char *key)
 {
@@ -96,4 +125,3 @@ char *resolve_cmd_path(char *cmd, char **envp)
     free(paths);
     return NULL;
 }
-

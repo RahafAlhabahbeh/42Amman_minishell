@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   call_export.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dal-mahr <dal-mahr@student.42.fr>          +#+  +:+       +#+        */
+/*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:54:38 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/07/27 14:16:36 by dal-mahr         ###   ########.fr       */
+/*   Updated: 2025/07/31 00:30:14 by dal-mahr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -120,6 +120,7 @@ static void export_with_args(t_minishell *mini, char **argv)
             int key_len = eq - argv[i];
             char *key = ft_substr(argv[i], 0, key_len);
             char *value = ft_strdup(eq + 1);
+            //printf("key: %s, value: %s\n", key, value);
             mini->env_list = set_env_value(mini, key, value);
             free(key);
             free(value);
