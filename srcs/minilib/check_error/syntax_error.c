@@ -30,7 +30,20 @@ int	is_valid_syntax(t_token *tokens)
 				if (!curr->next)
 					ft_putstr_fd("newline", 2);
 				else
-					ft_putstr_fd(curr->next->value, 2);
+				{
+					if (curr->next->type == PIPE)
+						ft_putstr_fd("|", 2);
+					else if (curr->next->type == REDIR_IN)
+						ft_putstr_fd("<", 2);
+					else if (curr->next->type == REDIR_OUT)
+						ft_putstr_fd(">", 2);
+					else if (curr->next->type == REDIR_APPEND)
+						ft_putstr_fd(">>", 2);
+					else if (curr->next->type == HERE_DOC)
+						ft_putstr_fd("<<", 2);
+					else
+						ft_putstr_fd(curr->next->value, 2);
+				}
 				ft_putstr_fd("'\n", 2);
 				return (0);
 			}

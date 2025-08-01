@@ -1,5 +1,34 @@
 #include "../../../include/minishell.h"
 
+static void handle_shlvl(t_minishell *mini)
+{
+    char *shlvl_str = get_value_env(mini, "SHLVL");
+    int shlvl = 0;
+    
+    if (shlvl_str)
+    {
+        shlvl = ft_atoi(shlvl_str);
+        if (shlvl < 0)
+            shlvl = 0;
+    }
+    
+    shlvl++;
+    if (shlvl > 999)
+    {
+        ft_putstr_fd("minishell: warning: shell level (", STDERR_FILENO);
+        ft_putstr_fd(ft_itoa(shlvl), STDERR_FILENO);
+        ft_putstr_fd(") too high, resetting to 1\n", STDERR_FILENO);
+        shlvl = 1;
+    }
+    
+    char *new_shlvl = ft_itoa(shlvl);
+    if (new_shlvl)
+    {
+        set_env_value(mini, "SHLVL", new_shlvl);
+        free(new_shlvl);
+    }
+}
+
 void init_env_list(t_minishell *mini, char **envp)
 {
     mini->env_list = NULL;
@@ -26,6 +55,9 @@ void init_env_list(t_minishell *mini, char **envp)
         free(key);
         free(value);
     }
+    
+    // Handle SHLVL
+    handle_shlvl(mini);
 }
 
 char *get_env_value(const char *key, t_env *env)

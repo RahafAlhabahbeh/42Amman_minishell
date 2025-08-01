@@ -9,8 +9,14 @@ void handle_sigint(int sig)
     rl_redisplay();
 }
 
+void handle_sigquit(int sig)
+{
+    (void)sig;
+    // Ctrl+\ should do nothing in interactive mode
+}
+
 void setup_signals(void)
 {
-    signal(SIGINT, handle_sigint);  // Handle Ctrl+C
-    signal(SIGQUIT, SIG_IGN);       // Ignore Ctrl+
+    signal(SIGINT, handle_sigint);   // Handle Ctrl+C
+    signal(SIGQUIT, handle_sigquit); // Handle Ctrl+backslash
 }

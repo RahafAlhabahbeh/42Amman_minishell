@@ -25,6 +25,18 @@ void execute_builtin_cmd(t_minishell *mini, t_cmd *cmd)
         call_pwd(mini);
     else if (!ft_strcmp(name, "env"))
         call_env(mini, cmd->argv);
+    else if (!ft_strcmp(name, "export"))
+        call_export(mini, cmd->argv);
+    else if (!ft_strcmp(name, "unset"))
+        call_unset(mini, cmd->argv);
+    else if (!ft_strcmp(name, "exit"))
+        call_exit(mini, cmd->argv);
+    else if (!ft_strcmp(name, "cd"))
+    {
+        // cd in child process should show error
+        ft_putstr_fd("minishell: cd: cannot change directory in pipe\n", STDERR_FILENO);
+        mini->exit_status = 1;
+    }
 }
 
 

@@ -15,21 +15,66 @@
 void call_cd(t_minishell *mini, char **argv)
 {
     char *path = argv[1];
+    
+    // Handle multiple arguments
+    if (argv[2])
+    {
+        ft_putstr_fd("minishell: cd: too many arguments\n", STDERR_FILENO);
+        mini->exit_status = 1;
+        return;
+    }
+    
+    // If no argument, go to HOME
     if (!path)
-        path = getenv("HOME");
-
+        path = get_value_env(mini, "HOME");
+    
+    // Handle special cases
+    if (ft_strcmp(path, "-") == 0)
+    {
+        path = get_value_env(mini, "OLDPWD");
+        if (!path)
+        {
+            ft_putstr_fd("minishell: cd: OLDPWD not set\n", STDERR_FILENO);
+            mini->exit_status = 1;
+            return;
+        }
+    }
+    else if (ft_strcmp(path, "~") == 0)
+    {
+        path = get_value_env(mini, "HOME");
+    }
+    
+    // Try to change directory
     if (chdir(path) != 0)
     {
-        perror("minishell: cd");
+        ft_putstr_fd("minishell: cd: ", STDERR_FILENO);
+        ft_putstr_fd(path, STDERR_FILENO);
+        ft_putstr_fd(": ", STDERR_FILENO);
+        if (access(path, F_OK) != 0)
+            ft_putstr_fd("No such file or directory\n", STDERR_FILENO);
+        else if (access(path, R_OK) != 0)
+            ft_putstr_fd("Permission denied\n", STDERR_FILENO);
+        else
+            ft_putstr_fd("Not a directory\n", STDERR_FILENO);
         mini->exit_status = 1;
         return;
     }
 
+    // Update environment variables
+    char *old_pwd = get_value_env(mini, "PWD");
     char cwd[1024];
     if (getcwd(cwd, sizeof(cwd)) != NULL)
     {
-        set_env_value(mini, "OLDPWD", get_value_env(mini, "PWD"));
+        if (old_pwd)
+            set_env_value(mini, "OLDPWD", old_pwd);
         set_env_value(mini, "PWD", cwd);
+    }
+    else
+    {
+        ft_putstr_fd("minishell: error retrieving current directory: ", STDERR_FILENO);
+        ft_putstr_fd("getcwd: cannot access parent directories: No such file or directory\n", STDERR_FILENO);
+        mini->exit_status = 0; // cd succeeded, just can't get cwd
+        return;
     }
 
     mini->exit_status = 0;
