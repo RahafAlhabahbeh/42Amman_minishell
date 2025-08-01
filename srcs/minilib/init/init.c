@@ -8,7 +8,9 @@ void init(t_minishell *mini)
     mini->token_count = 0;
     mini->pipex_count = 0;
     mini->token = NULL;
-	mini->fd_out = -1;
+	//mini->fd_out = -1;
 	mini->env_list = NULL;
+    // minishell->envp = NULL; // Yes
+    // minishell->envp = envp; // Yes
     ft_memset(mini->buff, 0, sizeof(mini->buff));
 }

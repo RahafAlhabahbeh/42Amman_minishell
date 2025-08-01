@@ -14,18 +14,19 @@
 
 int main(int ac, char **av, char **envp)
 {
-    t_minishell minishell;
-
     (void)ac;
     (void)av;
+    t_minishell minishell;
 
     init(&minishell);
     minishell.envp = envp;
-    init_env_list(&minishell, envp);
+    init_env_list(&minishell, envp); // put this inside init
 
+    // minishell_loop function
     while (1)
     {
         setup_signals();
+        // clear the input check_free
         if (minishell.token)
         {
             free_tokens(minishell.token);
@@ -38,6 +39,7 @@ int main(int ac, char **av, char **envp)
             minishell.cmd_count = 0;
         }
 
+        // check_init
         // printf("Start 1\n");
         // print_tokens(minishell.token);
         // print_commands(minishell.cmd);
