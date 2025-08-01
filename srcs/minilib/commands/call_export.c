@@ -79,7 +79,15 @@ static void export_no_args(t_minishell *mini)
     for (int i = 0; i < count; i++)
     {
         if (!cur->value)
+        {
             arr[i] = ft_strdup(cur->key);
+            if (!arr[i])
+            {
+                while (i-- > 0) free(arr[i]);
+                free(arr);
+                return;
+            }
+        }
         else
         {
             int len = ft_strlen(cur->key) + ft_strlen(cur->value) + 2;

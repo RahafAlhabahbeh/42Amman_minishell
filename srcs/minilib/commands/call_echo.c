@@ -42,7 +42,7 @@
 //         printf("\n");
 
 // }
-void call_echo(t_minishell *mini, char **argv)
+void call_echo(t_minishell *mini __attribute__((unused)), char **argv)
 {
     int i = 1;
     int newline = 1;
@@ -59,18 +59,15 @@ void call_echo(t_minishell *mini, char **argv)
         else
             break;
     }
-    int fd = mini->fd_out;
-    if(fd == -1)
-        fd = 1;
 
     while (argv[i])
     {
-        ft_putstr_fd(argv[i], fd);
+        ft_putstr_fd(argv[i], STDOUT_FILENO);
         if (argv[i + 1])
-            ft_putchar_fd(' ', fd);
+            ft_putchar_fd(' ', STDOUT_FILENO);
         i++;
     }
 
     if (newline)
-        ft_putchar_fd('\n', fd);
+        ft_putchar_fd('\n', STDOUT_FILENO);
 }

@@ -16,42 +16,32 @@ int is_builtin(char *cmd)
 {
     if (!cmd)
         return 0;
-    return (!strcmp(cmd, "echo") || !strcmp(cmd, "cd") || !strcmp(cmd, "pwd") ||
-            !strcmp(cmd, "env") || !strcmp(cmd, "export") || !strcmp(cmd, "unset") ||
-            !strcmp(cmd, "exit"));
+    return (!ft_strcmp(cmd, "echo") || !ft_strcmp(cmd, "cd") || !ft_strcmp(cmd, "pwd") ||
+            !ft_strcmp(cmd, "env") || !ft_strcmp(cmd, "export") || !ft_strcmp(cmd, "unset") ||
+            !ft_strcmp(cmd, "exit"));
 }
 
 void execute_builtin(t_minishell *minishell, int i)
 {
-    t_cmd *cmd = minishell->cmd;
-    int j = 0;
-
-    // Traverse to the i-th command node
-    while (cmd && j < i)
-    {
-        cmd = cmd->next;
-        j++;
-    }
-    if (!cmd || !cmd->argv || !cmd->argv[0])
+    if (i < 0 || i > minishell->pipex_count || !minishell->cmd[i].argv || !minishell->cmd[i].argv[0])
         return;
 
-    char *name = cmd->argv[0];
+    char *name = minishell->cmd[i].argv[0];
 
     if (!ft_strcmp(name, "echo"))
-        call_echo(minishell, cmd->argv);
+        call_echo(minishell, minishell->cmd[i].argv);
     else if (!ft_strcmp(name, "pwd"))
         call_pwd(minishell);
     else if (!ft_strcmp(name, "env"))
-            call_env(minishell, cmd->argv);
-    //call_env(minishell);
+        call_env(minishell, minishell->cmd[i].argv);
     else if (!ft_strcmp(name, "export"))
-        call_export(minishell, cmd->argv);
+        call_export(minishell, minishell->cmd[i].argv);
     else if (!ft_strcmp(name, "unset"))
-        call_unset(minishell, cmd->argv);
+        call_unset(minishell, minishell->cmd[i].argv);
     else if (!ft_strcmp(name, "exit"))
-        call_exit(minishell, cmd->argv);
+        call_exit(minishell, minishell->cmd[i].argv);
     else if (!ft_strcmp(name, "cd"))
-        call_cd(minishell, cmd->argv);
+        call_cd(minishell, minishell->cmd[i].argv);
 
     minishell->exit_status = 0;
 }

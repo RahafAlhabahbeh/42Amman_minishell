@@ -38,13 +38,19 @@ void redirect_output_append(const char *file)
 
 void handle_redirections(t_cmd *cmd, int prev_fd, int *pipe_fds, int is_last)
 {
-    if (prev_fd != -1)
+    // First, handle input redirection (this takes precedence over pipe input)
+    if (cmd->input_file_name)
     {
+        redirect_input(cmd->input_file_name);
+    }
+    else if (prev_fd != -1)
+    {
+        // Only use pipe input if no file redirection
         dup2(prev_fd, STDIN_FILENO);
         close(prev_fd);
     }   
-    if (cmd->input_file_name)
-        redirect_input(cmd->input_file_name);
+    
+    // Then handle output redirection (this takes precedence over pipe output)
     if (cmd->output_file_name)
     {
         if (cmd->out_type == REDIR_APPEND)
@@ -52,8 +58,9 @@ void handle_redirections(t_cmd *cmd, int prev_fd, int *pipe_fds, int is_last)
         else
             redirect_output(cmd->output_file_name);
     }
-    if (!is_last)
+    else if (!is_last)
     {
+        // Only use pipe output if no file redirection
         close(pipe_fds[0]);
         dup2(pipe_fds[1], STDOUT_FILENO);
         close(pipe_fds[1]);

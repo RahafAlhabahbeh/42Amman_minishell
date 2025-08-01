@@ -23,17 +23,14 @@
 //         perror("pwd");
 // }
 
-void call_pwd(t_minishell *mini)
+void call_pwd(t_minishell *mini __attribute__((unused)))
 {
     char cwd[PATH_MAX];
-    int fd = mini->fd_out;
-    if (fd == -1)
-        fd = 1;
 
     if (getcwd(cwd, sizeof(cwd)) != NULL)
     {
-        ft_putstr_fd(cwd, fd);
-        ft_putchar_fd('\n', fd);
+        ft_putstr_fd(cwd, STDOUT_FILENO);
+        ft_putchar_fd('\n', STDOUT_FILENO);
     }
     else
         perror("pwd");

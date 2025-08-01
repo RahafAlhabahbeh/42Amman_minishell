@@ -5,7 +5,12 @@ char *replace_var(t_minishell *minishell, const char *str, char quote)
     char result[1024] = {0};
     int i = 0, j = 0;
     if (quote == '\'')
-        return strdup(str);
+    {
+        char *dup = strdup(str);
+        if (!dup)
+            return NULL;
+        return dup;
+    }
 
     while (str[i])
     {
@@ -53,7 +58,10 @@ char *replace_var(t_minishell *minishell, const char *str, char quote)
     }
 
     result[j] = '\0';
-    return strdup(result);
+    char *dup = strdup(result);
+    if (!dup)
+        return NULL;
+    return dup;
 }
 
 
@@ -67,9 +75,19 @@ t_token *expand(t_minishell *minishell)
     while (cur)
     {
         char *expanded = replace_var(minishell, cur->value, cur->quote);
+        if (!expanded)
+        {
+            // If replace_var fails, we need to clean up and return NULL
+            // This will be handled by the caller
+            return NULL;
+        }
+        
         t_token *new_tok = malloc(sizeof(t_token));
         if (!new_tok)
+        {
+            free(expanded);
             return NULL;
+        }
 
         new_tok->value = expanded;
         new_tok->type = cur->type;

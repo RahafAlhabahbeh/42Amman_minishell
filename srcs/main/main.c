@@ -34,7 +34,7 @@ int main(int ac, char **av, char **envp)
         }
         if (minishell.cmd)
         {
-            free_commands(minishell.cmd, minishell.cmd_count);
+            free_commands(minishell.cmd, minishell.pipex_count);
             minishell.cmd = NULL;
             minishell.cmd_count = 0;
         }
@@ -71,13 +71,19 @@ int main(int ac, char **av, char **envp)
         t_token *old = minishell.token;
         minishell.token = expand(&minishell);
         free_tokens(old);
+        
+        if (!minishell.token)
+        {
+            // If expand failed, continue to next iteration
+            continue;
+        }
 
         // print_tokens(minishell.token);
 
         count_pipe(&minishell);
 
         if (minishell.cmd)
-            free_commands(minishell.cmd, minishell.cmd_count);
+            free_commands(minishell.cmd, minishell.pipex_count);
 
         minishell.cmd_count = minishell.pipex_count + 1;
         minishell.cmd = malloc(sizeof(t_cmd) * minishell.cmd_count);

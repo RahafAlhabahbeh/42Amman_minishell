@@ -11,7 +11,15 @@ void init_env_list(t_minishell *mini, char **envp)
 
         int key_len = eq - envp[i];
         char *key = ft_substr(envp[i], 0, key_len);
+        if (!key)
+            continue;
+            
         char *value = ft_strdup(eq + 1);
+        if (!value)
+        {
+            free(key);
+            continue;
+        }
 
         mini->env_list = set_env_value(mini, key, value);
 
@@ -56,8 +64,22 @@ t_env *set_env_value(t_minishell *mini, char *key, char *value)
         return mini->env_list; // handle malloc failure better if needed
 
     new_node->key = ft_strdup(key);
+    if (!new_node->key)
+    {
+        free(new_node);
+        return mini->env_list;
+    }
+    
     if (value)
+    {
         new_node->value = ft_strdup(value);
+        if (!new_node->value)
+        {
+            free(new_node->key);
+            free(new_node);
+            return mini->env_list;
+        }
+    }
     else
         new_node->value = NULL;
     new_node->next = NULL;

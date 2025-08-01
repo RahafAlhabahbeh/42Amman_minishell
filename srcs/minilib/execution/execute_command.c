@@ -58,7 +58,7 @@ static int should_run_builtin_in_parent(t_cmd *cmd, int index, int total_pipes)
     if (is_str_in_set(cmd->argv[0], (char *[]){"export", "unset", "cd", "exit", NULL}))
         return (!has_pipe && !has_redir);
     else if (is_str_in_set(cmd->argv[0], (char *[]){"echo", "pwd", "env", NULL}))
-        return (index == total_pipes); // only if no pipe *after*
+        return (!has_pipe && index == total_pipes); // only if no pipe at all
     return 0;
 }
 
@@ -71,7 +71,6 @@ static void execute_child_process(t_minishell *mini, t_cmd *cmd, int prev_fd,
 
     if (is_builtin(cmd->argv[0]))
     {
-        fprintf(stdout, "Build in child\n");
         handle_redirections(cmd, prev_fd, pipe_fds, is_last);
         execute_builtin_cmd(mini, cmd);
         free_commands(mini->cmd, mini->pipex_count);
@@ -102,13 +101,9 @@ static int execute_parent_process(int prev_fd, int *pipe_fds, int is_last)
 }
 
 static pid_t handle_command_iteration(t_minishell *mini, char **envp,
-                                      t_cmd *cmd, int i, int prev_fd)
+                                      t_cmd *cmd, int i, int prev_fd, int *pipe_fds)
 {
-    int pipe_fds[2];
     pid_t pid = -1;
-
-    if (i < mini->pipex_count)
-        safe_pipe(pipe_fds);
 
     if (is_builtin(cmd->argv[0]) &&
         should_run_builtin_in_parent(cmd, i, mini->pipex_count))
@@ -135,14 +130,28 @@ static pid_t handle_command_iteration(t_minishell *mini, char **envp,
 static void execute_loop(t_minishell *mini, char **envp, pid_t *pids)
 {
     int prev_fd = -1;
-    t_cmd *cmd = mini->cmd;
 
-    for (int i = 0; cmd && i <= mini->pipex_count; i++, cmd = cmd->next)
+    for (int i = 0; i <= mini->pipex_count; i++)
     {
-        pid_t pid = handle_command_iteration(mini, envp, cmd, i, prev_fd);
+        t_cmd *cmd = &mini->cmd[i];
+        int pipe_fds[2] = {-1, -1};
+        
+        // Create pipe for next command (except for the last command)
+        if (i < mini->pipex_count)
+            safe_pipe(pipe_fds);
+        
+        pid_t pid = handle_command_iteration(mini, envp, cmd, i, prev_fd, pipe_fds);
         if (pid > 0) // Only save real child PIDs
             pids[i] = pid;
-        prev_fd = (pid == 0) ? -1 : prev_fd; // Child has already exited
+        
+        // Update prev_fd for next iteration
+        if (i < mini->pipex_count)
+        {
+            if (prev_fd != -1)
+                close(prev_fd);
+            prev_fd = pipe_fds[0];
+            close(pipe_fds[1]); // Close write end in parent
+        }
     }
 }
 

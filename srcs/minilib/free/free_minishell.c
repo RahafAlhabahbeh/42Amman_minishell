@@ -31,7 +31,9 @@ void free_cmds_array(t_cmd *cmd_array, int count)
 }
 void free_commands(t_cmd *cmd, int count)
 {
-    for (int i = 0; i < count; i++)
+    if (!cmd) return;
+    
+    for (int i = 0; i <= count; i++)
     {
         if (cmd[i].argv)
         {

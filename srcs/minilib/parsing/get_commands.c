@@ -76,29 +76,49 @@ void put_token_to_commands(t_minishell *minishell)
 			if (fd >= 0)
 				close(fd);
 
-			// Store only the last redirection
+			// Apply redirection to the current command
 			if (cur->type == REDIR_IN)
 			{
 				free(minishell->cmd[cmd_index].input_file_name);
 				minishell->cmd[cmd_index].input_file_name = ft_strdup(filename);
+				if (!minishell->cmd[cmd_index].input_file_name)
+				{
+					fprintf(stderr, "minishell: memory allocation failed\n");
+					exit(EXIT_FAILURE);
+				}
 				minishell->cmd[cmd_index].in_type = REDIR_IN;
 			}
 			else if (cur->type == HERE_DOC)
 			{
 				free(minishell->cmd[cmd_index].input_file_name);
 				minishell->cmd[cmd_index].input_file_name = ft_strdup(filename);
+				if (!minishell->cmd[cmd_index].input_file_name)
+				{
+					fprintf(stderr, "minishell: memory allocation failed\n");
+					exit(EXIT_FAILURE);
+				}
 				minishell->cmd[cmd_index].in_type = HERE_DOC;
 			}
 			else if (cur->type == REDIR_OUT)
 			{
 				free(minishell->cmd[cmd_index].output_file_name);
 				minishell->cmd[cmd_index].output_file_name = ft_strdup(filename);
+				if (!minishell->cmd[cmd_index].output_file_name)
+				{
+					fprintf(stderr, "minishell: memory allocation failed\n");
+					exit(EXIT_FAILURE);
+				}
 				minishell->cmd[cmd_index].out_type = REDIR_OUT;
 			}
 			else if (cur->type == REDIR_APPEND)
 			{
 				free(minishell->cmd[cmd_index].output_file_name);
 				minishell->cmd[cmd_index].output_file_name = ft_strdup(filename);
+				if (!minishell->cmd[cmd_index].output_file_name)
+				{
+					fprintf(stderr, "minishell: memory allocation failed\n");
+					exit(EXIT_FAILURE);
+				}
 				minishell->cmd[cmd_index].out_type = REDIR_APPEND;
 			}
 
@@ -106,7 +126,13 @@ void put_token_to_commands(t_minishell *minishell)
 		}
 		else if (cur->type == WORD)
 		{
-			minishell->cmd[cmd_index].argv[arg_index++] = ft_strdup(cur->value);
+			minishell->cmd[cmd_index].argv[arg_index] = ft_strdup(cur->value);
+			if (!minishell->cmd[cmd_index].argv[arg_index])
+			{
+				fprintf(stderr, "minishell: memory allocation failed\n");
+				exit(EXIT_FAILURE);
+			}
+			arg_index++;
 		}
 		cur = cur->next;
 	}
