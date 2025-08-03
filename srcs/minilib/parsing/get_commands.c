@@ -29,6 +29,8 @@ void put_token_to_commands(t_minishell *minishell)
 		minishell->cmd[i].output_file_name = NULL;
 		minishell->cmd[i].in_type = -1;
 		minishell->cmd[i].out_type = -1;
+		minishell->cmd[i].input_quote = 0;
+		minishell->cmd[i].heredoc_temp_file = NULL;
 		minishell->cmd[i].next = (i < minishell->pipex_count) ? &minishell->cmd[i + 1] : NULL;
 		minishell->cmd[i].prev = (i > 0) ? &minishell->cmd[i - 1] : NULL;
 	}
@@ -90,6 +92,7 @@ void put_token_to_commands(t_minishell *minishell)
 			}
 			else if (cur->type == HERE_DOC)
 			{
+				// For multiple heredocs, only keep the last one
 				free(minishell->cmd[cmd_index].input_file_name);
 				minishell->cmd[cmd_index].input_file_name = ft_strdup(filename);
 				if (!minishell->cmd[cmd_index].input_file_name)
@@ -98,6 +101,7 @@ void put_token_to_commands(t_minishell *minishell)
 					exit(EXIT_FAILURE);
 				}
 				minishell->cmd[cmd_index].in_type = HERE_DOC;
+				minishell->cmd[cmd_index].input_quote = cur->next->quote;
 			}
 			else if (cur->type == REDIR_OUT)
 			{

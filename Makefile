@@ -30,6 +30,7 @@ SRC = \
 	$(SRC_DIR)/execution/execute_command.c \
 	$(SRC_DIR)/execution/execute_builtin.c \
 	$(SRC_DIR)/redirection/redirection.c \
+	$(SRC_DIR)/redirection/heredoc.c \
 	$(SRC_DIR)/free/free_minishell.c	\
 	$(SRC_DIR)/check_error/syntax_error.c	\
 	$(SRC_DIR)/signal/signals.c

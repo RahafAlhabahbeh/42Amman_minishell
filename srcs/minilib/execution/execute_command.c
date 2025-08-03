@@ -77,13 +77,19 @@ static int should_run_builtin_in_parent(t_cmd *cmd, int index, int total_pipes)
 static void execute_child_process(t_minishell *mini, t_cmd *cmd, int prev_fd,
                                   int *pipe_fds, int is_last, char **envp)
 {
-    //handle_redirections(cmd, prev_fd, pipe_fds, is_last);
     signal(SIGINT, SIG_DFL);
     signal(SIGQUIT, SIG_DFL);
 
+    // Handle heredoc if needed
+    if (cmd->in_type == HERE_DOC)
+    {
+        if (handle_heredoc(mini, cmd) < 0)
+            exit(1);
+    }
+
     if (is_builtin(cmd->argv[0]))
     {
-        handle_redirections(cmd, prev_fd, pipe_fds, is_last);
+        handle_redirections(cmd, prev_fd, pipe_fds, is_last, mini);
         execute_builtin_cmd(mini, cmd);
         free_commands(mini->cmd, mini->pipex_count);
         free_tokens(mini->token);
@@ -91,7 +97,7 @@ static void execute_child_process(t_minishell *mini, t_cmd *cmd, int prev_fd,
         exit(0);
     }
 
-    handle_redirections(cmd, prev_fd, pipe_fds, is_last);
+    handle_redirections(cmd, prev_fd, pipe_fds, is_last, mini);
     char *path = resolve_cmd_path(cmd->argv[0], envp);
     if (!path)
     {
@@ -120,7 +126,13 @@ static pid_t handle_command_iteration(t_minishell *mini, char **envp,
     if (is_builtin(cmd->argv[0]) &&
         should_run_builtin_in_parent(cmd, i, mini->pipex_count))
     {
-        handle_redirections(cmd, prev_fd, pipe_fds, i == mini->pipex_count);
+        // Handle heredoc if needed
+        if (cmd->in_type == HERE_DOC)
+        {
+            if (handle_heredoc(mini, cmd) < 0)
+                return -1;
+        }
+        handle_redirections(cmd, prev_fd, pipe_fds, i == mini->pipex_count, mini);
         execute_builtin(mini, i);
         return -1; // no fork, no child
     }
@@ -188,5 +200,8 @@ void execute_command(t_minishell *mini, char **envp)
                 mini->exit_status = 128 + WTERMSIG(status);
         }
     }
+    
+    // Clean up heredoc temporary files
+    cleanup_heredoc_files(mini);
 }
 

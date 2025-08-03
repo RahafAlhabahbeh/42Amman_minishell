@@ -36,12 +36,17 @@ void redirect_output_append(const char *file)
     close(fd);
 }
 
-void handle_redirections(t_cmd *cmd, int prev_fd, int *pipe_fds, int is_last)
+void handle_redirections(t_cmd *cmd, int prev_fd, int *pipe_fds, int is_last, t_minishell *mini)
 {
+    (void)mini; // Suppress unused parameter warning
     // First, handle input redirection (this takes precedence over pipe input)
     if (cmd->input_file_name)
     {
-        redirect_input(cmd->input_file_name);
+        // Check if it's a heredoc file descriptor (numeric string)
+        if (ft_isdigit(cmd->input_file_name[0]))
+            redirect_heredoc_input(cmd->input_file_name);
+        else
+            redirect_input(cmd->input_file_name);
     }
     else if (prev_fd != -1)
     {

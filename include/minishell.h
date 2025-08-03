@@ -57,6 +57,8 @@ typedef struct s_cmd {
     t_token_type out_type;    // NONE / REDIR_OUT / APPEND / PIPE_OUT
     char *input_file_name;
     char *output_file_name;
+    char input_quote;         // Quote character for input redirection (for heredoc)
+    char *heredoc_temp_file;  // Temporary file name for heredoc cleanup
     // char **input_files;
     // char **output_files;
     struct s_cmd *next;  // Next command in pipe sequence
@@ -101,7 +103,13 @@ void execute_builtin(t_minishell *minishell, int i);
 void redirect_input(const char *file);
 void redirect_output(const char *file);
 void redirect_output_append(const char *file);
-void handle_redirections(t_cmd *cmd, int prev_fd, int *pipe_fds, int is_last);
+void handle_redirections(t_cmd *cmd, int prev_fd, int *pipe_fds, int is_last, t_minishell *mini);
+
+/* heredoc functions */
+int handle_heredoc(t_minishell *mini, t_cmd *cmd);
+void redirect_heredoc_input(const char *fd_str);
+void cleanup_heredoc_files(t_minishell *mini);
+void handle_heredoc_sigint(int sig);
 void execute_command(t_minishell *minishell, char **envp);
 // void call_env(t_minishell *mini);
 void call_env(t_minishell *mini, char **argv);
