@@ -1,5 +1,19 @@
 #include "../../../include/minishell.h"
 
+int is_str_in_set(const char *str, char **set)
+{
+    if (!str || !set)
+        return 0;
+
+    for (int i = 0; set[i]; i++)
+    {
+        if (ft_strcmp(str, set[i]) == 0)
+            return 1;
+    }
+    return 0;
+}
+
+
 void execute_one_command(t_minishell *mini, char **envp)
 {
     fprintf(stdout, "Executing one command...\n");

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dal-mahr <dal-mahr@student.42.fr>          +#+  +:+       +#+        */
+/*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/02 22:14:22 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/07/27 14:15:32 by dal-mahr         ###   ########.fr       */
+/*   Updated: 2025/08/04 09:38:06 by dal-mahr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,11 +16,6 @@ int main(int ac, char **av, char **envp)
 {
     (void)ac;
     (void)av;
-<<<<<<< HEAD
-    init(&minishell);
-    minishell.envp = envp;
-    init_env_list(&minishell, envp);
-=======
     t_minishell minishell;
 
     init(&minishell);
@@ -28,7 +23,6 @@ int main(int ac, char **av, char **envp)
     init_env_list(&minishell, envp); // put this inside init
 
     // minishell_loop function
->>>>>>> main
     while (1)
     {
         setup_signals();
@@ -56,12 +50,6 @@ int main(int ac, char **av, char **envp)
         // if (!minishell.promp_input || minishell.promp_input[0] == '\0')
         //     continue;
         if (!minishell.promp_input || minishell.promp_input[0] == '\0')
-<<<<<<< HEAD
-            continue;
-
-        minishell.token = tokenize(&minishell);
-        if (!minishell.token)
-=======
         {
             free(minishell.promp_input);
             minishell.promp_input = NULL;
@@ -77,16 +65,12 @@ int main(int ac, char **av, char **envp)
         {
             minishell.exit_status = 258;
             reset_minishell(&minishell);
->>>>>>> main
             continue;
-
+        }
         t_token *old = minishell.token;
         minishell.token = expand(&minishell);
         free_tokens(old);
-<<<<<<< HEAD
-        count_pipe(&minishell);
-=======
-        
+    
         if (!minishell.token)
         {
             // If expand failed, continue to next iteration
@@ -96,8 +80,6 @@ int main(int ac, char **av, char **envp)
         // print_tokens(minishell.token);
 
         count_pipe(&minishell);
-
->>>>>>> main
         if (minishell.cmd)
             free_commands(minishell.cmd, minishell.pipex_count);
 
@@ -109,12 +91,7 @@ int main(int ac, char **av, char **envp)
 
         ft_bzero(minishell.cmd, sizeof(t_cmd) * (minishell.pipex_count + 1));
         put_token_to_commands(&minishell);
-<<<<<<< HEAD
-=======
-
         // print_commands(minishell.cmd);
-
->>>>>>> main
         execute_command(&minishell, envp);
 
 

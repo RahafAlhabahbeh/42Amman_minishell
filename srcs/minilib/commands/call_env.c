@@ -6,38 +6,12 @@
 /*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:54:23 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/07/31 01:17:27 by dal-mahr         ###   ########.fr       */
+/*   Updated: 2025/08/04 09:29:16 by dal-mahr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../../include/minishell.h"
 
-<<<<<<< HEAD
-void call_env(t_minishell *mini)
-{
-    print_env_list(mini->env_list);
-}
-
-// char	*my_getenv(char *name, char **env)
-// {
-// 	int		i;
-// 	size_t	len;
-
-// 	if (!name || !env)
-// 		return NULL;
-		
-// 	len = ft_strlen(name);
-// 	i = 0;
-// 	while (env[i])
-// 	{
-// 		if (ft_strncmp(env[i], name, len) == 0 && env[i][len] == '=')
-// 			return (env[i] + len + 1);
-// 		i++;
-// 	}
-// 	return (NULL);
-// }
-
-=======
 void print_env_list(t_env *env_list)
 {
     t_env *cur = env_list;
@@ -49,18 +23,12 @@ void print_env_list(t_env *env_list)
     }
 }
 
-// void call_env(t_minishell *mini)
-// {
-//     print_env_list(mini->env_list);
-// }
-
-
 void call_env(t_minishell *shell __attribute__((unused)), char **argv)
 {
     if (argv[1])
     {
         ft_putstr_fd("env: too many arguments\n", STDERR_FILENO);
-        return ;
+        return;
     }
 
     t_env *curr = shell->env_list;
@@ -77,20 +45,13 @@ void call_env(t_minishell *shell __attribute__((unused)), char **argv)
     }
 }
 
-
-
->>>>>>> main
 char *get_value_env(t_minishell *mini, const char *key)
 {
     t_env *cur = mini->env_list;
 
     while (cur)
     {
-<<<<<<< HEAD
         if (ft_strcmp(cur->key, key) == 0)
-=======
-        if (ft_strncmp(cur->key, key, ft_strlen(cur->key)) == 0)
->>>>>>> main
             return cur->value;  // return the value pointer (do not free it)
         cur = cur->next;
     }
@@ -103,7 +64,8 @@ char *join_path(const char *dir, const char *cmd)
         return NULL;
         
     char *full = malloc(strlen(dir) + strlen(cmd) + 2); // '/' + '\0'
-    if (!full) return NULL;
+    if (!full)
+        return NULL;
     
     if (snprintf(full, strlen(dir) + strlen(cmd) + 2, "%s/%s", dir, cmd) < 0)
     {
@@ -127,7 +89,7 @@ char *resolve_cmd_path(char *cmd, char **envp)
             return NULL;
     }
 
-    // Get PATH
+    // Get PATH from envp
     char *path_var = NULL;
     for (int i = 0; envp[i]; i++)
     {
@@ -141,7 +103,7 @@ char *resolve_cmd_path(char *cmd, char **envp)
     if (!path_var)
         return NULL;
 
-    // Split PATH and check each dir
+    // Split PATH and check each directory for the command
     char *paths = strdup(path_var);
     if (!paths)
         return NULL;
@@ -154,7 +116,7 @@ char *resolve_cmd_path(char *cmd, char **envp)
         if (full && access(full, X_OK) == 0)
         {
             free(paths);
-            return full; // success
+            return full; // found executable path
         }
         free(full);
         token = strtok(NULL, ":");

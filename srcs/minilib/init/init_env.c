@@ -1,9 +1,5 @@
 #include "../../../include/minishell.h"
 
-<<<<<<< HEAD
-void init_env_list(t_minishell *mini, char **envp)
-{
-=======
 static void handle_shlvl(t_minishell *mini)
 {
     char *shlvl_str = get_value_env(mini, "SHLVL");
@@ -35,7 +31,6 @@ static void handle_shlvl(t_minishell *mini)
 
 void init_env_list(t_minishell *mini, char **envp)
 {
->>>>>>> main
     mini->env_list = NULL;
     for (int i = 0; envp[i]; i++)
     {
@@ -45,9 +40,6 @@ void init_env_list(t_minishell *mini, char **envp)
 
         int key_len = eq - envp[i];
         char *key = ft_substr(envp[i], 0, key_len);
-<<<<<<< HEAD
-        char *value = ft_strdup(eq + 1);
-=======
         if (!key)
             continue;
             
@@ -57,30 +49,22 @@ void init_env_list(t_minishell *mini, char **envp)
             free(key);
             continue;
         }
->>>>>>> main
 
         mini->env_list = set_env_value(mini, key, value);
 
         free(key);
         free(value);
     }
-<<<<<<< HEAD
-=======
     
-    // Handle SHLVL
+    // Handle SHLVL environment variable
     handle_shlvl(mini);
->>>>>>> main
 }
 
 char *get_env_value(const char *key, t_env *env)
 {
     while (env)
     {
-<<<<<<< HEAD
         if (ft_strcmp(env->key, key) == 0)
-=======
-        if (ft_strncmp(env->key, key, ft_strlen(env->key)) == 0)
->>>>>>> main
             return env->value;
         env = env->next;
     }
@@ -91,7 +75,7 @@ t_env *set_env_value(t_minishell *mini, char *key, char *value)
 {
     t_env *cur = mini->env_list;
 
-    // If key exists, update value
+    // If key exists, update its value
     while (cur)
     {
         if (ft_strcmp(cur->key, key) == 0)
@@ -106,16 +90,12 @@ t_env *set_env_value(t_minishell *mini, char *key, char *value)
         cur = cur->next;
     }
 
-    // If key not found, add new node at the end
+    // If key not found, add a new node at the end
     t_env *new_node = malloc(sizeof(t_env));
     if (!new_node)
-        return mini->env_list; // handle malloc failure better if needed
+        return mini->env_list;
 
     new_node->key = ft_strdup(key);
-<<<<<<< HEAD
-    if (value)
-        new_node->value = ft_strdup(value);
-=======
     if (!new_node->key)
     {
         free(new_node);
@@ -132,15 +112,12 @@ t_env *set_env_value(t_minishell *mini, char *key, char *value)
             return mini->env_list;
         }
     }
->>>>>>> main
     else
         new_node->value = NULL;
     new_node->next = NULL;
 
     if (!mini->env_list)
-    {
         mini->env_list = new_node;
-    }
     else
     {
         t_env *last = mini->env_list;

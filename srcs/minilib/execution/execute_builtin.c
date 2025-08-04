@@ -6,7 +6,7 @@
 /*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:55:21 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/04 07:40:08 by dal-mahr         ###   ########.fr       */
+/*   Updated: 2025/08/04 09:47:41 by dal-mahr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@ int is_builtin(char *cmd)
             !ft_strcmp(cmd, "env") || !ft_strcmp(cmd, "export") || !ft_strcmp(cmd, "unset") ||
             !ft_strcmp(cmd, "exit"));
 }
+
 
 void execute_builtin_cmd(t_minishell *mini, t_cmd *cmd)
 {

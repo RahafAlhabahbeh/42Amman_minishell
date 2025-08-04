@@ -58,17 +58,17 @@ void execute_command(t_minishell *minishell, char **envp)
             // Execute command
             if (is_builtin(minishell->cmd[0].argv[0]) && minishell->pipex_count == 0)
             {
-                execute_builtin(minishell, 0, envp);
+                execute_builtin(minishell, 0);
                 continue;
             }
             else
             {
                 char *path = resolve_cmd_path(minishell->cmd[i].argv[0], minishell->envp);
-                int j = i;
-                for (int h = 0; minishell->cmd[j].argv[h]; h++)
-                {
-                    printf("PATH: %s, CMD ARGV[%d][%d] = %s\n", path, j, h, minishell->cmd[j].argv[h]);
-                }
+                // int j = i;
+                // for (int h = 0; minishell->cmd[j].argv[h]; h++)
+                // {
+                //     printf("PATH: %s, CMD ARGV[%d][%d] = %s\n", path, j, h, minishell->cmd[j].argv[h]);
+                // }
                 if (!path)
                 {
                     fprintf(stderr, "%s: command not found\n", minishell->cmd[i].argv[0]);
@@ -102,35 +102,6 @@ void execute_command(t_minishell *minishell, char **envp)
         ;
 }
 
-int is_builtin(char *cmd)
-{
-    /*return (!strcmp(cmd, "echo") || !strcmp(cmd, "cd") || !strcmp(cmd, "pwd") ||
-            !strcmp(cmd, "env") || !strcmp(cmd, "export") || !strcmp(cmd, "unset"));*/
-    // printf("BUILD IN COMMAND\n");
-    if (!cmd)
-        return 0;
-    return (!strcmp(cmd, "echo") || !strcmp(cmd, "pwd") || !strcmp(cmd, "env"));
-}
-
-void execute_builtin(t_minishell *minishell, int i, char **envp)
-{
-    printf("BUILD IN COMMAND\n");
-    char *cmd = minishell->cmd[i].argv[0];
-    if (strcmp(minishell->cmd[i].argv[0], "echo") == 0)
-        call_echo(minishell->cmd[i].argv);
-    else if (!strcmp(cmd, "pwd"))
-        call_pwd();
-    else if (!strcmp(cmd, "env"))
-        call_env(minishell, envp);
-    /*else if (!strcmp(cmd, "cd"))
-        call_cd(minishell, envp);
-    else if (!strcmp(cmd, "export"))
-        call_export(envp, minishell->cmd[i].argv[1]);
-    else if (!strcmp(cmd, "unset"))
-        call_unset(envp, minishell->cmd[i].argv[1]);
-    */
-    exit(0);
-}
 
 /*
 

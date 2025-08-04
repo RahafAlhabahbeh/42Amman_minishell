@@ -4,17 +4,14 @@ char *replace_var(t_minishell *minishell, const char *str, char quote)
 {
     char result[1024] = {0};
     int i = 0, j = 0;
+
     if (quote == '\'')
-<<<<<<< HEAD
-        return strdup(str);
-=======
     {
         char *dup = strdup(str);
         if (!dup)
             return NULL;
         return dup;
     }
->>>>>>> main
 
     while (str[i])
     {
@@ -27,13 +24,14 @@ char *replace_var(t_minishell *minishell, const char *str, char quote)
                 char status_str[12]; // Enough for any int
                 snprintf(status_str, sizeof(status_str), "%d", minishell->exit_status);
 
-                if (j + strlen(status_str) < sizeof(result))
+                if (j + (int)strlen(status_str) < (int)sizeof(result))
                 {
                     strcat(result, status_str);
                     j += strlen(status_str);
                 }
                 continue;
             }
+
             char var[256] = {0};
             int k = 0;
 
@@ -42,13 +40,12 @@ char *replace_var(t_minishell *minishell, const char *str, char quote)
                 var[k++] = str[i++];
             var[k] = '\0';
 
-            // const char *val = my_getenv(var, envp);
             const char *val = get_value_env(minishell, var);
             if (!val)
                 val = "";
 
             size_t len = strlen(val);
-            if (j + len < sizeof(result))
+            if (j + (int)len < (int)sizeof(result))
             {
                 strcat(result, val);
                 j += len;
@@ -62,13 +59,12 @@ char *replace_var(t_minishell *minishell, const char *str, char quote)
     }
 
     result[j] = '\0';
+
     char *dup = strdup(result);
     if (!dup)
         return NULL;
     return dup;
 }
-
-
 
 t_token *expand(t_minishell *minishell)
 {
@@ -79,20 +75,31 @@ t_token *expand(t_minishell *minishell)
     while (cur)
     {
         char *expanded = replace_var(minishell, cur->value, cur->quote);
-<<<<<<< HEAD
-=======
         if (!expanded)
         {
-            // If replace_var fails, we need to clean up and return NULL
-            // This will be handled by the caller
+            // On failure, free already created tokens and return NULL
+            while (new_list)
+            {
+                t_token *tmp = new_list;
+                new_list = new_list->next;
+                free(tmp->value);
+                free(tmp);
+            }
             return NULL;
         }
-        
->>>>>>> main
+
         t_token *new_tok = malloc(sizeof(t_token));
         if (!new_tok)
         {
             free(expanded);
+            // Free all previously allocated tokens
+            while (new_list)
+            {
+                t_token *tmp = new_list;
+                new_list = new_list->next;
+                free(tmp->value);
+                free(tmp);
+            }
             return NULL;
         }
 
@@ -112,4 +119,3 @@ t_token *expand(t_minishell *minishell)
 
     return new_list;
 }
-

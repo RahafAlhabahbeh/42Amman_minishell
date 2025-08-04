@@ -6,22 +6,12 @@
 /*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:54:52 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/07/31 01:15:40 by dal-mahr         ###   ########.fr       */
+/*   Updated: 2025/08/04 09:34:37 by dal-mahr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../../include/minishell.h"
 #include <limits.h>
-
-// void call_pwd(void)
-// {
-//     char cwd[PATH_MAX];
-
-//     if (getcwd(cwd, sizeof(cwd)) != NULL)
-//         printf("%s\n", cwd);
-//     else
-//         perror("pwd");
-// }
 
 void call_pwd(t_minishell *mini __attribute__((unused)))
 {
