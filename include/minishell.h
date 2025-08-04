@@ -6,7 +6,7 @@
 /*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/14 00:00:00 by rahaf             #+#    #+#             */
-/*   Updated: 2025/07/31 01:11:13 by dal-mahr         ###   ########.fr       */
+/*   Updated: 2025/08/04 07:58:52 by dal-mahr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,6 +64,8 @@ typedef struct s_cmd {
     struct s_cmd *next;  // Next command in pipe sequence
     struct s_cmd *prev;  // Prev command in pipe sequence
     // t_env *env;
+    int original_stdin;
+    int original_stdout;
 } t_cmd;
 
 typedef struct s_minishell
@@ -85,6 +87,12 @@ typedef struct s_minishell
 t_token *tokenize(t_minishell *minishell);
 void init_shell(t_minishell *minishell);
 void init(t_minishell *mini);
+<<<<<<< HEAD
+t_cmd *init_cmd(void);
+t_token *expand(t_minishell *minishell);
+char *replace_var(t_minishell *minishell, const char *str, char quote);
+=======
+>>>>>>> main
 void init_env_list(t_minishell *mini, char **envp);
 char *get_value_env(t_minishell *mini, const char *key);
 void print_export_list(t_env *env_list);
@@ -103,7 +111,10 @@ void execute_builtin(t_minishell *minishell, int i);
 void redirect_input(const char *file);
 void redirect_output(const char *file);
 void redirect_output_append(const char *file);
-void handle_redirections(t_cmd *cmd, int prev_fd, int *pipe_fds, int is_last, t_minishell *mini);
+void handle_redirections(t_cmd *cmd, int prev_fd, int *pipe_fds, int is_last);
+void restore_original_fds(t_cmd *cmd);
+void save_original_fds(t_cmd *cmd);
+// void handle_redirections(t_cmd *cmd, int prev_fd, int *pipe_fds, int is_last, t_minishell *mini);
 
 /* heredoc functions */
 int handle_heredoc(t_minishell *mini, t_cmd *cmd);
@@ -111,15 +122,20 @@ void redirect_heredoc_input(const char *fd_str);
 void cleanup_heredoc_files(t_minishell *mini);
 void handle_heredoc_sigint(int sig);
 void execute_command(t_minishell *minishell, char **envp);
-// void call_env(t_minishell *mini);
+<<<<<<< HEAD
+void call_env(t_minishell *mini);
+void call_export(t_minishell *mini, char **argv);
+void call_unset(t_minishell *mini, char **argv);
+void call_echo(char **argv);
+void call_pwd();
+=======
 void call_env(t_minishell *mini, char **argv);
 void call_export(t_minishell *mini, char **argv);
 void call_unset(t_minishell *mini, char **argv);
-// void call_echo(char **argv);
-// void call_pwd();
 void call_echo(t_minishell *mini, char **argv);
 void call_pwd(t_minishell *mini);
 void call_cd(t_minishell *mini, char **argv);
+>>>>>>> main
 int is_valid_identifier(const char *s);
 
 char *join_path(const char *dir, const char *cmd);
@@ -154,5 +170,16 @@ void print_commands(t_cmd *cmd);
 int is_invalid_token(t_token_type type);
 int	is_valid_syntax(t_token *tokens);
 
-
+int is_one_command(t_minishell *mini);
+void execute_one_command(t_minishell *mini, char **envp);
+void multiple_command_execution(t_minishell *mini, char **envp);
+void execute_loop(t_minishell *mini, char **envp, pid_t *pids);
+pid_t handle_command_iteration(t_minishell *mini, char **envp,
+                                      t_cmd *cmd, int i, int prev_fd, int *pipe_fds);
+int execute_parent_process(int prev_fd, int *pipe_fds, int is_last);
+void execute_child_process(t_minishell *mini, t_cmd *cmd, int prev_fd,
+                                  int *pipe_fds, int is_last, char **envp);
+int should_run_builtin_in_parent(t_cmd *cmd, int index, int total_pipes);
+int is_redirection_present(t_cmd *cmd);
+                                      
 #endif

@@ -12,196 +12,170 @@
 
 #include "../../../include/minishell.h"
 
-void execute_builtin_cmd(t_minishell *mini, t_cmd *cmd)
+void execute_command(t_minishell *minishell, char **envp)
 {
-    if (!cmd || !cmd->argv || !cmd->argv[0])
-        return;
-
-    char *name = cmd->argv[0];
-
-    if (!ft_strcmp(name, "echo"))
-        call_echo(mini, cmd->argv);
-    else if (!ft_strcmp(name, "pwd"))
-        call_pwd(mini);
-    else if (!ft_strcmp(name, "env"))
-        call_env(mini, cmd->argv);
-    else if (!ft_strcmp(name, "export"))
-        call_export(mini, cmd->argv);
-    else if (!ft_strcmp(name, "unset"))
-        call_unset(mini, cmd->argv);
-    else if (!ft_strcmp(name, "exit"))
-        call_exit(mini, cmd->argv);
-    else if (!ft_strcmp(name, "cd"))
-    {
-        // cd in child process should show error
-        ft_putstr_fd("minishell: cd: cannot change directory in pipe\n", STDERR_FILENO);
-        mini->exit_status = 1;
-    }
-}
-
-
-int is_str_in_set(char *s, char *set[])
-{
-    int i = 0;
-    while (set[i])
-    {
-        if (ft_strcmp(s, set[i]) == 0)
-            return 1;
-        i++;
-    }
-    return 0;
-}
-
-static int is_redirection_present(t_cmd *cmd)
-{
-    if (cmd->in_type == REDIR_IN || cmd->in_type == HERE_DOC)
-        return 1;
-    if (cmd->out_type == REDIR_OUT || cmd->out_type == REDIR_APPEND)
-        return 1;
-    return 0;
-}
-
-
-static int should_run_builtin_in_parent(t_cmd *cmd, int index, int total_pipes)
-{
-    int has_pipe = (index > 0) || (index < total_pipes);
-    int has_redir = is_redirection_present(cmd);
-
-    if (is_str_in_set(cmd->argv[0], (char *[]){"export", "unset", "cd", "exit", NULL}))
-        return (!has_pipe && !has_redir);
-    else if (is_str_in_set(cmd->argv[0], (char *[]){"echo", "pwd", "env", NULL}))
-        return (!has_pipe && index == total_pipes); // only if no pipe at all
-    return 0;
-}
-
-static void execute_child_process(t_minishell *mini, t_cmd *cmd, int prev_fd,
-                                  int *pipe_fds, int is_last, char **envp)
-{
-    signal(SIGINT, SIG_DFL);
-    signal(SIGQUIT, SIG_DFL);
-
-    // Handle heredoc if needed
-    if (cmd->in_type == HERE_DOC)
-    {
-        if (handle_heredoc(mini, cmd) < 0)
-            exit(1);
-    }
-
-    if (is_builtin(cmd->argv[0]))
-    {
-        handle_redirections(cmd, prev_fd, pipe_fds, is_last, mini);
-        execute_builtin_cmd(mini, cmd);
-        free_commands(mini->cmd, mini->pipex_count);
-        free_tokens(mini->token);
-        free(mini->promp_input);
-        exit(0);
-    }
-
-    handle_redirections(cmd, prev_fd, pipe_fds, is_last, mini);
-    char *path = resolve_cmd_path(cmd->argv[0], envp);
-    if (!path)
-    {
-        fprintf(stderr, "minishell: command not found: %s\n", cmd->argv[0]);
-        exit(127);
-    }
-    execve(path, cmd->argv, envp);
-    perror("execve");
-    exit(EXIT_FAILURE);
-}
-
-static int execute_parent_process(int prev_fd, int *pipe_fds, int is_last)
-{
-    if (prev_fd != -1)
-        close(prev_fd);
-    if (!is_last)
-        close(pipe_fds[1]);
-    return (!is_last) ? pipe_fds[0] : -1;
-}
-
-static pid_t handle_command_iteration(t_minishell *mini, char **envp,
-                                      t_cmd *cmd, int i, int prev_fd, int *pipe_fds)
-{
-    pid_t pid = -1;
-
-    if (is_builtin(cmd->argv[0]) &&
-        should_run_builtin_in_parent(cmd, i, mini->pipex_count))
-    {
-        // Handle heredoc if needed
-        if (cmd->in_type == HERE_DOC)
-        {
-            if (handle_heredoc(mini, cmd) < 0)
-                return -1;
-        }
-        handle_redirections(cmd, prev_fd, pipe_fds, i == mini->pipex_count, mini);
-        execute_builtin(mini, i);
-        return -1; // no fork, no child
-    }
-
-    pid = fork();
-    if (pid == -1)
-    {
-        perror("fork");
-        exit(EXIT_FAILURE);
-    }
-    else if (pid == 0)
-        execute_child_process(mini, cmd, prev_fd, pipe_fds, i == mini->pipex_count, envp);
-
-    execute_parent_process(prev_fd, pipe_fds, i == mini->pipex_count);
-    return pid;
-}
-
-
-static void execute_loop(t_minishell *mini, char **envp, pid_t *pids)
-{
+    int i;
+    int pipefd[2];
     int prev_fd = -1;
+    pid_t pid;
 
-    for (int i = 0; i <= mini->pipex_count; i++)
+    for (i = 0; i <= minishell->pipex_count; i++)
     {
-        t_cmd *cmd = &mini->cmd[i];
-        int pipe_fds[2] = {-1, -1};
-        
-        // Create pipe for next command (except for the last command)
-        if (i < mini->pipex_count)
-            safe_pipe(pipe_fds);
-        
-        pid_t pid = handle_command_iteration(mini, envp, cmd, i, prev_fd, pipe_fds);
-        if (pid > 0) // Only save real child PIDs
-            pids[i] = pid;
-        
-        // Update prev_fd for next iteration
-        if (i < mini->pipex_count)
+        if (i < minishell->pipex_count && pipe(pipefd) == -1)
         {
+            perror("pipe");
+            exit(EXIT_FAILURE);
+        }
+
+        pid = fork();
+        if (pid == 0)
+        {
+            signal(SIGINT, SIG_DFL);
+            signal(SIGQUIT, SIG_DFL);
+            // Input redirection
+            if (minishell->cmd[i].input_file_name)
+                redirect_input(minishell->cmd[i].input_file_name);
+            else if (prev_fd != -1)
+                dup2(prev_fd, STDIN_FILENO);
+
+            // Output redirection
+            if (minishell->cmd[i].output_file_name)
+                redirect_output(minishell->cmd[i].output_file_name);
+            else if (i < minishell->pipex_count)
+                dup2(pipefd[1], STDOUT_FILENO);
+
+            // Close unused fds
             if (prev_fd != -1)
                 close(prev_fd);
-            prev_fd = pipe_fds[0];
-            close(pipe_fds[1]); // Close write end in parent
+            if (i < minishell->pipex_count)
+                close(pipefd[0]);
+            if (!minishell->cmd[i].argv || !minishell->cmd[i].argv[0])
+            {
+                fprintf(stderr, "No command to execute\n");
+                return;
+            }
+
+            // Execute command
+            if (is_builtin(minishell->cmd[0].argv[0]) && minishell->pipex_count == 0)
+            {
+                execute_builtin(minishell, 0, envp);
+                continue;
+            }
+            else
+            {
+                char *path = resolve_cmd_path(minishell->cmd[i].argv[0], minishell->envp);
+                int j = i;
+                for (int h = 0; minishell->cmd[j].argv[h]; h++)
+                {
+                    printf("PATH: %s, CMD ARGV[%d][%d] = %s\n", path, j, h, minishell->cmd[j].argv[h]);
+                }
+                if (!path)
+                {
+                    fprintf(stderr, "%s: command not found\n", minishell->cmd[i].argv[0]);
+                    exit(127);
+                }
+
+                if (execve(path, minishell->cmd[i].argv, envp) == -1)
+                {
+                    perror("execve");
+                    exit(126); // permission denied or other exec error
+                }
+            }
         }
-    }
-}
-
-void execute_command(t_minishell *mini, char **envp)
-{
-    int count = mini->pipex_count + 1;
-    pid_t pids[count];
-    int status;
-
-    ft_bzero(pids, sizeof(pids)); // make sure to zero out
-
-    execute_loop(mini, envp, pids);
-
-    for (int i = 0; i < count; i++)
-    {
-        if (pids[i] > 0)
+        else if (pid < 0)
         {
-            waitpid(pids[i], &status, 0);
-            if (WIFEXITED(status))
-                mini->exit_status = WEXITSTATUS(status);
-            else if (WIFSIGNALED(status))
-                mini->exit_status = 128 + WTERMSIG(status);
+            perror("fork");
+            exit(EXIT_FAILURE);
+        }
+
+        // Parent process
+        if (prev_fd != -1)
+            close(prev_fd);
+        if (i < minishell->pipex_count)
+        {
+            close(pipefd[1]);
+            prev_fd = pipefd[0];
         }
     }
-    
-    // Clean up heredoc temporary files
-    cleanup_heredoc_files(mini);
+
+    while (wait(NULL) > 0)
+        ;
 }
 
+int is_builtin(char *cmd)
+{
+    /*return (!strcmp(cmd, "echo") || !strcmp(cmd, "cd") || !strcmp(cmd, "pwd") ||
+            !strcmp(cmd, "env") || !strcmp(cmd, "export") || !strcmp(cmd, "unset"));*/
+    // printf("BUILD IN COMMAND\n");
+    if (!cmd)
+        return 0;
+    return (!strcmp(cmd, "echo") || !strcmp(cmd, "pwd") || !strcmp(cmd, "env"));
+}
+
+void execute_builtin(t_minishell *minishell, int i, char **envp)
+{
+    printf("BUILD IN COMMAND\n");
+    char *cmd = minishell->cmd[i].argv[0];
+    if (strcmp(minishell->cmd[i].argv[0], "echo") == 0)
+        call_echo(minishell->cmd[i].argv);
+    else if (!strcmp(cmd, "pwd"))
+        call_pwd();
+    else if (!strcmp(cmd, "env"))
+        call_env(minishell, envp);
+    /*else if (!strcmp(cmd, "cd"))
+        call_cd(minishell, envp);
+    else if (!strcmp(cmd, "export"))
+        call_export(envp, minishell->cmd[i].argv[1]);
+    else if (!strcmp(cmd, "unset"))
+        call_unset(envp, minishell->cmd[i].argv[1]);
+    */
+    exit(0);
+}
+
+/*
+
+dal-mahr@c1r6s5:~/Desktop/minihell$ jdfkl
+jdfkl: command not found
+dal-mahr@c1r6s5:~/Desktop/minihell$
+exit
+dal-mahr@c1r6s5 ~/Desktop/minihell
+ % echo $?
+127
+dal-mahr@c1r6s5 ~/Desktop/minihell
+ % bash
+dal-mahr@c1r6s5:~/Desktop/minihell$ ls
+include  libft	Makefile  minishell  Notes  obj  out.txt  readline.supp  srcs
+dal-mahr@c1r6s5:~/Desktop/minihell$
+exit
+dal-mahr@c1r6s5 ~/Desktop/minihell
+ % echo $?
+0
+dal-mahr@c1r6s5 ~/Desktop/minihell
+ % bash
+dal-mahr@c1r6s5:~/Desktop/minihell$ jdfslk
+jdfslk: command not found
+dal-mahr@c1r6s5:~/Desktop/minihell$ exit
+exit
+dal-mahr@c1r6s5 ~/Desktop/minihell
+ % echo $?
+127
+dal-mahr@c1r6s5 ~/Desktop/minihell
+ % bash
+dal-mahr@c1r6s5:~/Desktop/minihell$ ls jfdlk
+ls: cannot access 'jfdlk': No such file or directory
+dal-mahr@c1r6s5:~/Desktop/minihell$
+exit
+dal-mahr@c1r6s5 ~/Desktop/minihell
+ % echo $?
+2
+dal-mahr@c1r6s5 ~/Desktop/minihell
+ % bash
+dal-mahr@c1r6s5:~/Desktop/minihell$ ^C
+dal-mahr@c1r6s5:~/Desktop/minihell$ echo $?
+130
+dal-mahr@c1r6s5:~/Desktop/minihell$ cat
+^\Quit (core dumped)
+dal-mahr@c1r6s5:~/Desktop/minihell$ echo $?
+131
+dal-mahr@c1r6s5:~/Desktop/minihell$
+*/

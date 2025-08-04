@@ -1,0 +1,68 @@
+#include "../../../include/minishell.h"
+
+void execute_child_process(t_minishell *mini, t_cmd *cmd, int prev_fd, int *pipe_fds, int is_last, char **envp)
+{
+    signal(SIGINT, SIG_DFL);
+    signal(SIGQUIT, SIG_DFL);
+
+    if (cmd->in_type == HERE_DOC && handle_heredoc(mini, cmd) < 0)
+        exit(1);
+
+    save_original_fds(cmd);
+    handle_redirections(cmd, prev_fd, pipe_fds, is_last);
+
+    if (is_builtin(cmd->argv[0]))
+    {
+        execute_builtin_cmd(mini, cmd);
+        restore_original_fds(cmd);
+        exit(0);
+    }
+
+    char *path = resolve_cmd_path(cmd->argv[0], envp);
+    if (!path)
+    {
+        fprintf(stderr, "minishell: command not found: %s\n", cmd->argv[0]);
+        exit(127);
+    }
+
+    execve(path, cmd->argv, envp);
+    perror("execve");
+    exit(EXIT_FAILURE);
+}
+
+
+// void execute_child_process(t_minishell *mini, t_cmd *cmd, int prev_fd,
+//                                   int *pipe_fds, int is_last, char **envp)
+// {
+//     signal(SIGINT, SIG_DFL);
+//     signal(SIGQUIT, SIG_DFL);
+
+//     // Handle heredoc if needed
+//     if (cmd->in_type == HERE_DOC)
+//     {
+//         if (handle_heredoc(mini, cmd) < 0)
+//             exit(1);
+//     }
+//     // save_original_fds(cmd);
+//     if (is_builtin(cmd->argv[0]))
+//     {
+//         handle_redirections(cmd, prev_fd, pipe_fds, is_last, mini);
+//         execute_builtin_cmd(mini, cmd);
+//         // restore_original_fds(cmd);
+//         free_commands(mini->cmd, mini->pipex_count);
+//         free_tokens(mini->token);
+//         free(mini->promp_input);
+//         exit(0);
+//     }
+
+//     handle_redirections(cmd, prev_fd, pipe_fds, is_last, mini);
+//     char *path = resolve_cmd_path(cmd->argv[0], envp);
+//     if (!path)
+//     {
+//         fprintf(stderr, "minishell: command not found: %s\n", cmd->argv[0]);
+//         exit(127);
+//     }
+//     execve(path, cmd->argv, envp);
+//     perror("execve");
+//     exit(EXIT_FAILURE);
+// }

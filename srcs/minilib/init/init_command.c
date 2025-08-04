@@ -11,6 +11,8 @@ void init_cmmands(t_minishell *minishell)
     minishell->cmd[i].input_file_name = NULL;
     minishell->cmd[i].out_type = -1;
     minishell->cmd[i].output_file_name = NULL;
+    minishell->cmd[i].original_stdin = -1;
+    minishell->cmd[i].original_stdout = -1;
 
     if (i < minishell->pipex_count)
         minishell->cmd[i].next = &minishell->cmd[i + 1];

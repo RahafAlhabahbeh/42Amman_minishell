@@ -6,7 +6,7 @@
 /*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:55:21 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/07/31 01:13:18 by dal-mahr         ###   ########.fr       */
+/*   Updated: 2025/08/04 07:40:08 by dal-mahr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,35 @@ int is_builtin(char *cmd)
     return (!ft_strcmp(cmd, "echo") || !ft_strcmp(cmd, "cd") || !ft_strcmp(cmd, "pwd") ||
             !ft_strcmp(cmd, "env") || !ft_strcmp(cmd, "export") || !ft_strcmp(cmd, "unset") ||
             !ft_strcmp(cmd, "exit"));
+}
+
+void execute_builtin_cmd(t_minishell *mini, t_cmd *cmd)
+{
+    if (!cmd || !cmd->argv || !cmd->argv[0])
+        return;
+
+    char *name = cmd->argv[0];
+
+    if (!ft_strcmp(name, "echo"))
+        call_echo(mini, cmd->argv);
+    else if (!ft_strcmp(name, "pwd"))
+        call_pwd(mini);
+    else if (!ft_strcmp(name, "env"))
+        call_env(mini, cmd->argv);
+    else if (!ft_strcmp(name, "export"))
+        call_export(mini, cmd->argv);
+    else if (!ft_strcmp(name, "unset"))
+        call_unset(mini, cmd->argv);
+    else if (!ft_strcmp(name, "exit"))
+        call_exit(mini, cmd->argv);
+    else if (!ft_strcmp(name, "cd"))
+        call_cd(mini, cmd->argv);
+    // else if (!ft_strcmp(name, "cd"))
+    // {
+    //     // cd in child process should show error
+    //     ft_putstr_fd("minishell: cd: cannot change directory in pipe\n", STDERR_FILENO);
+    //     mini->exit_status = 1;
+    // }
 }
 
 void execute_builtin(t_minishell *minishell, int i)

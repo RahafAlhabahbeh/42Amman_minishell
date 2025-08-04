@@ -1,3 +1,12 @@
+<<<<<<< HEAD
+#include "../../../include/minishell.h"
+
+void unset_env(t_env **env, const char *key)
+{
+    t_env *cur = *env;
+    t_env *prev = NULL;
+
+=======
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
@@ -17,6 +26,7 @@ void unset_env(t_env **env, const char *key)
     t_env *cur = *env;
     t_env *prev = NULL;
 
+>>>>>>> main
     while (cur)
     {
         if (ft_strncmp(cur->key, key, ft_strlen(key)) == 0)
