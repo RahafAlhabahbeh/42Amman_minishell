@@ -20,21 +20,18 @@ void put_token_to_commands(t_minishell *minishell)
 	int cmd_index = 0;
 	int arg_index = 0;
 
+	init_cmd(minishell);
+
 	for (int i = 0; i <= minishell->pipex_count; i++)
 	{
 		minishell->cmd[i].argv = malloc(sizeof(char *) * MAX_ARGS);
 		if (!minishell->cmd[i].argv)
+		{
+			perror("malloc");
 			exit(EXIT_FAILURE);
-		minishell->cmd[i].input_file_name = NULL;
-		minishell->cmd[i].output_file_name = NULL;
-		minishell->cmd[i].in_type = -1;
-		minishell->cmd[i].out_type = -1;
-		minishell->cmd[i].input_quote = 0;
-		minishell->cmd[i].heredoc_temp_file = NULL;
-		minishell->cmd[i].next = (i < minishell->pipex_count) ? &minishell->cmd[i + 1] : NULL;
-		minishell->cmd[i].prev = (i > 0) ? &minishell->cmd[i - 1] : NULL;
+		}
 	}
-
+	
 	while (cur)
 	{
 		if (cur->type == PIPE)

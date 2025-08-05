@@ -6,7 +6,7 @@
 /*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:55:21 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/07/31 01:13:18 by dal-mahr         ###   ########.fr       */
+/*   Updated: 2025/08/04 11:08:40 by dal-mahr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,29 @@ void execute_builtin(t_minishell *minishell, int i)
         call_cd(minishell, minishell->cmd[i].argv);
 
     minishell->exit_status = 0;
+}
+
+void execute_builtin_cmd(t_minishell *mini, t_cmd *cmd)
+{
+    if (!cmd || !cmd->argv || !cmd->argv[0])
+        return;
+
+    char *name = cmd->argv[0];
+
+    if (!ft_strcmp(name, "echo"))
+        call_echo(mini, cmd->argv);
+    else if (!ft_strcmp(name, "pwd"))
+        call_pwd(mini);
+    else if (!ft_strcmp(name, "env"))
+        call_env(mini, cmd->argv);
+    else if (!ft_strcmp(name, "export"))
+        call_export(mini, cmd->argv);
+    else if (!ft_strcmp(name, "unset"))
+        call_unset(mini, cmd->argv);
+    else if (!ft_strcmp(name, "exit"))
+        call_exit(mini, cmd->argv);
+    else if (!ft_strcmp(name, "cd"))
+        call_cd(mini, cmd->argv);
 }
 
 int ft_strcmp(const char *s1, const char *s2)

@@ -47,19 +47,6 @@ void free_commands(t_cmd *cmd, int count)
     free(cmd);
 }
 
-// void free_minishell(t_minishell *mini)
-// {
-//     if (mini->promp_input)
-//         free(mini->promp_input);
-
-//     free_tokens(mini->token);
-
-//     // If you use an array of commands, free accordingly:
-//     free_cmds_array(mini->cmd, mini->pipex_count);
-
-//     // free_env_list(mini->env_list); // uncomment if you use env_list
-// }
-
 void free_minishell(t_minishell *mini)
 {
     if (mini->promp_input)
@@ -88,32 +75,56 @@ void free_env_list(t_env *env)
     }
 }
 
-
 // void reset_minishell(t_minishell *mini)
 // {
 //     if (mini->promp_input)
 //         free(mini->promp_input);
-//     free_tokens(mini->token);
-//     free_cmds_array(mini->cmd, mini->pipex_count);
+//     if (mini->token)
+//         free_tokens(mini->token);
+//     if (mini->cmd)
+//         free_cmds_array(mini->cmd, mini->pipex_count);
+
 //     mini->promp_input = NULL;
 //     mini->token = NULL;
 //     mini->cmd = NULL;
+//     mini->cmd_count = 0;
 //     mini->pipex_count = 0;
+//     if (mini->promp_input)
+//     {
+//         free(mini->promp_input);
+//         mini->promp_input = NULL;
+//     }
+//     if (mini->token)
+//     {
+//         free_tokens(mini->token);
+//         mini->token = NULL;
+//     }
+//     if (mini->cmd)
+//     {
+//         free_commands(mini->cmd, mini->pipex_count);
+//         mini->cmd = NULL;
+//         mini->cmd_count = 0;
+//     }
 // }
-
 void reset_minishell(t_minishell *mini)
 {
     if (mini->promp_input)
+    {
         free(mini->promp_input);
+        mini->promp_input = NULL;
+    }
     if (mini->token)
+    {
         free_tokens(mini->token);
+        mini->token = NULL;
+    }
     if (mini->cmd)
-        free_cmds_array(mini->cmd, mini->pipex_count);
-
-    mini->promp_input = NULL;
-    mini->token = NULL;
-    mini->cmd = NULL;
-    mini->cmd_count = 0;
+    {
+        free_commands(mini->cmd, mini->pipex_count);
+        mini->cmd = NULL;
+        mini->cmd_count = 0;
+    }
     mini->pipex_count = 0;
 }
+
 

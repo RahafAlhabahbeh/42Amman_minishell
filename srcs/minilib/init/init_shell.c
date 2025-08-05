@@ -8,7 +8,8 @@ void init_shell(t_minishell *minishell)
     // Handle EOF (Ctrl+D) - exit shell cleanly
     if (!minishell->promp_input)
     {
-        printf("exit\n");
+        // printf("exit\n");
+        fprintf(stderr, "exit\n");
         rl_clear_history();
         free_minishell(minishell);
         exit(0);

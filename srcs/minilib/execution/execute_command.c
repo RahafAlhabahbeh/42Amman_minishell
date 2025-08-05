@@ -12,33 +12,6 @@
 
 #include "../../../include/minishell.h"
 
-void execute_builtin_cmd(t_minishell *mini, t_cmd *cmd)
-{
-    if (!cmd || !cmd->argv || !cmd->argv[0])
-        return;
-
-    char *name = cmd->argv[0];
-
-    if (!ft_strcmp(name, "echo"))
-        call_echo(mini, cmd->argv);
-    else if (!ft_strcmp(name, "pwd"))
-        call_pwd(mini);
-    else if (!ft_strcmp(name, "env"))
-        call_env(mini, cmd->argv);
-    else if (!ft_strcmp(name, "export"))
-        call_export(mini, cmd->argv);
-    else if (!ft_strcmp(name, "unset"))
-        call_unset(mini, cmd->argv);
-    else if (!ft_strcmp(name, "exit"))
-        call_exit(mini, cmd->argv);
-    else if (!ft_strcmp(name, "cd"))
-    {
-        // cd in child process should show error
-        ft_putstr_fd("minishell: cd: cannot change directory in pipe\n", STDERR_FILENO);
-        mini->exit_status = 1;
-    }
-}
-
 
 int is_str_in_set(char *s, char *set[])
 {
@@ -52,7 +25,7 @@ int is_str_in_set(char *s, char *set[])
     return 0;
 }
 
-static int is_redirection_present(t_cmd *cmd)
+int is_redirection_present(t_cmd *cmd)
 {
     if (cmd->in_type == REDIR_IN || cmd->in_type == HERE_DOC)
         return 1;
@@ -62,7 +35,7 @@ static int is_redirection_present(t_cmd *cmd)
 }
 
 
-static int should_run_builtin_in_parent(t_cmd *cmd, int index, int total_pipes)
+int should_run_builtin_in_parent(t_cmd *cmd, int index, int total_pipes)
 {
     int has_pipe = (index > 0) || (index < total_pipes);
     int has_redir = is_redirection_present(cmd);
@@ -74,42 +47,7 @@ static int should_run_builtin_in_parent(t_cmd *cmd, int index, int total_pipes)
     return 0;
 }
 
-static void execute_child_process(t_minishell *mini, t_cmd *cmd, int prev_fd,
-                                  int *pipe_fds, int is_last, char **envp)
-{
-    signal(SIGINT, SIG_DFL);
-    signal(SIGQUIT, SIG_DFL);
-
-    // Handle heredoc if needed
-    if (cmd->in_type == HERE_DOC)
-    {
-        if (handle_heredoc(mini, cmd) < 0)
-            exit(1);
-    }
-
-    if (is_builtin(cmd->argv[0]))
-    {
-        handle_redirections(cmd, prev_fd, pipe_fds, is_last, mini);
-        execute_builtin_cmd(mini, cmd);
-        free_commands(mini->cmd, mini->pipex_count);
-        free_tokens(mini->token);
-        free(mini->promp_input);
-        exit(0);
-    }
-
-    handle_redirections(cmd, prev_fd, pipe_fds, is_last, mini);
-    char *path = resolve_cmd_path(cmd->argv[0], envp);
-    if (!path)
-    {
-        fprintf(stderr, "minishell: command not found: %s\n", cmd->argv[0]);
-        exit(127);
-    }
-    execve(path, cmd->argv, envp);
-    perror("execve");
-    exit(EXIT_FAILURE);
-}
-
-static int execute_parent_process(int prev_fd, int *pipe_fds, int is_last)
+int execute_parent_process(int prev_fd, int *pipe_fds, int is_last)
 {
     if (prev_fd != -1)
         close(prev_fd);
@@ -118,22 +56,24 @@ static int execute_parent_process(int prev_fd, int *pipe_fds, int is_last)
     return (!is_last) ? pipe_fds[0] : -1;
 }
 
-static pid_t handle_command_iteration(t_minishell *mini, char **envp,
-                                      t_cmd *cmd, int i, int prev_fd, int *pipe_fds)
+pid_t handle_command_iteration(t_minishell *mini, char **envp,
+                              t_cmd *cmd, int i, int prev_fd, int *pipe_fds)
 {
     pid_t pid = -1;
 
     if (is_builtin(cmd->argv[0]) &&
         should_run_builtin_in_parent(cmd, i, mini->pipex_count))
     {
-        // Handle heredoc if needed
         if (cmd->in_type == HERE_DOC)
         {
             if (handle_heredoc(mini, cmd) < 0)
                 return -1;
         }
-        handle_redirections(cmd, prev_fd, pipe_fds, i == mini->pipex_count, mini);
+
+        save_original_fds(cmd);  // Save fds before redirecting
+        handle_redirections(cmd, prev_fd, pipe_fds, i == mini->pipex_count);
         execute_builtin(mini, i);
+        restore_original_fds(cmd);  // Restore fds after builtin
         return -1; // no fork, no child
     }
 
@@ -151,7 +91,8 @@ static pid_t handle_command_iteration(t_minishell *mini, char **envp,
 }
 
 
-static void execute_loop(t_minishell *mini, char **envp, pid_t *pids)
+
+void execute_loop(t_minishell *mini, char **envp, pid_t *pids)
 {
     int prev_fd = -1;
 
@@ -181,27 +122,11 @@ static void execute_loop(t_minishell *mini, char **envp, pid_t *pids)
 
 void execute_command(t_minishell *mini, char **envp)
 {
-    int count = mini->pipex_count + 1;
-    pid_t pids[count];
-    int status;
-
-    ft_bzero(pids, sizeof(pids)); // make sure to zero out
-
-    execute_loop(mini, envp, pids);
-
-    for (int i = 0; i < count; i++)
-    {
-        if (pids[i] > 0)
-        {
-            waitpid(pids[i], &status, 0);
-            if (WIFEXITED(status))
-                mini->exit_status = WEXITSTATUS(status);
-            else if (WIFSIGNALED(status))
-                mini->exit_status = 128 + WTERMSIG(status);
-        }
-    }
-    
-    // Clean up heredoc temporary files
-    cleanup_heredoc_files(mini);
+    if (mini->pipex_count == 0)
+        execute_one_command(mini, envp);
+    else
+        multiple_command_execution(mini, envp);
 }
+
+
 

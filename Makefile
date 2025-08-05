@@ -16,8 +16,10 @@ SRC = \
     $(SRC_DIR)/parsing/get_commands.c \
     $(MAIN_DIR)/main.c \
     $(MAIN_DIR)/print.c \
-	$(SRC_DIR)/init/init_shell.c \
 	$(SRC_DIR)/init/init.c \
+	$(SRC_DIR)/init/init_shell.c \
+	$(SRC_DIR)/init/init_env.c \
+	$(SRC_DIR)/init/init_command.c \
 	$(SRC_DIR)/commands/call_env.c \
 	$(SRC_DIR)/commands/call_echo.c \
 	$(SRC_DIR)/commands/call_pwd.c \
@@ -25,10 +27,12 @@ SRC = \
 	$(SRC_DIR)/commands/call_unset.c \
 	$(SRC_DIR)/commands/call_exit.c \
 	$(SRC_DIR)/commands/call_cd.c \
-	$(SRC_DIR)/init/init_env.c \
 	$(SRC_DIR)/pipe/pipe.c \
 	$(SRC_DIR)/execution/execute_command.c \
 	$(SRC_DIR)/execution/execute_builtin.c \
+	$(SRC_DIR)/execution/execute_child_process.c \
+	$(SRC_DIR)/execution/execute_one_command.c \
+	$(SRC_DIR)/execution/multiple_command_execution.c \
 	$(SRC_DIR)/redirection/redirection.c \
 	$(SRC_DIR)/redirection/heredoc.c \
 	$(SRC_DIR)/free/free_minishell.c	\

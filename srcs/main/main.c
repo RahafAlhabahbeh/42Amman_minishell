@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dal-mahr <dal-mahr@student.42.fr>          +#+  +:+       +#+        */
+/*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/02 22:14:22 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/07/27 14:15:32 by dal-mahr         ###   ########.fr       */
+/*   Updated: 2025/08/04 11:38:24 by dal-mahr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,17 +27,17 @@ int main(int ac, char **av, char **envp)
     {
         setup_signals();
         // clear the input check_free
-        if (minishell.token)
-        {
-            free_tokens(minishell.token);
-            minishell.token = NULL;
-        }
-        if (minishell.cmd)
-        {
-            free_commands(minishell.cmd, minishell.pipex_count);
-            minishell.cmd = NULL;
-            minishell.cmd_count = 0;
-        }
+        // if (minishell.token)
+        // {
+        //     free_tokens(minishell.token);
+        //     minishell.token = NULL;
+        // }
+        // if (minishell.cmd)
+        // {
+        //     free_commands(minishell.cmd, minishell.pipex_count);
+        //     minishell.cmd = NULL;
+        //     minishell.cmd_count = 0;
+        // }
 
         // check_init
         // printf("Start 1\n");
@@ -81,28 +81,18 @@ int main(int ac, char **av, char **envp)
         // print_tokens(minishell.token);
 
         count_pipe(&minishell);
-
-        if (minishell.cmd)
-            free_commands(minishell.cmd, minishell.pipex_count);
-
-        minishell.cmd_count = minishell.pipex_count + 1;
-        minishell.cmd = malloc(sizeof(t_cmd) * minishell.cmd_count);
-
-        if (!minishell.cmd)
-            exit(EXIT_FAILURE);
-
-        ft_bzero(minishell.cmd, sizeof(t_cmd) * (minishell.pipex_count + 1));
+        init_cmd(&minishell);
         put_token_to_commands(&minishell);
 
         // print_commands(minishell.cmd);
 
         execute_command(&minishell, envp);
+        reset_minishell(&minishell);
+        // free_tokens(minishell.token);
+        // minishell.token = NULL;
 
-        free_tokens(minishell.token);
-        minishell.token = NULL;
-
-        free(minishell.promp_input);
-        minishell.promp_input = NULL;
+        // free(minishell.promp_input);
+        // minishell.promp_input = NULL;
     }
 
     rl_clear_history();
