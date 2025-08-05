@@ -1,22 +1,10 @@
 #include "../../../include/minishell.h"
 
-int is_str_in_set(const char *str, char **set)
-{
-    if (!str || !set)
-        return 0;
-
-    for (int i = 0; set[i]; i++)
-    {
-        if (ft_strcmp(str, set[i]) == 0)
-            return 1;
-    }
-    return 0;
-}
-
 
 void execute_one_command(t_minishell *mini, char **envp)
 {
-    fprintf(stdout, "Executing one command...\n");
+    // fprintf(stdout, "Executing one command...\n");
+    // fprintf(stderr, "Executing one command...\n");
     t_cmd *cmd = mini->cmd;
 
     if (!cmd || !cmd->argv || !cmd->argv[0])
@@ -30,8 +18,16 @@ void execute_one_command(t_minishell *mini, char **envp)
     if (is_builtin(cmd->argv[0]) &&
         is_str_in_set(cmd->argv[0], (char *[]){"export", "unset", "cd", "exit", NULL}))
     {
-        handle_redirections(cmd, -1, NULL, 1);
+
+        save_original_fds(cmd);
+        if (handle_redirections(cmd, -1, NULL, 1) < 0)
+        {
+            restore_original_fds(cmd);
+            mini->exit_status = 1;
+            return;
+        }
         execute_builtin_cmd(mini, cmd);
+        restore_original_fds(cmd);
         return;
     }
 
@@ -46,7 +42,8 @@ void execute_one_command(t_minishell *mini, char **envp)
     {
         signal(SIGINT, SIG_DFL);
         signal(SIGQUIT, SIG_DFL);
-        handle_redirections(cmd, -1, NULL, 1);
+        if (handle_redirections(cmd, -1, NULL, 1) < 0)
+            exit(1);
         if (is_builtin(cmd->argv[0]))
         {
             execute_builtin_cmd(mini, cmd);

@@ -25,77 +25,76 @@ void multiple_command_execution(t_minishell *mini, char **envp)
     cleanup_heredoc_files(mini);
 }
 
-void execute_loop(t_minishell *mini, char **envp, pid_t *pids)
-{
-    int i = 0;
-    int fd[2];
-    int prev_fd = -1;
-    t_cmd *cmd = mini->cmd;
+// void execute_loop(t_minishell *mini, char **envp, pid_t *pids)
+// {
+//     int i = 0;
+//     int fd[2];
+//     int prev_fd = -1;
+//     t_cmd *cmd = mini->cmd;
 
-    while (cmd)
-    {
-        if (pipe(fd) == -1)
-        {
-            perror("pipe");
-            return;
-        }
+//     while (cmd)
+//     {
+//         if (pipe(fd) == -1)
+//         {
+//             perror("pipe");
+//             return;
+//         }
 
-        pid_t pid = fork();
-        if (pid < 0)
-        {
-            perror("fork");
-            return;
-        }
-        else if (pid == 0)
-        {
-            signal(SIGINT, SIG_DFL);
-            signal(SIGQUIT, SIG_DFL);
+//         pid_t pid = fork();
+//         if (pid < 0)
+//         {
+//             perror("fork");
+//             return;
+//         }
+//         else if (pid == 0)
+//         {
+//             signal(SIGINT, SIG_DFL);
+//             signal(SIGQUIT, SIG_DFL);
 
-            if (prev_fd != -1)
-            {
-                dup2(prev_fd, STDIN_FILENO);
-                close(prev_fd);
-            }
+//             if (prev_fd != -1)
+//             {
+//                 dup2(prev_fd, STDIN_FILENO);
+//                 close(prev_fd);
+//             }
 
-            if (cmd->next)
-            {
-                dup2(fd[1], STDOUT_FILENO);
-                close(fd[1]);
-            }
+//             if (cmd->next)
+//             {
+//                 dup2(fd[1], STDOUT_FILENO);
+//                 close(fd[1]);
+//             }
 
-            close(fd[0]);
-            int is_last = (cmd->next == NULL);  // true if it's the last command
-            handle_redirections(cmd, prev_fd, fd, is_last);
+//             close(fd[0]);
+//             int is_last = (cmd->next == NULL);  // true if it's the last command
+//             handle_redirections(cmd, prev_fd, fd, is_last);
 
-            if (is_builtin(cmd->argv[0]))
-                execute_builtin_cmd(mini, cmd);
-            else
-            {
-                char *path = resolve_cmd_path(cmd->argv[0], envp);
-                if (!path)
-                {
-                    fprintf(stderr, "minishell: command not found: %s\n", cmd->argv[0]);
-                    exit(127);
-                }
-                execve(path, cmd->argv, envp);
-                perror("execve");
-                exit(EXIT_FAILURE);
-            }
-        }
-        else
-        {
-            pids[i++] = pid;
+//             if (is_builtin(cmd->argv[0]))
+//                 execute_builtin_cmd(mini, cmd);
+//             else
+//             {
+//                 char *path = resolve_cmd_path(cmd->argv[0], envp);
+//                 if (!path)
+//                 {
+//                     fprintf(stderr, "minishell: command not found: %s\n", cmd->argv[0]);
+//                     exit(127);
+//                 }
+//                 execve(path, cmd->argv, envp);
+//                 perror("execve");
+//                 exit(EXIT_FAILURE);
+//             }
+//         }
+//         else
+//         {
+//             pids[i++] = pid;
 
-            if (prev_fd != -1)
-                close(prev_fd);
-            close(fd[1]);
-            prev_fd = fd[0];
-        }
+//             if (prev_fd != -1)
+//                 close(prev_fd);
+//             close(fd[1]);
+//             prev_fd = fd[0];
+//         }
 
-        cmd = cmd->next;
-    }
+//         cmd = cmd->next;
+//     }
 
-    if (prev_fd != -1)
-        close(prev_fd);
-}
-
+//     if (prev_fd != -1)
+//         close(prev_fd);
+// }

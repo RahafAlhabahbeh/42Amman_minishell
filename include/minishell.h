@@ -6,7 +6,11 @@
 /*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/14 00:00:00 by rahaf             #+#    #+#             */
+<<<<<<< HEAD
 /*   Updated: 2025/08/04 09:55:09 by dal-mahr         ###   ########.fr       */
+=======
+/*   Updated: 2025/08/05 04:37:17 by dal-mahr         ###   ########.fr       */
+>>>>>>> memory-leak-fix
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,6 +98,8 @@ char *replace_var(t_minishell *minishell, const char *str, char quote);
 
 
 void init_env_list(t_minishell *mini, char **envp);
+// t_cmd *init_cmd(void);
+void init_cmd(t_minishell *mini);
 char *get_value_env(t_minishell *mini, const char *key);
 void print_export_list(t_env *env_list);
 void print_env_list(t_env *env_list);
@@ -108,13 +114,11 @@ void put_token_to_commands(t_minishell *minishell);
 
 int is_builtin(char *cmd);
 void execute_builtin(t_minishell *minishell, int i);
-void redirect_input(const char *file);
-void redirect_output(const char *file);
-void redirect_output_append(const char *file);
-void handle_redirections(t_cmd *cmd, int prev_fd, int *pipe_fds, int is_last);
-void restore_original_fds(t_cmd *cmd);
-void save_original_fds(t_cmd *cmd);
-// void handle_redirections(t_cmd *cmd, int prev_fd, int *pipe_fds, int is_last, t_minishell *mini);
+int redirect_input(const char *file);
+int redirect_output(const char *file);
+int redirect_output_append(const char *file);
+int handle_redirections(t_cmd *cmd, int prev_fd, int *pipe_fds, int is_last);
+
 
 /* heredoc functions */
 int handle_heredoc(t_minishell *mini, t_cmd *cmd);
@@ -122,7 +126,6 @@ void redirect_heredoc_input(const char *fd_str);
 void cleanup_heredoc_files(t_minishell *mini);
 void handle_heredoc_sigint(int sig);
 void execute_command(t_minishell *minishell, char **envp);
-
 void call_env(t_minishell *mini, char **argv);
 void call_export(t_minishell *mini, char **argv);
 void call_unset(t_minishell *mini, char **argv);
@@ -174,5 +177,8 @@ void execute_child_process(t_minishell *mini, t_cmd *cmd, int prev_fd,
                                   int *pipe_fds, int is_last, char **envp);
 int should_run_builtin_in_parent(t_cmd *cmd, int index, int total_pipes);
 int is_redirection_present(t_cmd *cmd);
-                                      
+
+void save_original_fds(t_cmd *cmd);
+void restore_original_fds(t_cmd *cmd);
+
 #endif

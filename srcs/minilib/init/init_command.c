@@ -21,3 +21,23 @@ void init_cmmands(t_minishell *minishell)
     i++;
     }
 }
+
+void init_cmd(t_minishell *mini)
+{
+    mini->cmd = malloc(sizeof(t_cmd) * (mini->pipex_count + 1));
+    if (!mini->cmd)
+        exit(EXIT_FAILURE);
+
+    for (int i = 0; i <= mini->pipex_count; i++)
+    {
+        mini->cmd[i].argv = NULL;
+        mini->cmd[i].input_file_name = NULL;
+        mini->cmd[i].output_file_name = NULL;
+        mini->cmd[i].in_type = -1;
+        mini->cmd[i].out_type = -1;
+        mini->cmd[i].input_quote = 0;
+        mini->cmd[i].heredoc_temp_file = NULL;
+        mini->cmd[i].next = (i < mini->pipex_count) ? &mini->cmd[i + 1] : NULL;
+        mini->cmd[i].prev = (i > 0) ? &mini->cmd[i - 1] : NULL;
+    }
+}

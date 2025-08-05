@@ -16,8 +16,10 @@ SRC = \
     $(SRC_DIR)/parsing/get_commands.c \
     $(MAIN_DIR)/main.c \
     $(MAIN_DIR)/print.c \
-	$(SRC_DIR)/init/init_shell.c \
 	$(SRC_DIR)/init/init.c \
+	$(SRC_DIR)/init/init_shell.c \
+	$(SRC_DIR)/init/init_env.c \
+	$(SRC_DIR)/init/init_command.c \
 	$(SRC_DIR)/commands/call_env.c \
 	$(SRC_DIR)/commands/call_echo.c \
 	$(SRC_DIR)/commands/call_pwd.c \
@@ -25,7 +27,6 @@ SRC = \
 	$(SRC_DIR)/commands/call_unset.c \
 	$(SRC_DIR)/commands/call_exit.c \
 	$(SRC_DIR)/commands/call_cd.c \
-	$(SRC_DIR)/init/init_env.c \
 	$(SRC_DIR)/pipe/pipe.c \
 	$(SRC_DIR)/execution/execute_command.c \
 	$(SRC_DIR)/execution/execute_builtin.c \

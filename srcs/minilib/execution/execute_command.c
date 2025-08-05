@@ -12,7 +12,87 @@
 
 #include "../../../include/minishell.h"
 
-void execute_command(t_minishell *minishell, char **envp)
+
+int is_str_in_set(char *s, char *set[])
+{
+    int i = 0;
+    while (set[i])
+    {
+        if (ft_strcmp(s, set[i]) == 0)
+            return 1;
+        i++;
+    }
+    return 0;
+}
+
+int is_redirection_present(t_cmd *cmd)
+{
+    if (cmd->in_type == REDIR_IN || cmd->in_type == HERE_DOC)
+        return 1;
+    if (cmd->out_type == REDIR_OUT || cmd->out_type == REDIR_APPEND)
+        return 1;
+    return 0;
+}
+
+
+int should_run_builtin_in_parent(t_cmd *cmd, int index, int total_pipes)
+{
+    int has_pipe = (index > 0) || (index < total_pipes);
+    int has_redir = is_redirection_present(cmd);
+
+    if (is_str_in_set(cmd->argv[0], (char *[]){"export", "unset", "cd", "exit", NULL}))
+        return (!has_pipe && !has_redir);
+    else if (is_str_in_set(cmd->argv[0], (char *[]){"echo", "pwd", "env", NULL}))
+        return (!has_pipe && index == total_pipes); // only if no pipe at all
+    return 0;
+}
+
+int execute_parent_process(int prev_fd, int *pipe_fds, int is_last)
+{
+    if (prev_fd != -1)
+        close(prev_fd);
+    if (!is_last)
+        close(pipe_fds[1]);
+    return (!is_last) ? pipe_fds[0] : -1;
+}
+
+pid_t handle_command_iteration(t_minishell *mini, char **envp,
+                              t_cmd *cmd, int i, int prev_fd, int *pipe_fds)
+{
+    pid_t pid = -1;
+
+    if (is_builtin(cmd->argv[0]) &&
+        should_run_builtin_in_parent(cmd, i, mini->pipex_count))
+    {
+        if (cmd->in_type == HERE_DOC)
+        {
+            if (handle_heredoc(mini, cmd) < 0)
+                return -1;
+        }
+
+        save_original_fds(cmd);  // Save fds before redirecting
+        handle_redirections(cmd, prev_fd, pipe_fds, i == mini->pipex_count);
+        execute_builtin(mini, i);
+        restore_original_fds(cmd);  // Restore fds after builtin
+        return -1; // no fork, no child
+    }
+
+    pid = fork();
+    if (pid == -1)
+    {
+        perror("fork");
+        exit(EXIT_FAILURE);
+    }
+    else if (pid == 0)
+        execute_child_process(mini, cmd, prev_fd, pipe_fds, i == mini->pipex_count, envp);
+
+    execute_parent_process(prev_fd, pipe_fds, i == mini->pipex_count);
+    return pid;
+}
+
+
+
+void execute_loop(t_minishell *mini, char **envp, pid_t *pids)
 {
     int i;
     int pipefd[2];
@@ -82,71 +162,14 @@ void execute_command(t_minishell *minishell, char **envp)
                 }
             }
         }
-        else if (pid < 0)
-        {
-            perror("fork");
-            exit(EXIT_FAILURE);
-        }
 
-        // Parent process
-        if (prev_fd != -1)
-            close(prev_fd);
-        if (i < minishell->pipex_count)
-        {
-            close(pipefd[1]);
-            prev_fd = pipefd[0];
-        }
     }
-
-    while (wait(NULL) > 0)
-        ;
 }
 
-
-/*
-
-dal-mahr@c1r6s5:~/Desktop/minihell$ jdfkl
-jdfkl: command not found
-dal-mahr@c1r6s5:~/Desktop/minihell$
-exit
-dal-mahr@c1r6s5 ~/Desktop/minihell
- % echo $?
-127
-dal-mahr@c1r6s5 ~/Desktop/minihell
- % bash
-dal-mahr@c1r6s5:~/Desktop/minihell$ ls
-include  libft	Makefile  minishell  Notes  obj  out.txt  readline.supp  srcs
-dal-mahr@c1r6s5:~/Desktop/minihell$
-exit
-dal-mahr@c1r6s5 ~/Desktop/minihell
- % echo $?
-0
-dal-mahr@c1r6s5 ~/Desktop/minihell
- % bash
-dal-mahr@c1r6s5:~/Desktop/minihell$ jdfslk
-jdfslk: command not found
-dal-mahr@c1r6s5:~/Desktop/minihell$ exit
-exit
-dal-mahr@c1r6s5 ~/Desktop/minihell
- % echo $?
-127
-dal-mahr@c1r6s5 ~/Desktop/minihell
- % bash
-dal-mahr@c1r6s5:~/Desktop/minihell$ ls jfdlk
-ls: cannot access 'jfdlk': No such file or directory
-dal-mahr@c1r6s5:~/Desktop/minihell$
-exit
-dal-mahr@c1r6s5 ~/Desktop/minihell
- % echo $?
-2
-dal-mahr@c1r6s5 ~/Desktop/minihell
- % bash
-dal-mahr@c1r6s5:~/Desktop/minihell$ ^C
-dal-mahr@c1r6s5:~/Desktop/minihell$ echo $?
-130
-dal-mahr@c1r6s5:~/Desktop/minihell$ cat
-^\Quit (core dumped)
-dal-mahr@c1r6s5:~/Desktop/minihell$ echo $?
-131
-dal-mahr@c1r6s5:~/Desktop/minihell$
-*/
+void execute_command(t_minishell *mini, char **envp)
+{
+    if (mini->pipex_count == 0)
+        execute_one_command(mini, envp);
+    else
+        multiple_command_execution(mini, envp);
+}
