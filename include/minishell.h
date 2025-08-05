@@ -6,11 +6,7 @@
 /*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/14 00:00:00 by rahaf             #+#    #+#             */
-<<<<<<< HEAD
-/*   Updated: 2025/08/04 09:55:09 by dal-mahr         ###   ########.fr       */
-=======
-/*   Updated: 2025/08/05 04:37:17 by dal-mahr         ###   ########.fr       */
->>>>>>> memory-leak-fix
+/*   Updated: 2025/08/05 05:34:22 by dal-mahr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,7 +88,7 @@ t_token *tokenize(t_minishell *minishell);
 void init_shell(t_minishell *minishell);
 void init(t_minishell *mini);
 
-t_cmd *init_cmd(void);
+// t_cmd *init_cmd(void);
 t_token *expand(t_minishell *minishell);
 char *replace_var(t_minishell *minishell, const char *str, char quote);
 
