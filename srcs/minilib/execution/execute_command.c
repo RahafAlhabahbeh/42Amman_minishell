@@ -35,10 +35,12 @@ int should_run_builtin_in_parent(t_cmd *cmd, int index, int total_pipes)
     int has_pipe = (index > 0) || (index < total_pipes);
     int has_redir = is_redirection_present(cmd);
 
+    // Builtins that should never run in parent when there are pipes or redirections
     if (is_str_in_set(cmd->argv[0], (char *[]) {"export", "unset", "cd", "exit", NULL}))
         return (!has_pipe && !has_redir);
+    // Builtins that can run in parent only if they're the last command and no pipes/redirections
     else if (is_str_in_set(cmd->argv[0], (char *[]) {"echo", "pwd", "env", NULL}))
-        return (!has_pipe && index == total_pipes);
+        return (!has_pipe && !has_redir && index == total_pipes);
     return 0;
 }
 
@@ -68,6 +70,7 @@ void execute_loop(t_minishell *mini, char **envp, pid_t *pids)
 
         t_cmd *cmd = &mini->cmd[i];
 
+        // Handle builtins that should run in parent process (no pipes, no redirections)
         if (is_builtin(cmd->argv[0]) && should_run_builtin_in_parent(cmd, i, mini->pipex_count))
         {
             if (cmd->in_type == HERE_DOC && handle_heredoc(mini, cmd) < 0)

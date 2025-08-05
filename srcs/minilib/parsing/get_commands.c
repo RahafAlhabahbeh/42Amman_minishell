@@ -20,7 +20,7 @@ void put_token_to_commands(t_minishell *minishell)
 	int cmd_index = 0;
 	int arg_index = 0;
 
-	init_cmd(minishell);
+	// init_cmd is already called in main, don't call it again
 
 	for (int i = 0; i <= minishell->pipex_count; i++)
 	{
@@ -29,6 +29,11 @@ void put_token_to_commands(t_minishell *minishell)
 		{
 			perror("malloc");
 			exit(EXIT_FAILURE);
+		}
+		// Initialize all pointers to NULL
+		for (int j = 0; j < MAX_ARGS; j++)
+		{
+			minishell->cmd[i].argv[j] = NULL;
 		}
 	}
 	
@@ -47,7 +52,7 @@ void put_token_to_commands(t_minishell *minishell)
 			}
 		}
 		else if (cur->type == REDIR_IN || cur->type == REDIR_OUT ||
-				 cur->type == REDIR_APPEND || cur->type == HERE_DOC)
+				 cur->type == REDIR_APPEND)
 		{
 			if (!cur->next || cur->next->type != WORD)
 			{
@@ -65,9 +70,8 @@ void put_token_to_commands(t_minishell *minishell)
 				fd = open(filename, O_WRONLY | O_CREAT | O_APPEND, 0644);
 			else if (cur->type == REDIR_IN)
 				fd = open(filename, O_RDONLY);
-			// HERE_DOC is handled separately, skip open()
 
-			if ((cur->type != HERE_DOC) && fd < 0)
+			if (fd < 0)
 			{
 				perror(filename);
 				exit(EXIT_FAILURE);
@@ -86,19 +90,6 @@ void put_token_to_commands(t_minishell *minishell)
 					exit(EXIT_FAILURE);
 				}
 				minishell->cmd[cmd_index].in_type = REDIR_IN;
-			}
-			else if (cur->type == HERE_DOC)
-			{
-				// For multiple heredocs, only keep the last one
-				free(minishell->cmd[cmd_index].input_file_name);
-				minishell->cmd[cmd_index].input_file_name = ft_strdup(filename);
-				if (!minishell->cmd[cmd_index].input_file_name)
-				{
-					fprintf(stderr, "minishell: memory allocation failed\n");
-					exit(EXIT_FAILURE);
-				}
-				minishell->cmd[cmd_index].in_type = HERE_DOC;
-				minishell->cmd[cmd_index].input_quote = cur->next->quote;
 			}
 			else if (cur->type == REDIR_OUT)
 			{
@@ -125,6 +116,31 @@ void put_token_to_commands(t_minishell *minishell)
 
 			cur = cur->next; // skip the filename
 		}
+		else if (cur->type == HERE_DOC)
+		{
+			if (!cur->next || cur->next->type != WORD)
+			{
+				fprintf(stderr, "minishell: syntax error near redirection\n");
+				exit(EXIT_FAILURE);
+			}
+
+			const char *filename = cur->next->value;
+
+			// For multiple heredocs, only keep the last one
+			// This ensures that only the final delimiter is used for the heredoc
+			// The heredoc processing will read all content until the final delimiter
+			free(minishell->cmd[cmd_index].input_file_name);
+			minishell->cmd[cmd_index].input_file_name = ft_strdup(filename);
+			if (!minishell->cmd[cmd_index].input_file_name)
+			{
+				fprintf(stderr, "minishell: memory allocation failed\n");
+				exit(EXIT_FAILURE);
+			}
+			minishell->cmd[cmd_index].in_type = HERE_DOC;
+			minishell->cmd[cmd_index].input_quote = cur->next->quote;
+
+			cur = cur->next; // skip the filename
+		}
 		else if (cur->type == WORD)
 		{
 			minishell->cmd[cmd_index].argv[arg_index] = ft_strdup(cur->value);
@@ -140,4 +156,20 @@ void put_token_to_commands(t_minishell *minishell)
 
 	// Null-terminate last command argv
 	minishell->cmd[cmd_index].argv[arg_index] = NULL;
+	
+	// Handle heredoc without command (default to cat)
+	for (int i = 0; i <= minishell->pipex_count; i++)
+	{
+		if (minishell->cmd[i].in_type == HERE_DOC && 
+			(!minishell->cmd[i].argv || !minishell->cmd[i].argv[0]))
+		{
+			// Add cat as default command
+			minishell->cmd[i].argv[0] = ft_strdup("cat");
+			if (!minishell->cmd[i].argv[0])
+			{
+				fprintf(stderr, "minishell: memory allocation failed\n");
+				exit(EXIT_FAILURE);
+			}
+		}
+	}
 }

@@ -23,9 +23,29 @@ void free_cmds_array(t_cmd *cmd_array, int count)
             for (int j = 0; cmd_array[i].argv[j]; j++)
                 free(cmd_array[i].argv[j]);
             free(cmd_array[i].argv);
+            cmd_array[i].argv = NULL;
         }
-        free(cmd_array[i].input_file_name);
-        free(cmd_array[i].output_file_name);
+        if (cmd_array[i].input_file_name)
+        {
+            free(cmd_array[i].input_file_name);
+            cmd_array[i].input_file_name = NULL;
+        }
+        if (cmd_array[i].output_file_name)
+        {
+            free(cmd_array[i].output_file_name);
+            cmd_array[i].output_file_name = NULL;
+        }
+        if (cmd_array[i].heredoc_temp_file)
+        {
+            unlink(cmd_array[i].heredoc_temp_file);
+            free(cmd_array[i].heredoc_temp_file);
+            cmd_array[i].heredoc_temp_file = NULL;
+        }
+        if (cmd_array[i].heredoc_fd >= 0)
+        {
+            close(cmd_array[i].heredoc_fd);
+            cmd_array[i].heredoc_fd = -1;
+        }
     }
     free(cmd_array);
 }
@@ -40,9 +60,29 @@ void free_commands(t_cmd *cmd, int count)
             for (int j = 0; cmd[i].argv[j]; j++)
                 free(cmd[i].argv[j]);
             free(cmd[i].argv);
+            cmd[i].argv = NULL;
         }
-        free(cmd[i].input_file_name);
-        free(cmd[i].output_file_name);
+        if (cmd[i].input_file_name)
+        {
+            free(cmd[i].input_file_name);
+            cmd[i].input_file_name = NULL;
+        }
+        if (cmd[i].output_file_name)
+        {
+            free(cmd[i].output_file_name);
+            cmd[i].output_file_name = NULL;
+        }
+        if (cmd[i].heredoc_temp_file)
+        {
+            unlink(cmd[i].heredoc_temp_file);
+            free(cmd[i].heredoc_temp_file);
+            cmd[i].heredoc_temp_file = NULL;
+        }
+        if (cmd[i].heredoc_fd >= 0)
+        {
+            close(cmd[i].heredoc_fd);
+            cmd[i].heredoc_fd = -1;
+        }
     }
     free(cmd);
 }

@@ -59,8 +59,7 @@ run_test "Multiple heredocs" "cat << EOF1 << EOF2
 first
 EOF1
 second
-EOF2" "first
-second"
+EOF2" "second"
 
 # Test 5: Integration with redirection
 echo -e "${YELLOW}Case 5: Integration with redirection${NC}"

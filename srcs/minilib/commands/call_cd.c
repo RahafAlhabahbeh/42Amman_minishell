@@ -16,6 +16,14 @@ void call_cd(t_minishell *mini, char **argv)
 {
     char *path = argv[1];
     
+    // Check if cd is being run in a pipe
+    if (mini->pipex_count > 0)
+    {
+        ft_putstr_fd("minishell: cd: cannot change directory in pipe\n", STDERR_FILENO);
+        mini->exit_status = 1;
+        return;
+    }
+    
     // Handle multiple arguments
     if (argv[2])
     {
@@ -27,6 +35,14 @@ void call_cd(t_minishell *mini, char **argv)
     // If no argument, go to HOME
     if (!path)
         path = get_value_env(mini, "HOME");
+    
+    // Check if HOME is set when needed
+    if (!path)
+    {
+        ft_putstr_fd("minishell: cd: HOME not set\n", STDERR_FILENO);
+        mini->exit_status = 1;
+        return;
+    }
     
     // Handle special cases
     if (ft_strcmp(path, "-") == 0)
@@ -42,6 +58,12 @@ void call_cd(t_minishell *mini, char **argv)
     else if (ft_strcmp(path, "~") == 0)
     {
         path = get_value_env(mini, "HOME");
+        if (!path)
+        {
+            ft_putstr_fd("minishell: cd: HOME not set\n", STDERR_FILENO);
+            mini->exit_status = 1;
+            return;
+        }
     }
     
     // Try to change directory

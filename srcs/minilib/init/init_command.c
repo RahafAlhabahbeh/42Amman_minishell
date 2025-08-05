@@ -37,6 +37,7 @@ void init_cmd(t_minishell *mini)
         mini->cmd[i].out_type = -1;
         mini->cmd[i].input_quote = 0;
         mini->cmd[i].heredoc_temp_file = NULL;
+        mini->cmd[i].heredoc_fd = -1;
         mini->cmd[i].next = (i < mini->pipex_count) ? &mini->cmd[i + 1] : NULL;
         mini->cmd[i].prev = (i > 0) ? &mini->cmd[i - 1] : NULL;
     }

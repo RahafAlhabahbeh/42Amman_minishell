@@ -83,7 +83,13 @@ void restore_original_fds(t_cmd *cmd)
 // }
 int handle_redirections(t_cmd *cmd, int prev_fd, int *pipe_fds, int is_last)
 {
-    if (cmd->input_file_name)
+    // Handle input redirection
+    if (cmd->heredoc_fd >= 0)
+    {
+        // Heredoc takes precedence over other input redirections
+        redirect_heredoc_input(cmd);
+    }
+    else if (cmd->input_file_name)
     {
         if (redirect_input(cmd->input_file_name) < 0)
             return -1;
@@ -93,7 +99,7 @@ int handle_redirections(t_cmd *cmd, int prev_fd, int *pipe_fds, int is_last)
         dup2(prev_fd, STDIN_FILENO);
     }
 
-
+    // Handle output redirection
     if (cmd->output_file_name)
     {
         if (cmd->out_type == REDIR_APPEND)
