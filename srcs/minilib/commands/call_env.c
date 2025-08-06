@@ -28,6 +28,7 @@ void call_env(t_minishell *shell __attribute__((unused)), char **argv)
     if (argv[1])
     {
         ft_putstr_fd("env: too many arguments\n", STDERR_FILENO);
+        shell->exit_status = 1;
         return;
     }
 

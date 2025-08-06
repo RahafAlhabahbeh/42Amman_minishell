@@ -21,6 +21,9 @@ int main(int ac, char **av, char **envp)
     init(&minishell);
     minishell.envp = envp;
     init_env_list(&minishell, envp); // put this inside init
+    
+    // Set minishell pointer for signal handling
+    set_minishell_pointer(&minishell);
 
     // minishell_loop function
     while (1)
@@ -46,6 +49,16 @@ int main(int ac, char **av, char **envp)
         // printf("Start 2\n");
 
         init_shell(&minishell);
+        
+        // Check if SIGINT was received during input
+        if (check_sigint_received())
+        {
+            minishell.exit_status = 130;  // 128 + SIGINT (2)
+            free(minishell.promp_input);
+            minishell.promp_input = NULL;
+            continue;
+        }
+        
         // printf("DEBUG: raw input = [%s]\n", minishell.promp_input);
         // if (!minishell.promp_input || minishell.promp_input[0] == '\0')
         //     continue;
@@ -63,7 +76,7 @@ int main(int ac, char **av, char **envp)
 
         if (!is_valid_syntax(minishell.token))
         {
-            minishell.exit_status = 258;
+            minishell.exit_status = 2;  // Incorrect usage
             reset_minishell(&minishell);
             continue;
         }

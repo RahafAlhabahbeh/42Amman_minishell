@@ -5,8 +5,7 @@ void execute_child_process(t_minishell *mini, t_cmd *cmd, int prev_fd, int *pipe
     signal(SIGINT, SIG_DFL);
     signal(SIGQUIT, SIG_DFL);
 
-    if (cmd->in_type == HERE_DOC && handle_heredoc(mini, cmd) < 0)
-        exit(1);
+    // Heredoc is already handled in parent process
 
     save_original_fds(cmd);
     handle_redirections(cmd, prev_fd, pipe_fds, is_last);

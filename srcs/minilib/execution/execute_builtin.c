@@ -44,7 +44,7 @@ void execute_builtin(t_minishell *minishell, int i)
     else if (!ft_strcmp(name, "cd"))
         call_cd(minishell, minishell->cmd[i].argv);
 
-    minishell->exit_status = 0;
+    // Builtin commands set their own exit status, don't override it
 }
 
 void execute_builtin_cmd(t_minishell *mini, t_cmd *cmd)

@@ -48,6 +48,7 @@ void put_token_to_commands(t_minishell *minishell)
 			if (cmd_index > minishell->pipex_count)
 			{
 				fprintf(stderr, "minishell: internal error: too many commands\n");
+				minishell->exit_status = 1;  // General error
 				exit(EXIT_FAILURE);
 			}
 		}
@@ -57,6 +58,7 @@ void put_token_to_commands(t_minishell *minishell)
 			if (!cur->next || cur->next->type != WORD)
 			{
 				fprintf(stderr, "minishell: syntax error near redirection\n");
+				minishell->exit_status = 2;  // Incorrect usage
 				exit(EXIT_FAILURE);
 			}
 
@@ -90,6 +92,7 @@ void put_token_to_commands(t_minishell *minishell)
 				if (!minishell->cmd[cmd_index].input_file_name)
 				{
 					fprintf(stderr, "minishell: memory allocation failed\n");
+					minishell->exit_status = 1;  // General error
 					exit(EXIT_FAILURE);
 				}
 				minishell->cmd[cmd_index].in_type = REDIR_IN;
@@ -101,6 +104,7 @@ void put_token_to_commands(t_minishell *minishell)
 				if (!minishell->cmd[cmd_index].output_file_name)
 				{
 					fprintf(stderr, "minishell: memory allocation failed\n");
+					minishell->exit_status = 1;  // General error
 					exit(EXIT_FAILURE);
 				}
 				minishell->cmd[cmd_index].out_type = REDIR_OUT;
@@ -112,6 +116,7 @@ void put_token_to_commands(t_minishell *minishell)
 				if (!minishell->cmd[cmd_index].output_file_name)
 				{
 					fprintf(stderr, "minishell: memory allocation failed\n");
+					minishell->exit_status = 1;  // General error
 					exit(EXIT_FAILURE);
 				}
 				minishell->cmd[cmd_index].out_type = REDIR_APPEND;
@@ -124,6 +129,7 @@ void put_token_to_commands(t_minishell *minishell)
 			if (!cur->next || cur->next->type != WORD)
 			{
 				fprintf(stderr, "minishell: syntax error near redirection\n");
+				minishell->exit_status = 2;  // Incorrect usage
 				exit(EXIT_FAILURE);
 			}
 
@@ -137,6 +143,7 @@ void put_token_to_commands(t_minishell *minishell)
 			if (!minishell->cmd[cmd_index].input_file_name)
 			{
 				fprintf(stderr, "minishell: memory allocation failed\n");
+				minishell->exit_status = 1;  // General error
 				exit(EXIT_FAILURE);
 			}
 			minishell->cmd[cmd_index].in_type = HERE_DOC;
@@ -150,6 +157,7 @@ void put_token_to_commands(t_minishell *minishell)
 			if (!minishell->cmd[cmd_index].argv[arg_index])
 			{
 				fprintf(stderr, "minishell: memory allocation failed\n");
+				minishell->exit_status = 1;  // General error
 				exit(EXIT_FAILURE);
 			}
 			arg_index++;
@@ -166,13 +174,20 @@ void put_token_to_commands(t_minishell *minishell)
 		if (minishell->cmd[i].in_type == HERE_DOC && 
 			(!minishell->cmd[i].argv || !minishell->cmd[i].argv[0]))
 		{
-			// Add cat as default command
-			minishell->cmd[i].argv[0] = ft_strdup("cat");
-			if (!minishell->cmd[i].argv[0])
+			// Add cat as default command only if there's no pipe after this command
+			// or if this is the last command in the pipeline
+			if (i == minishell->pipex_count)
 			{
-				fprintf(stderr, "minishell: memory allocation failed\n");
-				exit(EXIT_FAILURE);
+				minishell->cmd[i].argv[0] = ft_strdup("cat");
+				if (!minishell->cmd[i].argv[0])
+				{
+					fprintf(stderr, "minishell: memory allocation failed\n");
+					minishell->exit_status = 1;  // General error
+					exit(EXIT_FAILURE);
+				}
 			}
+			// If there's a pipe after this command, leave it as empty command
+			// The heredoc content will flow to the next command
 		}
 	}
 }

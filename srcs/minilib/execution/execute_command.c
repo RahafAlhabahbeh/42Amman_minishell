@@ -67,11 +67,20 @@ void execute_loop(t_minishell *mini, char **envp, pid_t *pids)
     int prev_fd = -1;
     pid_t pid;
 
+    // Process all heredocs in parent before forking
+    for (i = 0; i <= mini->pipex_count; i++)
+    {
+        t_cmd *cmd = &mini->cmd[i];
+        if (cmd->in_type == HERE_DOC && handle_heredoc(mini, cmd) < 0)
+            return; // Exit if heredoc fails
+    }
+
     for (i = 0; i <= mini->pipex_count; i++)
     {
         if (i < mini->pipex_count && pipe(pipefd) == -1)
         {
             perror("pipe");
+            mini->exit_status = 1;  // General error
             exit(EXIT_FAILURE);
         }
 
@@ -80,8 +89,6 @@ void execute_loop(t_minishell *mini, char **envp, pid_t *pids)
         // Handle builtins that should run in parent process (no pipes, no redirections)
         if (is_builtin(cmd->argv[0]) && should_run_builtin_in_parent(cmd, i, mini->pipex_count))
         {
-            if (cmd->in_type == HERE_DOC && handle_heredoc(mini, cmd) < 0)
-                continue;
             save_original_fds(cmd);
             if (handle_redirections(cmd, prev_fd, pipefd, i == mini->pipex_count) == 0)
                 execute_builtin(mini, i);
@@ -94,16 +101,33 @@ void execute_loop(t_minishell *mini, char **envp, pid_t *pids)
         if (pid == -1)
         {
             perror("fork");
+            mini->exit_status = 1;  // General error
             exit(EXIT_FAILURE);
         }
         else if (pid == 0)
         {
             signal(SIGINT, SIG_DFL);
             signal(SIGQUIT, SIG_DFL);
-            if (cmd->in_type == HERE_DOC && handle_heredoc(mini, cmd) < 0)
-                exit(1);
             if (handle_redirections(cmd, prev_fd, pipefd, i == mini->pipex_count) < 0)
                 exit(1);
+            
+            // Handle empty command (just pass heredoc content through)
+            if (!cmd->argv || !cmd->argv[0])
+            {
+                // For empty command with heredoc, we need to pass the content through
+                // The redirections have already been set up, so just read from stdin and write to stdout
+                if (cmd->in_type == REDIR_IN)
+                {
+                    char buffer[1024];
+                    ssize_t bytes_read;
+                    while ((bytes_read = read(STDIN_FILENO, buffer, sizeof(buffer))) > 0)
+                    {
+                        write(STDOUT_FILENO, buffer, bytes_read);
+                    }
+                }
+                exit(0);
+            }
+            
             if (is_builtin(cmd->argv[0]))
                 execute_builtin(mini, i);
             else
@@ -116,7 +140,7 @@ void execute_loop(t_minishell *mini, char **envp, pid_t *pids)
                 }
                 execve(path, cmd->argv, envp);
                 perror("execve");
-                exit(126);
+                exit(126);  // Command invoked cannot execute
             }
             exit(0);
         }

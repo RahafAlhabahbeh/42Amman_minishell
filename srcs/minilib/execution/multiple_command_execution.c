@@ -11,6 +11,7 @@ void multiple_command_execution(t_minishell *mini, char **envp)
         pids[i] = -1;
         
     execute_loop(mini, envp, pids);
+    set_child_process_flag(1);  // Set flag before waiting for children
     for (int i = 0; i < count; i++)
     {
         if (pids[i] > 0)
@@ -28,5 +29,6 @@ void multiple_command_execution(t_minishell *mini, char **envp)
             continue;
         }
     }
+    set_child_process_flag(0);  // Clear flag after all children are done
     cleanup_heredoc_files(mini);
 }

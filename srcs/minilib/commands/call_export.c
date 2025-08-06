@@ -109,11 +109,13 @@ static void export_no_args(t_minishell *mini)
 
 static void export_with_args(t_minishell *mini, char **argv)
 {
+    int has_error = 0;
     for (int i = 1; argv[i]; i++)
     {
         if (!is_valid_identifier(argv[i]))
         {
             fprintf(stderr, "export: `%s`: not a valid identifier\n", argv[i]);
+            has_error = 1;
             continue;
         }
         char *eq = ft_strchr(argv[i], '=');
@@ -133,6 +135,8 @@ static void export_with_args(t_minishell *mini, char **argv)
             free(value);
         }
     }
+    if (has_error)
+        mini->exit_status = 1;
 }
 
 void call_export(t_minishell *mini, char **argv)

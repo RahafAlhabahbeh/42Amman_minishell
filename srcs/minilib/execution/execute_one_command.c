@@ -36,6 +36,7 @@ void execute_one_command(t_minishell *mini, char **envp)
     if (pid < 0)
     {
         perror("fork");
+        mini->exit_status = 1;  // General error
         return;
     }
     else if (pid == 0)
@@ -52,17 +53,19 @@ void execute_one_command(t_minishell *mini, char **envp)
         char *path = resolve_cmd_path(cmd->argv[0], envp);
         if (!path)
         {
-            fprintf(stderr, "minishell: command not found: %s\n", cmd->argv[0]);
+            fprintf(stderr, "%s: command not found\n", cmd->argv[0]);
             exit(127);
         }
         execve(path, cmd->argv, envp);
         perror("execve");
-        exit(EXIT_FAILURE);
+        exit(126);  // Command invoked cannot execute
     }
     else
     {
         int status;
+        set_child_process_flag(1);  // Set flag before waiting
         waitpid(pid, &status, 0);
+        set_child_process_flag(0);  // Clear flag after waiting
         if (WIFEXITED(status))
             mini->exit_status = WEXITSTATUS(status);
         else if (WIFSIGNALED(status))

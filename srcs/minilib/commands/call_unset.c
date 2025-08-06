@@ -38,13 +38,17 @@ void unset_env(t_env **env, const char *key)
 
 void call_unset(t_minishell *mini, char **argv)
 {
+    int has_error = 0;
     for (int i = 1; argv[i]; i++)
     {
         if (!is_valid_identifier(argv[i]))
         {
             fprintf(stderr, "unset: `%s`: not a valid identifier\n", argv[i]);
+            has_error = 1;
             continue;
         }
         unset_env(&mini->env_list, argv[i]);
     }
+    if (has_error)
+        mini->exit_status = 1;
 }

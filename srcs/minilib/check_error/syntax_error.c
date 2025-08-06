@@ -22,9 +22,25 @@ int	is_valid_syntax(t_token *tokens)
 
 	while (curr)
 	{
-		if (is_invalid_token(curr->type))
+		if (curr->type == PIPE)
 		{
-			if (!curr->next || is_invalid_token(curr->next->type))
+			// After a pipe, we can have redirections or words
+			if (!curr->next)
+			{
+				ft_putstr_fd("minishell: syntax error near unexpected token `newline'\n", 2);
+				return (0);
+			}
+			// Pipe followed by another pipe is invalid
+			if (curr->next->type == PIPE)
+			{
+				ft_putstr_fd("minishell: syntax error near unexpected token `|'\n", 2);
+				return (0);
+			}
+		}
+		else if (is_invalid_token(curr->type) && curr->type != PIPE)
+		{
+			// For redirections, they must be followed by a word
+			if (!curr->next || curr->next->type != WORD)
 			{
 				ft_putstr_fd("minishell: syntax error near unexpected token `", 2);
 				if (!curr->next)

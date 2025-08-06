@@ -23,6 +23,9 @@ void call_pwd(t_minishell *mini __attribute__((unused)))
         ft_putchar_fd('\n', STDOUT_FILENO);
     }
     else
+    {
         perror("pwd");
+        mini->exit_status = 1;
+    }
 }
 

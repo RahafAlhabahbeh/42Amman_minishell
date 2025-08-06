@@ -19,7 +19,7 @@ void handle_heredoc_sigint(int sig)
     (void)sig;
     g_heredoc_signal = 1;
     write(1, "\n", 1);
-    close(STDIN_FILENO);
+    // Set the flag and let the main loop handle the break
 }
 
 static char *expand_heredoc_line(t_minishell *mini, char *line, int expand_vars)
@@ -135,6 +135,7 @@ static int create_heredoc_temp_file(t_minishell *mini, const char *delimiter, ch
     // Set up signal handler for heredoc
     void (*old_sigint)(int) = signal(SIGINT, handle_heredoc_sigint);
     g_heredoc_signal = 0;
+    set_child_process_flag(1);  // Set flag during heredoc input
     
     char *line;
     int temp_content_fd = -1;
@@ -152,12 +153,16 @@ static int create_heredoc_temp_file(t_minishell *mini, const char *delimiter, ch
     }
     
     // Read all content until the final delimiter
-    while (1)
+    while (!g_heredoc_signal)
     {
-        line = readline("> ");
-        if (!line || g_heredoc_signal)
+        write(1, "> ", 2);
+        line = NULL;
+        size_t line_size = 0;
+        ssize_t read_size = getline(&line, &line_size, stdin);
+        
+        if (read_size == -1 || g_heredoc_signal)
         {
-            if (!line && !g_heredoc_signal)
+            if (read_size == -1 && !g_heredoc_signal)
             {
                 write(2, "bash: warning: here-document at line ", 35);
                 write(2, "delimited by end-of-file (wanted '", 33);
@@ -167,6 +172,10 @@ static int create_heredoc_temp_file(t_minishell *mini, const char *delimiter, ch
             free(line);
             break;
         }
+        
+        // Remove newline from the end
+        if (line && line[read_size - 1] == '\n')
+            line[read_size - 1] = '\0';
         
         // Check for exact delimiter match
         if (ft_strcmp(line, clean_delimiter) == 0)
@@ -189,84 +198,25 @@ static int create_heredoc_temp_file(t_minishell *mini, const char *delimiter, ch
     // Close temporary content file
     close(temp_content_fd);
     
-    // Now read the temporary content file and extract only the content after the last intermediate delimiter
+    // Simply copy the content to the final temp file
     temp_content_fd = open(temp_content_filename, O_RDONLY);
     if (temp_content_fd >= 0)
     {
         char buffer[1024];
         ssize_t bytes_read;
-        int found_last_delimiter = 0;
-        char *last_intermediate_delimiter = NULL;
         
-        // First pass: find the last intermediate delimiter
-        while ((bytes_read = read(temp_content_fd, buffer, sizeof(buffer) - 1)) > 0)
+        while ((bytes_read = read(temp_content_fd, buffer, sizeof(buffer))) > 0)
         {
-            buffer[bytes_read] = '\0';
-            char *line_start = buffer;
-            char *newline;
-            
-            while ((newline = strchr(line_start, '\n')) != NULL)
-            {
-                *newline = '\0';
-                
-                // Check if this line is an intermediate delimiter (not the final delimiter)
-                if (strcmp(line_start, clean_delimiter) != 0 && 
-                    (strcmp(line_start, "EOF1") == 0 || strcmp(line_start, "EOF2") == 0 || 
-                     strcmp(line_start, "EOF3") == 0 || strcmp(line_start, "END") == 0 || 
-                     strcmp(line_start, "STOP") == 0))
-                {
-                    last_intermediate_delimiter = ft_strdup(line_start);
-                }
-                
-                line_start = newline + 1;
-            }
-        }
-        
-        // Reset file position for second pass
-        close(temp_content_fd);
-        temp_content_fd = open(temp_content_filename, O_RDONLY);
-        
-        // Second pass: write only content after the last intermediate delimiter
-        while ((bytes_read = read(temp_content_fd, buffer, sizeof(buffer) - 1)) > 0)
-        {
-            buffer[bytes_read] = '\0';
-            char *line_start = buffer;
-            char *newline;
-            
-            while ((newline = strchr(line_start, '\n')) != NULL)
-            {
-                *newline = '\0';
-                
-                if (last_intermediate_delimiter && strcmp(line_start, last_intermediate_delimiter) == 0)
-                {
-                    found_last_delimiter = 1;
-                }
-                else if (found_last_delimiter)
-                {
-                    // This is content after the last intermediate delimiter
-                    write(temp_fd, line_start, strlen(line_start));
-                    write(temp_fd, "\n", 1);
-                }
-                
-                line_start = newline + 1;
-            }
-            
-            // Handle any remaining content
-            if (*line_start && found_last_delimiter)
-            {
-                write(temp_fd, line_start, strlen(line_start));
-                write(temp_fd, "\n", 1);
-            }
+            write(temp_fd, buffer, bytes_read);
         }
         
         close(temp_content_fd);
         unlink(temp_content_filename);
-        if (last_intermediate_delimiter)
-            free(last_intermediate_delimiter);
     }
     
     // Restore original signal handler
     signal(SIGINT, old_sigint);
+    set_child_process_flag(0);  // Clear flag after heredoc processing
     
     close(temp_fd);
     free(clean_delimiter);
@@ -291,18 +241,8 @@ int handle_heredoc(t_minishell *mini, t_cmd *cmd)
     // For now, we'll use the current delimiter and let the command parsing handle multiple heredocs
     // by only keeping the last one
     
-    // Create a delimiter string with quotes if needed
-    char delimiter_with_quotes[256];
-    if (cmd->input_quote)
-    {
-        sprintf(delimiter_with_quotes, "%c%s%c", cmd->input_quote, cmd->input_file_name, cmd->input_quote);
-    }
-    else
-    {
-        ft_strlcpy(delimiter_with_quotes, cmd->input_file_name, sizeof(delimiter_with_quotes));
-    }
-    
-    int heredoc_fd = create_heredoc_temp_file(mini, delimiter_with_quotes, &cmd->heredoc_temp_file);
+    // Pass the delimiter as-is, let create_heredoc_temp_file handle quote processing
+    int heredoc_fd = create_heredoc_temp_file(mini, cmd->input_file_name, &cmd->heredoc_temp_file);
     if (heredoc_fd < 0)
     {
         mini->exit_status = 1;
