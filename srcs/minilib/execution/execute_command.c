@@ -32,17 +32,24 @@ int is_redirection_present(t_cmd *cmd)
 
 int should_run_builtin_in_parent(t_cmd *cmd, int index, int total_pipes)
 {
-    int has_pipe = (index > 0) || (index < total_pipes);
+    int is_last = (index == total_pipes);
     int has_redir = is_redirection_present(cmd);
 
-    // Builtins that should never run in parent when there are pipes or redirections
-    if (is_str_in_set(cmd->argv[0], (char *[]) {"export", "unset", "cd", "exit", NULL}))
-        return (!has_pipe && !has_redir);
-    // Builtins that can run in parent only if they're the last command and no pipes/redirections
-    else if (is_str_in_set(cmd->argv[0], (char *[]) {"echo", "pwd", "env", NULL}))
-        return (!has_pipe && !has_redir && index == total_pipes);
+    // These builtins must be run in parent to affect shell state
+    if (is_str_in_set(cmd->argv[0], (char *[]) {"export", "unset", "exit", NULL}))
+        return (!has_redir && is_last);
+
+    // Special case for 'cd': run in parent if it is last and has no redirection
+    if (ft_strcmp(cmd->argv[0], "cd") == 0)
+    {
+        fprintf(stderr, "Running 'cd' in parent\n");
+        return (!has_redir && is_last);
+    }
+
+    // Other builtins (like echo, pwd, env) don't need to run in parent
     return 0;
 }
+
 
 int execute_parent_process(int prev_fd, int *pipe_fds, int is_last)
 {

@@ -96,6 +96,7 @@ void execute_piped_commands(t_minishell *minishell, char **envp)
                 if (fd_in == -1)
                 {
                     perror("open input file");
+                    printf("Remove the exit 2\n");
                     exit(EXIT_FAILURE);
                 }
                 if (dup2(fd_in, STDIN_FILENO) == -1)
@@ -111,6 +112,7 @@ void execute_piped_commands(t_minishell *minishell, char **envp)
                 if (fd_out == -1)
                 {
                     perror("open output file");
+                    printf("Remove the exit 3\n");
                     exit(EXIT_FAILURE);
                 }
                 if (dup2(fd_out, STDOUT_FILENO) == -1)
