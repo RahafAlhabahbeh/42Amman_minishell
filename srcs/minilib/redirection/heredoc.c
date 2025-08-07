@@ -31,6 +31,7 @@ static char *expand_heredoc_line(t_minishell *mini, char *line, int expand_vars)
     if (!result)
         return NULL;
     
+    result[0] = '\0';  // Initialize to empty string
     int i = 0, j = 0;
     while (line[i])
     {
@@ -71,8 +72,12 @@ static char *expand_heredoc_line(t_minishell *mini, char *line, int expand_vars)
             
             if (var_value)
             {
-                ft_strlcat(result, var_value, 1024);
-                j += ft_strlen(var_value);
+                int var_len = ft_strlen(var_value);
+                if (j + var_len < 1023)
+                {
+                    ft_strlcpy(result + j, var_value, 1024 - j);
+                    j += var_len;
+                }
                 free(var_value);
             }
         }

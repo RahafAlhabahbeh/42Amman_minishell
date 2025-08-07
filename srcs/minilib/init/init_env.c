@@ -15,9 +15,11 @@ static void handle_shlvl(t_minishell *mini)
     shlvl++;
     if (shlvl > 999)
     {
+        char *shlvl_str_warning = ft_itoa(shlvl);
         ft_putstr_fd("minishell: warning: shell level (", STDERR_FILENO);
-        ft_putstr_fd(ft_itoa(shlvl), STDERR_FILENO);
+        ft_putstr_fd(shlvl_str_warning, STDERR_FILENO);
         ft_putstr_fd(") too high, resetting to 1\n", STDERR_FILENO);
+        free(shlvl_str_warning);
         shlvl = 1;
     }
     
