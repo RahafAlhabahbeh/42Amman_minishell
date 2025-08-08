@@ -138,29 +138,8 @@ static char *expand_heredoc_line(t_minishell *mini, char *line, int expand_vars)
     return result;
 }
 
-static int is_quoted_delimiter(const char *delimiter)
-{
-    return (delimiter[0] == '\'' || delimiter[0] == '"');
-}
-
-static char *remove_quotes(const char *delimiter)
-{
-    int len = ft_strlen(delimiter);
-    if (len >= 2 && ((delimiter[0] == '\'' && delimiter[len - 1] == '\'') ||
-                     (delimiter[0] == '"' && delimiter[len - 1] == '"')))
-    {
-        char *unquoted = malloc(len - 1);
-        if (!unquoted)
-            return NULL;
-        ft_strlcpy(unquoted, delimiter + 1, len - 1);
-        return unquoted;
-    }
-    return ft_strdup(delimiter);
-}
-
-
-
-static int create_heredoc_temp_file(t_minishell *mini, const char *delimiter, char **temp_filename_ptr)
+static int create_heredoc_temp_file_with_quote(t_minishell *mini, const char *delimiter, 
+                                               char **temp_filename_ptr, char quote_char)
 {
     char temp_filename[256];
     static int heredoc_counter = 0;
@@ -219,9 +198,10 @@ static int create_heredoc_temp_file(t_minishell *mini, const char *delimiter, ch
         return -1;
     }
     
-    // Determine if we should expand variables
-    int expand_vars = !is_quoted_delimiter(delimiter);
-    char *clean_delimiter = remove_quotes(delimiter);
+    // Determine if we should expand variables based on quote information from tokenizer
+    int expand_vars = (quote_char != '\'' && quote_char != '"');
+    // Use delimiter as-is since quotes are already handled by tokenizer
+    char *clean_delimiter = ft_strdup(delimiter);
     if (!clean_delimiter)
     {
         close(temp_fd);
@@ -381,8 +361,9 @@ int handle_heredoc(t_minishell *mini, t_cmd *cmd)
     // For now, we'll use the current delimiter and let the command parsing handle multiple heredocs
     // by only keeping the last one
     
-    // Pass the delimiter as-is, let create_heredoc_temp_file handle quote processing
-    int heredoc_fd = create_heredoc_temp_file(mini, cmd->input_file_name, &cmd->heredoc_temp_file);
+    // Pass the delimiter and quote information for proper variable expansion handling
+    int heredoc_fd = create_heredoc_temp_file_with_quote(mini, cmd->input_file_name, 
+                                                        &cmd->heredoc_temp_file, cmd->input_quote);
     if (heredoc_fd < 0)
     {
         mini->exit_status = 1;

@@ -55,70 +55,221 @@ static void int_to_str(int num, char *str)
     }
 }
 
-char *replace_var(t_minishell *minishell, const char *str, char quote)
+// Enhanced function to extract variable name with support for braced syntax
+static int extract_var_name(const char *str, int *pos, char *var_name, int *is_braced)
 {
-    char result[1024] = {0};
-    int i = 0, j = 0;
+    int i = *pos;
+    int k = 0;
+    *is_braced = 0;
 
-    if (quote == '\'')
+    // Check for braced syntax ${VAR}
+    if (str[i] == '{')
     {
-        char *dup = ft_strdup(str);
-        if (!dup)
-            return NULL;
-        return dup;
-    }
-
-    while (str[i])
-    {
-        if (str[i] == '$' && str[i + 1])
+        *is_braced = 1;
+        i++; // skip '{'
+        
+        while (str[i] && str[i] != '}' && k < 255)
         {
+            if (ft_isalnum(str[i]) || str[i] == '_' || str[i] == '?' || str[i] == '$')
+                var_name[k++] = str[i];
+            else
+                break; // Invalid character in variable name
             i++;
-            if (str[i] == '?')
-            {
-                i++;
-                char status_str[12]; // Enough for any int
-                int_to_str(minishell->exit_status, status_str);
+        }
+        
+        if (str[i] == '}')
+            i++; // skip '}'
+        else
+            return -1; // Unclosed brace
+    }
+    else
+    {
+        // Regular syntax $VAR
+        while (str[i] && (ft_isalnum(str[i]) || str[i] == '_') && k < 255)
+            var_name[k++] = str[i++];
+    }
+    
+    var_name[k] = '\0';
+    *pos = i;
+    return k; // Return length of variable name
+}
 
-                if (j + (int)ft_strlen(status_str) < (int)sizeof(result))
-                {
-                    simple_strcat(result, status_str);
-                    j += ft_strlen(status_str);
-                }
-                continue;
-            }
+// Safely resize result buffer - ensures no memory leaks
+static char *safe_resize_buffer(char *buffer, size_t *capacity, size_t needed)
+{
+    size_t	new_capacity;
+    char	*new_buffer;
 
-            char var[256] = {0};
-            int k = 0;
+    if (needed < *capacity)
+        return (buffer);
+    new_capacity = *capacity;
+    while (new_capacity <= needed)
+        new_capacity *= 2;
+    new_buffer = realloc(buffer, new_capacity);
+    if (!new_buffer)
+        return (NULL);
+    *capacity = new_capacity;
+    return (new_buffer);
+}
 
-            // Extract variable name
-            while (str[i] && (ft_isalnum(str[i]) || str[i] == '_'))
-                var[k++] = str[i++];
-            var[k] = '\0';
+// Helper function to handle expansion of special variables
+static int	handle_special_var(t_minishell *mini, char **result, 
+				size_t *capacity, int *j, const char *str, int *i)
+{
+    char	status_str[12];
+    char	*temp;
+    size_t	len;
 
-            const char *val = get_value_env(minishell, var);
-            if (!val)
-                val = "";
+    if (str[*i] == '?')
+    {
+        (*i)++;
+        int_to_str(mini->exit_status, status_str);
+        len = ft_strlen(status_str);
+        temp = safe_resize_buffer(*result, capacity, *j + len + 1);
+        if (!temp)
+            return (-1);
+        *result = temp;
+        simple_strcat(*result + *j, status_str);
+        *j += len;
+        return (1);
+    }
+    else if (str[*i] == '$')
+    {
+        (*i)++;
+        int_to_str(getpid(), status_str);
+        len = ft_strlen(status_str);
+        temp = safe_resize_buffer(*result, capacity, *j + len + 1);
+        if (!temp)
+            return (-1);
+        *result = temp;
+        simple_strcat(*result + *j, status_str);
+        *j += len;
+        return (1);
+    }
+    return (0);
+}
 
-            size_t len = ft_strlen(val);
-            if (j + (int)len < (int)sizeof(result))
-            {
-                simple_strcat(result, val);
-                j += len;
-            }
+// Helper to handle regular variable expansion
+static int	handle_variable_expansion(t_minishell *mini, const char *str, 
+				char **result, size_t *capacity, int *i, int *j)
+{
+    char		var[256];
+    int		is_braced;
+    int		var_len;
+    const char	*val;
+    char		*temp;
+    size_t		len;
+
+    ft_memset(var, 0, sizeof(var));
+    var_len = extract_var_name(str, i, var, &is_braced);
+    if (var_len < 0 || var_len == 0)
+    {
+        temp = safe_resize_buffer(*result, capacity, *j + 2);
+        if (!temp)
+            return (-1);
+        *result = temp;
+        (*result)[(*j)++] = '$';
+        (*result)[*j] = '\0';
+        return (0);
+    }
+    
+    // Handle special variables in braced syntax
+    if (var_len == 1 && var[0] == '?')
+    {
+        char status_str[12];
+        int_to_str(mini->exit_status, status_str);
+        len = ft_strlen(status_str);
+        temp = safe_resize_buffer(*result, capacity, *j + len + 1);
+        if (!temp)
+            return (-1);
+        *result = temp;
+        simple_strcat(*result + *j, status_str);
+        *j += len;
+        return (0);
+    }
+    else if (var_len == 1 && var[0] == '$')
+    {
+        char pid_str[12];
+        int_to_str(getpid(), pid_str);
+        len = ft_strlen(pid_str);
+        temp = safe_resize_buffer(*result, capacity, *j + len + 1);
+        if (!temp)
+            return (-1);
+        *result = temp;
+        simple_strcat(*result + *j, pid_str);
+        *j += len;
+        return (0);
+    }
+    
+    val = get_value_env(mini, var);
+    if (!val)
+        val = "";
+    len = ft_strlen(val);
+    temp = safe_resize_buffer(*result, capacity, *j + len + 1);
+    if (!temp)
+        return (-1);
+    *result = temp;
+    simple_strcat(*result + *j, val);
+    *j += len;
+    return (0);
+}
+
+// Process the entire string for variable expansion
+static int	process_string_expansion(t_minishell *mini, const char *str,
+				char **result, size_t *capacity, int *i, int *j)
+{
+    char	*temp;
+    int	special_result;
+
+    while (str[*i])
+    {
+        if (str[*i] == '$' && str[*i + 1])
+        {
+            (*i)++;
+            special_result = handle_special_var(mini, result, capacity, j, str, i);
+            if (special_result == -1)
+                return (-1);
+            if (special_result == 0)
+                if (handle_variable_expansion(mini, str, result, capacity, i, j) == -1)
+                    return (-1);
         }
         else
         {
-            if (j < (int)(sizeof(result) - 1))
-                result[j++] = str[i++];
+            temp = safe_resize_buffer(*result, capacity, *j + 2);
+            if (!temp)
+                return (-1);
+            *result = temp;
+            (*result)[(*j)++] = str[(*i)++];
+            (*result)[*j] = '\0';
         }
     }
+    return (0);
+}
 
+// Main variable replacement function
+char *replace_var(t_minishell *minishell, const char *str, char quote)
+{
+    size_t	capacity;
+    char	*result;
+    int	i;
+    int	j;
+
+    if (quote == '\'')
+        return (ft_strdup(str));
+    capacity = 1024;
+    result = malloc(capacity);
+    if (!result)
+        return (NULL);
+    result[0] = '\0';
+    i = 0;
+    j = 0;
+    if (process_string_expansion(minishell, str, &result, &capacity, &i, &j) == -1)
+    {
+        free(result);
+        return (NULL);
+    }
     result[j] = '\0';
-
-    char *dup = ft_strdup(result);
-    if (!dup)
-        return NULL;
-    return dup;
+    return (result);
 }
 
 t_token *expand(t_minishell *minishell)

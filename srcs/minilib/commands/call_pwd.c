@@ -13,7 +13,7 @@
 #include "../../../include/minishell.h"
 #include <limits.h>
 
-void call_pwd(t_minishell *mini __attribute__((unused)))
+void call_pwd(t_minishell *mini)
 {
     char cwd[PATH_MAX];
 
@@ -26,6 +26,8 @@ void call_pwd(t_minishell *mini __attribute__((unused)))
     {
         perror("pwd");
         mini->exit_status = 1;
+        return;
     }
+    mini->exit_status = 0;
 }
 
