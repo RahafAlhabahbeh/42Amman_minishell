@@ -20,7 +20,9 @@ void execute_child_process(t_minishell *mini, t_cmd *cmd, int prev_fd, int *pipe
     char *path = resolve_cmd_path(cmd->argv[0], envp);
     if (!path)
     {
-        fprintf(stderr, "minishell: command not found: %s\n", cmd->argv[0]);
+        write(2, "minishell: command not found: ", 30);
+        write(2, cmd->argv[0], ft_strlen(cmd->argv[0]));
+        write(2, "\n", 1);
         exit(127);
     }
 
@@ -58,7 +60,9 @@ void execute_child_process(t_minishell *mini, t_cmd *cmd, int prev_fd, int *pipe
 //     char *path = resolve_cmd_path(cmd->argv[0], envp);
 //     if (!path)
 //     {
-//         fprintf(stderr, "minishell: command not found: %s\n", cmd->argv[0]);
+//         write(2, "minishell: command not found: ", 30);
+//         write(2, cmd->argv[0], ft_strlen(cmd->argv[0]));
+//         write(2, "\n", 1);
 //         exit(127);
 //     }
 //     execve(path, cmd->argv, envp);

@@ -12,14 +12,36 @@
 
 #include "../../../include/minishell.h"
 
-static int g_heredoc_signal = 0;
+// Use external signal handling from signals.c
+extern int check_sigint_received(void);
+
+// Simple strcpy implementation
+static char *simple_strcpy(char *dest, const char *src)
+{
+    char *ptr = dest;
+    while (*src)
+        *ptr++ = *src++;
+    *ptr = '\0';
+    return dest;
+}
+
+// Simple strcat implementation  
+static char *simple_strcat(char *dest, const char *src)
+{
+    char *ptr = dest;
+    while (*ptr)
+        ptr++;
+    while (*src)
+        *ptr++ = *src++;
+    *ptr = '\0';
+    return dest;
+}
 
 void handle_heredoc_sigint(int sig)
 {
     (void)sig;
-    g_heredoc_signal = 1;
     write(1, "\n", 1);
-    // Set the flag and let the main loop handle the break
+    // Signal handling is done in signals.c through g_received_signal
 }
 
 static char *expand_heredoc_line(t_minishell *mini, char *line, int expand_vars)
@@ -60,7 +82,33 @@ static char *expand_heredoc_line(t_minishell *mini, char *line, int expand_vars)
             if (ft_strcmp(var_name, "?") == 0)
             {
                 char exit_str[16];
-                sprintf(exit_str, "%d", mini->exit_status);
+                // Simple int to string conversion
+                int num = mini->exit_status;
+                int i = 0;
+                if (num == 0)
+                {
+                    exit_str[0] = '0';
+                    exit_str[1] = '\0';
+                }
+                else
+                {
+                    while (num > 0)
+                    {
+                        exit_str[i++] = (num % 10) + '0';
+                        num /= 10;
+                    }
+                    exit_str[i] = '\0';
+                    // Reverse string
+                    int start = 0, end = i - 1;
+                    while (start < end)
+                    {
+                        char temp = exit_str[start];
+                        exit_str[start] = exit_str[end];
+                        exit_str[end] = temp;
+                        start++;
+                        end--;
+                    }
+                }
                 var_value = ft_strdup(exit_str);
             }
             else
@@ -117,7 +165,51 @@ static int create_heredoc_temp_file(t_minishell *mini, const char *delimiter, ch
     char temp_filename[256];
     static int heredoc_counter = 0;
     
-    sprintf(temp_filename, "/tmp/heredoc_%d_%d", getpid(), heredoc_counter++);
+    // Build filename manually without sprintf
+    simple_strcpy(temp_filename, "/tmp/heredoc_");
+    // Convert getpid() to string and append
+    char pid_str[16];
+    int pid = getpid();
+    int i = 0;
+    while (pid > 0)
+    {
+        pid_str[i++] = (pid % 10) + '0';
+        pid /= 10;
+    }
+    pid_str[i] = '\0';
+    // Reverse pid_str
+    int start = 0, end = i - 1;
+    while (start < end)
+    {
+        char temp = pid_str[start];
+        pid_str[start] = pid_str[end];
+        pid_str[end] = temp;
+        start++;
+        end--;
+    }
+    simple_strcat(temp_filename, pid_str);
+    simple_strcat(temp_filename, "_");
+    // Convert counter to string and append
+    char counter_str[16];
+    int counter = heredoc_counter++;
+    i = 0;
+    while (counter > 0)
+    {
+        counter_str[i++] = (counter % 10) + '0';
+        counter /= 10;
+    }
+    counter_str[i] = '\0';
+    // Reverse counter_str
+    start = 0, end = i - 1;
+    while (start < end)
+    {
+        char temp = counter_str[start];
+        counter_str[start] = counter_str[end];
+        counter_str[end] = temp;
+        start++;
+        end--;
+    }
+    simple_strcat(temp_filename, counter_str);
     *temp_filename_ptr = ft_strdup(temp_filename);
     
     int temp_fd = open(temp_filename, O_WRONLY | O_CREAT | O_TRUNC, 0600);
@@ -139,15 +231,57 @@ static int create_heredoc_temp_file(t_minishell *mini, const char *delimiter, ch
     
     // Set up signal handler for heredoc
     void (*old_sigint)(int) = signal(SIGINT, handle_heredoc_sigint);
-    g_heredoc_signal = 0;
-    set_child_process_flag(1);  // Set flag during heredoc input
     
     char *line;
     int temp_content_fd = -1;
     char temp_content_filename[256];
     
     // Create a temporary file to store all content first
-    sprintf(temp_content_filename, "/tmp/heredoc_content_%d_%d", getpid(), heredoc_counter);
+    // Build filename manually without sprintf
+    simple_strcpy(temp_content_filename, "/tmp/heredoc_content_");
+    // Convert getpid() to string and append
+    char pid_str2[16];
+    int pid2 = getpid();
+    int j = 0;
+    while (pid2 > 0)
+    {
+        pid_str2[j++] = (pid2 % 10) + '0';
+        pid2 /= 10;
+    }
+    pid_str2[j] = '\0';
+    // Reverse pid_str2
+    int start2 = 0, end2 = j - 1;
+    while (start2 < end2)
+    {
+        char temp = pid_str2[start2];
+        pid_str2[start2] = pid_str2[end2];
+        pid_str2[end2] = temp;
+        start2++;
+        end2--;
+    }
+    simple_strcat(temp_content_filename, pid_str2);
+    simple_strcat(temp_content_filename, "_");
+    // Convert counter to string and append
+    char counter_str2[16];
+    j = 0;
+    int counter2 = heredoc_counter;
+    while (counter2 > 0)
+    {
+        counter_str2[j++] = (counter2 % 10) + '0';
+        counter2 /= 10;
+    }
+    counter_str2[j] = '\0';
+    // Reverse counter_str2
+    start2 = 0, end2 = j - 1;
+    while (start2 < end2)
+    {
+        char temp = counter_str2[start2];
+        counter_str2[start2] = counter_str2[end2];
+        counter_str2[end2] = temp;
+        start2++;
+        end2--;
+    }
+    simple_strcat(temp_content_filename, counter_str2);
     temp_content_fd = open(temp_content_filename, O_WRONLY | O_CREAT | O_TRUNC, 0600);
     if (temp_content_fd < 0)
     {
@@ -158,16 +292,17 @@ static int create_heredoc_temp_file(t_minishell *mini, const char *delimiter, ch
     }
     
     // Read all content until the final delimiter
-    while (!g_heredoc_signal)
+    while (!check_sigint_received())
     {
         write(1, "> ", 2);
         line = NULL;
         size_t line_size = 0;
         ssize_t read_size = getline(&line, &line_size, stdin);
         
-        if (read_size == -1 || g_heredoc_signal)
+        int sigint_received = check_sigint_received();
+        if (read_size == -1 || sigint_received)
         {
-            if (read_size == -1 && !g_heredoc_signal)
+            if (read_size == -1 && !sigint_received)
             {
                 write(2, "bash: warning: here-document at line ", 35);
                 write(2, "delimited by end-of-file (wanted '", 33);
@@ -221,12 +356,12 @@ static int create_heredoc_temp_file(t_minishell *mini, const char *delimiter, ch
     
     // Restore original signal handler
     signal(SIGINT, old_sigint);
-    set_child_process_flag(0);  // Clear flag after heredoc processing
     
     close(temp_fd);
     free(clean_delimiter);
     
-    if (g_heredoc_signal)
+    // Check if SIGINT was received during heredoc processing
+    if (check_sigint_received())
     {
         unlink(temp_filename);
         return -1;

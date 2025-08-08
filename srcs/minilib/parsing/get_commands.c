@@ -47,7 +47,7 @@ void put_token_to_commands(t_minishell *minishell)
 
 			if (cmd_index > minishell->pipex_count)
 			{
-				fprintf(stderr, "minishell: internal error: too many commands\n");
+				write(2, "minishell: internal error: too many commands\n", 45);
 				minishell->exit_status = 1;  // General error
 				exit(EXIT_FAILURE);
 			}
@@ -57,7 +57,7 @@ void put_token_to_commands(t_minishell *minishell)
 		{
 			if (!cur->next || cur->next->type != WORD)
 			{
-				fprintf(stderr, "minishell: syntax error near redirection\n");
+				write(2, "minishell: syntax error near redirection\n", 42);
 				minishell->exit_status = 2;  // Incorrect usage
 				exit(EXIT_FAILURE);
 			}
@@ -91,7 +91,7 @@ void put_token_to_commands(t_minishell *minishell)
 				minishell->cmd[cmd_index].input_file_name = ft_strdup(filename);
 				if (!minishell->cmd[cmd_index].input_file_name)
 				{
-					fprintf(stderr, "minishell: memory allocation failed\n");
+					write(2, "minishell: memory allocation failed\n", 36);
 					minishell->exit_status = 1;  // General error
 					exit(EXIT_FAILURE);
 				}
@@ -103,7 +103,7 @@ void put_token_to_commands(t_minishell *minishell)
 				minishell->cmd[cmd_index].output_file_name = ft_strdup(filename);
 				if (!minishell->cmd[cmd_index].output_file_name)
 				{
-					fprintf(stderr, "minishell: memory allocation failed\n");
+					write(2, "minishell: memory allocation failed\n", 36);
 					minishell->exit_status = 1;  // General error
 					exit(EXIT_FAILURE);
 				}
@@ -115,7 +115,7 @@ void put_token_to_commands(t_minishell *minishell)
 				minishell->cmd[cmd_index].output_file_name = ft_strdup(filename);
 				if (!minishell->cmd[cmd_index].output_file_name)
 				{
-					fprintf(stderr, "minishell: memory allocation failed\n");
+					write(2, "minishell: memory allocation failed\n", 36);
 					minishell->exit_status = 1;  // General error
 					exit(EXIT_FAILURE);
 				}
@@ -128,7 +128,7 @@ void put_token_to_commands(t_minishell *minishell)
 		{
 			if (!cur->next || cur->next->type != WORD)
 			{
-				fprintf(stderr, "minishell: syntax error near redirection\n");
+				write(2, "minishell: syntax error near redirection\n", 42);
 				minishell->exit_status = 2;  // Incorrect usage
 				exit(EXIT_FAILURE);
 			}
@@ -142,7 +142,7 @@ void put_token_to_commands(t_minishell *minishell)
 			minishell->cmd[cmd_index].input_file_name = ft_strdup(filename);
 			if (!minishell->cmd[cmd_index].input_file_name)
 			{
-				fprintf(stderr, "minishell: memory allocation failed\n");
+				write(2, "minishell: memory allocation failed\n", 36);
 				minishell->exit_status = 1;  // General error
 				exit(EXIT_FAILURE);
 			}
@@ -156,7 +156,7 @@ void put_token_to_commands(t_minishell *minishell)
 			minishell->cmd[cmd_index].argv[arg_index] = ft_strdup(cur->value);
 			if (!minishell->cmd[cmd_index].argv[arg_index])
 			{
-				fprintf(stderr, "minishell: memory allocation failed\n");
+				write(2, "minishell: memory allocation failed\n", 36);
 				minishell->exit_status = 1;  // General error
 				exit(EXIT_FAILURE);
 			}
@@ -181,7 +181,7 @@ void put_token_to_commands(t_minishell *minishell)
 				minishell->cmd[i].argv[0] = ft_strdup("cat");
 				if (!minishell->cmd[i].argv[0])
 				{
-					fprintf(stderr, "minishell: memory allocation failed\n");
+					write(2, "minishell: memory allocation failed\n", 36);
 					minishell->exit_status = 1;  // General error
 					exit(EXIT_FAILURE);
 				}

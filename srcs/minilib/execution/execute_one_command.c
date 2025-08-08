@@ -53,7 +53,8 @@ void execute_one_command(t_minishell *mini, char **envp)
         char *path = resolve_cmd_path(cmd->argv[0], envp);
         if (!path)
         {
-            fprintf(stderr, "%s: command not found\n", cmd->argv[0]);
+            write(2, cmd->argv[0], ft_strlen(cmd->argv[0]));
+            write(2, ": command not found\n", 20);
             exit(127);
         }
         execve(path, cmd->argv, envp);
@@ -63,9 +64,7 @@ void execute_one_command(t_minishell *mini, char **envp)
     else
     {
         int status;
-        set_child_process_flag(1);  // Set flag before waiting
         waitpid(pid, &status, 0);
-        set_child_process_flag(0);  // Clear flag after waiting
         if (WIFEXITED(status))
             mini->exit_status = WEXITSTATUS(status);
         else if (WIFSIGNALED(status))

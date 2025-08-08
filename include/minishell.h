@@ -147,6 +147,7 @@ void setup_signals(void);
 void set_child_process_flag(int flag);
 void set_minishell_pointer(t_minishell *mini);
 int check_sigint_received(void);
+int peek_sigint_received(void);
 t_token *expand(t_minishell *minishell);
 void	call_exit(t_minishell *mini, char **argv);
 

@@ -1,6 +1,28 @@
 
 #include "../../../include/minishell.h"
 
+// Simple strcpy implementation
+static char *simple_strcpy(char *dest, const char *src)
+{
+    char *ptr = dest;
+    while (*src)
+        *ptr++ = *src++;
+    *ptr = '\0';
+    return dest;
+}
+
+// Simple strcat implementation  
+static char *simple_strcat(char *dest, const char *src)
+{
+    char *ptr = dest;
+    while (*ptr)
+        ptr++;
+    while (*src)
+        *ptr++ = *src++;
+    *ptr = '\0';
+    return dest;
+}
+
 void init_shell(t_minishell *minishell)
 {
     char *line;
@@ -8,13 +30,17 @@ void init_shell(t_minishell *minishell)
     char *full_input = NULL;
     int len;
 
+    // Ensure readline doesn't catch signals
+    extern int rl_catch_signals;
+    rl_catch_signals = 0;
+    
     // Read the first line
     line = readline("minishell> ");
 
     // Handle EOF (Ctrl+D) - exit shell cleanly
     if (!line)
     {
-        fprintf(stderr, "exit\n");
+        write(2, "exit\n", 5);
         rl_clear_history();
         free_minishell(minishell);
         exit(0);
@@ -29,7 +55,7 @@ void init_shell(t_minishell *minishell)
     }
 
     // Start building the full input
-    full_input = strdup(line);
+    full_input = ft_strdup(line);
     if (!full_input)
     {
         free(line);
@@ -38,7 +64,7 @@ void init_shell(t_minishell *minishell)
     }
 
     // Check if line ends with pipe and continue reading
-    len = strlen(line);
+    len = ft_strlen(line);
     while (len > 0 && (line[len - 1] == '|' || isspace((unsigned char)line[len - 1])))
     {
         // Remove trailing spaces to check if it ends with pipe
@@ -54,7 +80,7 @@ void init_shell(t_minishell *minishell)
             if (!line)
             {
                 // EOF while waiting for more input
-                fprintf(stderr, "exit\n");
+                write(2, "exit\n", 5);
                 rl_clear_history();
                 free(full_input);
                 free_minishell(minishell);
@@ -63,7 +89,7 @@ void init_shell(t_minishell *minishell)
             
             // Append the new line to full input
             temp = full_input;
-            full_input = malloc(strlen(temp) + strlen(line) + 2); // +2 for space and null terminator
+            full_input = malloc(ft_strlen(temp) + ft_strlen(line) + 2); // +2 for space and null terminator
             if (!full_input)
             {
                 free(temp);
@@ -71,10 +97,13 @@ void init_shell(t_minishell *minishell)
                 minishell->promp_input = NULL;
                 return;
             }
-            sprintf(full_input, "%s %s", temp, line);
+            // Use simple_strcpy and simple_strcat instead of sprintf
+            simple_strcpy(full_input, temp);
+            simple_strcat(full_input, " ");
+            simple_strcat(full_input, line);
             free(temp);
             
-            len = strlen(line);
+            len = ft_strlen(line);
         }
         else
             break;

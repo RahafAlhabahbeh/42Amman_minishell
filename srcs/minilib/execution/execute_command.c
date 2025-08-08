@@ -42,7 +42,7 @@ int should_run_builtin_in_parent(t_cmd *cmd, int index, int total_pipes)
     // Special case for 'cd': run in parent if it is last and has no redirection
     if (ft_strcmp(cmd->argv[0], "cd") == 0)
     {
-        fprintf(stderr, "Running 'cd' in parent\n");
+        write(2, "Running 'cd' in parent\n", 23);
         return (!has_redir && is_last);
     }
 
@@ -135,7 +135,8 @@ void execute_loop(t_minishell *mini, char **envp, pid_t *pids)
                 char *path = resolve_cmd_path(cmd->argv[0], envp);
                 if (!path)
                 {
-                    fprintf(stderr, "%s: command not found\n", cmd->argv[0]);
+                    write(2, cmd->argv[0], ft_strlen(cmd->argv[0]));
+                    write(2, ": command not found\n", 20);
                     exit(127);
                 }
                 execve(path, cmd->argv, envp);

@@ -21,32 +21,11 @@ int main(int ac, char **av, char **envp)
     init(&minishell);
     minishell.envp = envp;
     init_env_list(&minishell, envp); // put this inside init
-    
-    // Set minishell pointer for signal handling
-    set_minishell_pointer(&minishell);
 
     // minishell_loop function
     while (1)
     {
         setup_signals();
-        // clear the input check_free
-        // if (minishell.token)
-        // {
-        //     free_tokens(minishell.token);
-        //     minishell.token = NULL;
-        // }
-        // if (minishell.cmd)
-        // {
-        //     free_commands(minishell.cmd, minishell.pipex_count);
-        //     minishell.cmd = NULL;
-        //     minishell.cmd_count = 0;
-        // }
-
-        // check_init
-        // printf("Start 1\n");
-        // print_tokens(minishell.token);
-        // print_commands(minishell.cmd);
-        // printf("Start 2\n");
 
         init_shell(&minishell);
         

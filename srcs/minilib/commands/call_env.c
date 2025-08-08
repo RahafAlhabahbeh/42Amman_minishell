@@ -12,6 +12,18 @@
 
 #include "../../../include/minishell.h"
 
+// Simple strcat implementation  
+static char *simple_strcat(char *dest, const char *src)
+{
+    char *ptr = dest;
+    while (*ptr)
+        ptr++;
+    while (*src)
+        *ptr++ = *src++;
+    *ptr = '\0';
+    return dest;
+}
+
 void print_env_list(t_env *env_list)
 {
     t_env *cur = env_list;
@@ -64,15 +76,15 @@ char *join_path(const char *dir, const char *cmd)
     if (!dir || !cmd)
         return NULL;
         
-    char *full = malloc(strlen(dir) + strlen(cmd) + 2); // '/' + '\0'
+    char *full = malloc(ft_strlen(dir) + ft_strlen(cmd) + 2); // '/' + '\0'
     if (!full)
         return NULL;
     
-    if (snprintf(full, strlen(dir) + strlen(cmd) + 2, "%s/%s", dir, cmd) < 0)
-    {
-        free(full);
-        return NULL;
-    }
+    // Use simple string operations instead of snprintf
+    full[0] = '\0';
+    simple_strcat(full, dir);
+    simple_strcat(full, "/");
+    simple_strcat(full, cmd);
     return full;
 }
 
@@ -82,10 +94,10 @@ char *resolve_cmd_path(char *cmd, char **envp)
         return NULL;
 
     // If command contains a slash, try to exec directly
-    if (strchr(cmd, '/'))
+    if (ft_strchr(cmd, '/'))
     {
         if (access(cmd, X_OK) == 0)
-            return strdup(cmd);
+            return ft_strdup(cmd);
         else
             return NULL;
     }
@@ -94,7 +106,9 @@ char *resolve_cmd_path(char *cmd, char **envp)
     char *path_var = NULL;
     for (int i = 0; envp[i]; i++)
     {
-        if (strncmp(envp[i], "PATH=", 5) == 0)
+        // Check if this environment variable starts with "PATH="
+        if (envp[i][0] == 'P' && envp[i][1] == 'A' && envp[i][2] == 'T' && 
+            envp[i][3] == 'H' && envp[i][4] == '=')
         {
             path_var = envp[i] + 5;
             break;
@@ -105,24 +119,31 @@ char *resolve_cmd_path(char *cmd, char **envp)
         return NULL;
 
     // Split PATH and check each directory for the command
-    char *paths = strdup(path_var);
-    if (!paths)
+    char **path_dirs = ft_split(path_var, ':');
+    if (!path_dirs)
         return NULL;
         
-    char *token = strtok(paths, ":");
-
-    while (token)
+    int i = 0;
+    while (path_dirs[i])
     {
-        char *full = join_path(token, cmd);
+        char *full = join_path(path_dirs[i], cmd);
         if (full && access(full, X_OK) == 0)
         {
-            free(paths);
+            // Free the split array before returning
+            int j = 0;
+            while (path_dirs[j])
+                free(path_dirs[j++]);
+            free(path_dirs);
             return full; // found executable path
         }
         free(full);
-        token = strtok(NULL, ":");
+        i++;
     }
 
-    free(paths);
+    // Free the split array
+    int j = 0;
+    while (path_dirs[j])
+        free(path_dirs[j++]);
+    free(path_dirs);
     return NULL;
 }

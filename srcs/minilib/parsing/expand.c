@@ -1,5 +1,60 @@
 #include "../../../include/minishell.h"
 
+// Simple strcat implementation
+static char *simple_strcat(char *dest, const char *src)
+{
+    char *ptr = dest;
+    while (*ptr)
+        ptr++;
+    while (*src)
+        *ptr++ = *src++;
+    *ptr = '\0';
+    return dest;
+}
+
+// Simple function to convert int to string (replaces snprintf)
+static void int_to_str(int num, char *str)
+{
+    int i = 0;
+    int is_negative = 0;
+    
+    if (num == 0)
+    {
+        str[0] = '0';
+        str[1] = '\0';
+        return;
+    }
+    
+    if (num < 0)
+    {
+        is_negative = 1;
+        num = -num;
+    }
+    
+    while (num > 0)
+    {
+        str[i++] = (num % 10) + '0';
+        num /= 10;
+    }
+    
+    if (is_negative)
+        str[i++] = '-';
+    
+    str[i] = '\0';
+    
+    // Reverse the string
+    int start = 0;
+    int end = i - 1;
+    while (start < end)
+    {
+        char temp = str[start];
+        str[start] = str[end];
+        str[end] = temp;
+        start++;
+        end--;
+    }
+}
+
 char *replace_var(t_minishell *minishell, const char *str, char quote)
 {
     char result[1024] = {0};
@@ -7,7 +62,7 @@ char *replace_var(t_minishell *minishell, const char *str, char quote)
 
     if (quote == '\'')
     {
-        char *dup = strdup(str);
+        char *dup = ft_strdup(str);
         if (!dup)
             return NULL;
         return dup;
@@ -22,12 +77,12 @@ char *replace_var(t_minishell *minishell, const char *str, char quote)
             {
                 i++;
                 char status_str[12]; // Enough for any int
-                snprintf(status_str, sizeof(status_str), "%d", minishell->exit_status);
+                int_to_str(minishell->exit_status, status_str);
 
-                if (j + (int)strlen(status_str) < (int)sizeof(result))
+                if (j + (int)ft_strlen(status_str) < (int)sizeof(result))
                 {
-                    strcat(result, status_str);
-                    j += strlen(status_str);
+                    simple_strcat(result, status_str);
+                    j += ft_strlen(status_str);
                 }
                 continue;
             }
@@ -44,10 +99,10 @@ char *replace_var(t_minishell *minishell, const char *str, char quote)
             if (!val)
                 val = "";
 
-            size_t len = strlen(val);
+            size_t len = ft_strlen(val);
             if (j + (int)len < (int)sizeof(result))
             {
-                strcat(result, val);
+                simple_strcat(result, val);
                 j += len;
             }
         }
@@ -60,7 +115,7 @@ char *replace_var(t_minishell *minishell, const char *str, char quote)
 
     result[j] = '\0';
 
-    char *dup = strdup(result);
+    char *dup = ft_strdup(result);
     if (!dup)
         return NULL;
     return dup;

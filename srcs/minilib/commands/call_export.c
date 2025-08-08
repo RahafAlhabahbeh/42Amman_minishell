@@ -114,7 +114,9 @@ static void export_with_args(t_minishell *mini, char **argv)
     {
         if (!is_valid_identifier(argv[i]))
         {
-            fprintf(stderr, "export: `%s`: not a valid identifier\n", argv[i]);
+            write(2, "export: `", 9);
+            write(2, argv[i], ft_strlen(argv[i]));
+            write(2, "`: not a valid identifier\n", 26);
             has_error = 1;
             continue;
         }

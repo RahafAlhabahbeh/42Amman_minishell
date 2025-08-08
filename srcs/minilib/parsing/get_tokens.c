@@ -5,7 +5,7 @@ static t_token *new_token(const char *value, t_token_type type, char quote)
     t_token *tok = malloc(sizeof(t_token));
     if (!tok)
         return (NULL);
-    tok->value = strdup(value);
+    tok->value = ft_strdup(value);
     if (!tok->value)
     {
         free(tok);
@@ -33,7 +33,7 @@ static void append_token(t_token **head, t_token **tail, t_token *tok)
 t_token *tokenize(t_minishell *minishell)
 {
     size_t i = 0;
-    size_t len = strlen(minishell->promp_input);
+    size_t len = ft_strlen(minishell->promp_input);
     char buf[1024];
     int buf_i = 0;
     t_token *head = NULL, *tail = NULL;
@@ -125,7 +125,7 @@ t_token *tokenize(t_minishell *minishell)
     }
     if (current_quote != 0)
     {
-        fprintf(stderr, "Syntax error: unmatched %c quote\n", current_quote);
+        write(2, "Syntax error: unmatched quote\n", 30);
         free_tokens(head); // this must be implemented
         return NULL;
     }
