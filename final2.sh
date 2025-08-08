@@ -132,6 +132,7 @@ test_cmd "echo \$?" "Check exit status"
 # EXPORT TESTS
 # ===========================
 
+test_cmd 'export _P1 _P2= _P3="" _P4=" " _P5 _P6=6 _P7="7"' "all export cases"
 test_cmd "export var=a" "export var"
 test_cmd "export \$var=test" "export using var as var name"
 test_cmd "echo \$var \$a" "echo exported variables"
