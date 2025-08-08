@@ -17,31 +17,31 @@ static void int_to_str(int num, char *str)
 {
     int i = 0;
     int is_negative = 0;
-    
+
     if (num == 0)
     {
         str[0] = '0';
         str[1] = '\0';
         return;
     }
-    
+
     if (num < 0)
     {
         is_negative = 1;
         num = -num;
     }
-    
+
     while (num > 0)
     {
         str[i++] = (num % 10) + '0';
         num /= 10;
     }
-    
+
     if (is_negative)
         str[i++] = '-';
-    
+
     str[i] = '\0';
-    
+
     // Reverse the string
     int start = 0;
     int end = i - 1;
@@ -67,7 +67,7 @@ static int extract_var_name(const char *str, int *pos, char *var_name, int *is_b
     {
         *is_braced = 1;
         i++; // skip '{'
-        
+
         while (str[i] && str[i] != '}' && k < 255)
         {
             if (ft_isalnum(str[i]) || str[i] == '_' || str[i] == '?' || str[i] == '$')
@@ -76,7 +76,7 @@ static int extract_var_name(const char *str, int *pos, char *var_name, int *is_b
                 break; // Invalid character in variable name
             i++;
         }
-        
+
         if (str[i] == '}')
             i++; // skip '}'
         else
@@ -88,7 +88,7 @@ static int extract_var_name(const char *str, int *pos, char *var_name, int *is_b
         while (str[i] && (ft_isalnum(str[i]) || str[i] == '_') && k < 255)
             var_name[k++] = str[i++];
     }
-    
+
     var_name[k] = '\0';
     *pos = i;
     return k; // Return length of variable name
@@ -97,8 +97,8 @@ static int extract_var_name(const char *str, int *pos, char *var_name, int *is_b
 // Safely resize result buffer - ensures no memory leaks
 static char *safe_resize_buffer(char *buffer, size_t *capacity, size_t needed)
 {
-    size_t	new_capacity;
-    char	*new_buffer;
+    size_t new_capacity;
+    char *new_buffer;
 
     if (needed < *capacity)
         return (buffer);
@@ -113,12 +113,12 @@ static char *safe_resize_buffer(char *buffer, size_t *capacity, size_t needed)
 }
 
 // Helper function to handle expansion of special variables
-static int	handle_special_var(t_minishell *mini, char **result, 
-				size_t *capacity, int *j, const char *str, int *i)
+static int handle_special_var(t_minishell *mini, char **result,
+                              size_t *capacity, int *j, const char *str, int *i)
 {
-    char	status_str[12];
-    char	*temp;
-    size_t	len;
+    char status_str[12];
+    char *temp;
+    size_t len;
 
     if (str[*i] == '?')
     {
@@ -150,15 +150,15 @@ static int	handle_special_var(t_minishell *mini, char **result,
 }
 
 // Helper to handle regular variable expansion
-static int	handle_variable_expansion(t_minishell *mini, const char *str, 
-				char **result, size_t *capacity, int *i, int *j)
+static int handle_variable_expansion(t_minishell *mini, const char *str,
+                                     char **result, size_t *capacity, int *i, int *j)
 {
-    char		var[256];
-    int		is_braced;
-    int		var_len;
-    const char	*val;
-    char		*temp;
-    size_t		len;
+    char var[256];
+    int is_braced;
+    int var_len;
+    const char *val;
+    char *temp;
+    size_t len;
 
     ft_memset(var, 0, sizeof(var));
     var_len = extract_var_name(str, i, var, &is_braced);
@@ -172,7 +172,7 @@ static int	handle_variable_expansion(t_minishell *mini, const char *str,
         (*result)[*j] = '\0';
         return (0);
     }
-    
+
     // Handle special variables in braced syntax
     if (var_len == 1 && var[0] == '?')
     {
@@ -200,7 +200,7 @@ static int	handle_variable_expansion(t_minishell *mini, const char *str,
         *j += len;
         return (0);
     }
-    
+
     val = get_value_env(mini, var);
     if (!val)
         val = "";
@@ -215,11 +215,11 @@ static int	handle_variable_expansion(t_minishell *mini, const char *str,
 }
 
 // Process the entire string for variable expansion
-static int	process_string_expansion(t_minishell *mini, const char *str,
-				char **result, size_t *capacity, int *i, int *j)
+static int process_string_expansion(t_minishell *mini, const char *str,
+                                    char **result, size_t *capacity, int *i, int *j)
 {
-    char	*temp;
-    int	special_result;
+    char *temp;
+    int special_result;
 
     while (str[*i])
     {
@@ -246,16 +246,44 @@ static int	process_string_expansion(t_minishell *mini, const char *str,
     return (0);
 }
 
+// Expand tilde at start (~ or ~/)
+static char *expand_tilde(t_minishell *minishell, const char *str)
+{
+    if (str[0] == '~' && (str[1] == '/' || str[1] == '\0'))
+    {
+        const char *home = get_value_env(minishell, "HOME");
+        if (!home)
+            home = "";
+        size_t home_len = ft_strlen(home);
+        size_t rest_len = ft_strlen(str + 1); // skip '~'
+        char *result = malloc(home_len + rest_len + 1);
+        if (!result)
+            return NULL;
+        ft_memcpy(result, home, home_len);
+        ft_memcpy(result + home_len, str + 1, rest_len);
+        result[home_len + rest_len] = '\0';
+        return result;
+    }
+    else
+    {
+        return ft_strdup(str);
+    }
+}
+
 // Main variable replacement function
 char *replace_var(t_minishell *minishell, const char *str, char quote)
 {
-    size_t	capacity;
-    char	*result;
-    int	i;
-    int	j;
+    size_t capacity;
+    char *result;
+    int i;
+    int j;
 
     if (quote == '\'')
         return (ft_strdup(str));
+    // First, expand tilde if any
+    char *tilde_expanded = expand_tilde(minishell, str);
+    if (!tilde_expanded)
+        return NULL;
     capacity = 1024;
     result = malloc(capacity);
     if (!result)

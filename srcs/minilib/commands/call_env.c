@@ -6,7 +6,7 @@
 /*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:54:23 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/04 09:29:16 by dal-mahr         ###   ########.fr       */
+/*   Updated: 2025/08/08 08:39:38 by dal-mahr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,63 +87,75 @@ char *join_path(const char *dir, const char *cmd)
     simple_strcat(full, cmd);
     return full;
 }
+int is_executable(const char *path)
+{
+    struct stat sb;
 
+    if (access(path, F_OK) != 0)
+        return -1; // Not found
+    if (access(path, X_OK) != 0)
+        return -2; // Found but not executable
+
+    if (stat(path, &sb) == 0 && S_ISREG(sb.st_mode))
+        return 0; // Found and executable
+    return -2;
+}
+
+// Main function: resolve cmd path
 char *resolve_cmd_path(char *cmd, char **envp)
 {
-    if (!cmd)
+    if (!cmd || !*cmd)
         return NULL;
 
-    // If command contains a slash, try to exec directly
-    if (ft_strchr(cmd, '/'))
+    // Case 1: Absolute or relative path
+    if (cmd[0] == '/' || (cmd[0] == '.' && (cmd[1] == '/' || cmd[1] == '.')))
     {
-        if (access(cmd, X_OK) == 0)
-            return ft_strdup(cmd);
-        else
-            return NULL;
+        int status = is_executable(cmd);
+        if (status == 0)
+            return strdup(cmd);
+        else if (status == -2)
+        {
+            fprintf(stderr, "%s: Permission denied\n", cmd);
+            exit(126);
+        }
+        return NULL; // Not found
     }
 
-    // Get PATH from envp
-    char *path_var = NULL;
+    // Case 2: Search in PATH
+    char *path_env = NULL;
     for (int i = 0; envp[i]; i++)
     {
-        // Check if this environment variable starts with "PATH="
-        if (envp[i][0] == 'P' && envp[i][1] == 'A' && envp[i][2] == 'T' && 
-            envp[i][3] == 'H' && envp[i][4] == '=')
+        if (strncmp(envp[i], "PATH=", 5) == 0)
         {
-            path_var = envp[i] + 5;
+            path_env = envp[i] + 5;
             break;
         }
     }
-
-    if (!path_var)
+    if (!path_env)
         return NULL;
 
-    // Split PATH and check each directory for the command
-    char **path_dirs = ft_split(path_var, ':');
-    if (!path_dirs)
-        return NULL;
-        
-    int i = 0;
-    while (path_dirs[i])
+    char **paths = ft_split(path_env, ':');
+    for (int i = 0; paths[i]; i++)
     {
-        char *full = join_path(path_dirs[i], cmd);
-        if (full && access(full, X_OK) == 0)
+        char *full = malloc(strlen(paths[i]) + strlen(cmd) + 2);
+        if (!full) continue;
+        sprintf(full, "%s/%s", paths[i], cmd);
+
+        int status = is_executable(full);
+        if (status == 0)
         {
-            // Free the split array before returning
-            int j = 0;
-            while (path_dirs[j])
-                free(path_dirs[j++]);
-            free(path_dirs);
-            return full; // found executable path
+            free(paths);
+            return full;
+        }
+        else if (status == -2)
+        {
+            fprintf(stderr, "%s: Permission denied\n", cmd);
+            free(paths);
+            free(full);
+            exit(126);
         }
         free(full);
-        i++;
     }
-
-    // Free the split array
-    int j = 0;
-    while (path_dirs[j])
-        free(path_dirs[j++]);
-    free(path_dirs);
-    return NULL;
+    free(paths);
+    return NULL; // Not found anywhere
 }

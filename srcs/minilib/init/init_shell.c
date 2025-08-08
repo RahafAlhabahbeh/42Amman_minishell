@@ -11,7 +11,7 @@ static char *simple_strcpy(char *dest, const char *src)
     return dest;
 }
 
-// Simple strcat implementation  
+// Simple strcat implementation
 static char *simple_strcat(char *dest, const char *src)
 {
     char *ptr = dest;
@@ -33,7 +33,7 @@ void init_shell(t_minishell *minishell)
     // Ensure readline doesn't catch signals
     extern int rl_catch_signals;
     rl_catch_signals = 0;
-    
+
     // Read the first line
     line = readline("minishell> ");
 
@@ -43,7 +43,7 @@ void init_shell(t_minishell *minishell)
         write(2, "exit\n", 5);
         rl_clear_history();
         free_minishell(minishell);
-        exit(0);
+        exit(minishell->exit_status);
     }
 
     // Handle empty input (just Enter pressed) - skip processing
@@ -70,13 +70,13 @@ void init_shell(t_minishell *minishell)
         // Remove trailing spaces to check if it ends with pipe
         while (len > 0 && isspace((unsigned char)line[len - 1]))
             len--;
-        
+
         if (len > 0 && line[len - 1] == '|')
         {
             // Line ends with pipe, read more input
             free(line);
             line = readline("> ");
-            
+
             if (!line)
             {
                 // EOF while waiting for more input
@@ -86,7 +86,7 @@ void init_shell(t_minishell *minishell)
                 free_minishell(minishell);
                 exit(0);
             }
-            
+
             // Append the new line to full input
             temp = full_input;
             full_input = malloc(ft_strlen(temp) + ft_strlen(line) + 2); // +2 for space and null terminator
@@ -102,7 +102,7 @@ void init_shell(t_minishell *minishell)
             simple_strcat(full_input, " ");
             simple_strcat(full_input, line);
             free(temp);
-            
+
             len = ft_strlen(line);
         }
         else

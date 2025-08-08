@@ -6,7 +6,7 @@
 /*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:53:57 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/07/24 08:53:58 by dal-mahr         ###   ########.fr       */
+/*   Updated: 2025/08/08 08:39:09 by dal-mahr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,28 +34,37 @@ void call_cd(t_minishell *mini, char **argv)
         return;
     }
 
-    // if (ft_strcmp(path, "-") == 0)
-    // {
-    //     path = get_value_env(mini, "OLDPWD");
-    //     if (!path)
-    //     {
-    //         ft_putstr_fd("minishell: cd: OLDPWD not set\n", STDERR_FILENO);
-    //         mini->exit_status = 1;
-    //         return;
-    //     }
-    // }
-    // else if (ft_strcmp(path, "~") == 0)
-    // {
-    //     path = get_value_env(mini, "HOME");
-    //     if (!path)
-    //     {
-    //         ft_putstr_fd("minishell: cd: HOME not set\n", STDERR_FILENO);
-    //         mini->exit_status = 1;
-    //         return;
-    //     }
-    // }
+    if (ft_strcmp(path, "-") == 0)
+    {
+        path = get_value_env(mini, "OLDPWD");
+        if (!path)
+        {
+            ft_putstr_fd("minishell: cd: OLDPWD not set\n", STDERR_FILENO);
+            mini->exit_status = 1;
+            return;
+        }
+    }
 
-    // Validate path even if we're in a pipe
+    else if (path[0] == '~')
+    {
+        char *home = get_value_env(mini, "HOME");
+        if (!home)
+        {
+            ft_putstr_fd("minishell: cd: HOME not set\n", STDERR_FILENO);
+            mini->exit_status = 1;
+            return;
+        }
+
+        char *expanded = ft_strjoin(home, path + 1); // path + 1 skips the '~'
+        if (!expanded)
+        {
+            ft_putstr_fd("minishell: cd: memory allocation failed\n", STDERR_FILENO);
+            mini->exit_status = 1;
+            return;
+        }
+        path = expanded;
+    }
+
     if (access(path, F_OK) != 0)
     {
         ft_putstr_fd("minishell: cd: ", STDERR_FILENO);
@@ -73,14 +82,12 @@ void call_cd(t_minishell *mini, char **argv)
         return;
     }
 
-    // If in pipe, skip actual directory change
     if (in_pipe)
     {
-        mini->exit_status = 0; // Bash sets $? to 0 even if cd in pipe doesn't change shell
+        mini->exit_status = 0;
         return;
     }
 
-    // Try to change directory
     if (chdir(path) != 0)
     {
         ft_putstr_fd("minishell: cd: ", STDERR_FILENO);
@@ -90,7 +97,6 @@ void call_cd(t_minishell *mini, char **argv)
         return;
     }
 
-    // Update environment
     char *old_pwd = get_value_env(mini, "PWD");
     char cwd[1024];
     if (getcwd(cwd, sizeof(cwd)) != NULL)

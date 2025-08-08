@@ -1,14 +1,20 @@
 #include "../../../include/minishell.h"
 
-
 void execute_one_command(t_minishell *mini, char **envp)
 {
     // fprintf(stdout, "Executing one command...\n");
     // fprintf(stderr, "Executing one command...\n");
     t_cmd *cmd = mini->cmd;
 
-    if (!cmd || !cmd->argv || !cmd->argv[0])
+    if (!cmd)
         return;
+
+    if (!cmd->argv[0] || cmd->argv[0][0] == '\0')
+    {
+        fprintf(stderr, "bash: %s: command not found\n", cmd->argv[0]);
+        mini->exit_status = 127; // Command not found
+        return;
+    }
 
     // Handle heredoc
     if (cmd->in_type == HERE_DOC && handle_heredoc(mini, cmd) < 0)
@@ -36,7 +42,7 @@ void execute_one_command(t_minishell *mini, char **envp)
     if (pid < 0)
     {
         perror("fork");
-        mini->exit_status = 1;  // General error
+        mini->exit_status = 1; // General error
         return;
     }
     else if (pid == 0)
@@ -59,7 +65,7 @@ void execute_one_command(t_minishell *mini, char **envp)
         }
         execve(path, cmd->argv, envp);
         perror("execve");
-        exit(126);  // Command invoked cannot execute
+        exit(126); // Command invoked cannot execute
     }
     else
     {

@@ -48,14 +48,34 @@ t_token *tokenize(t_minishell *minishell)
         {
             if (!current_quote)
             {
+                // Starting quote
                 current_quote = c;
                 if (buf_i == 0)
                     token_quote = c;
             }
             else
+            {
+                // Closing quote
                 current_quote = 0;
+
+                // If buf is not empty, finalize this quoted segment as part of token
+                if (buf_i > 0)
+                {
+                    buf[buf_i] = '\0';
+                    append_token(&head, &tail, new_token(buf, WORD, token_quote));
+                    buf_i = 0;
+                    token_quote = 0;
+                }
+                else
+                {
+                    // Empty quoted string -> add empty token with quote info
+                    append_token(&head, &tail, new_token("", WORD, c));
+                }
+            }
             i++;
+            continue; // Skip the rest of the loop so quote chars don't get added to buf
         }
+
         else if (!current_quote && (minishell->promp_input[i] == '>' || minishell->promp_input[i] == '<'))
         {
             if (buf_i > 0)
@@ -133,7 +153,6 @@ t_token *tokenize(t_minishell *minishell)
     return head;
 }
 
-
 /*
 
 user@debian:~/Desktop/42Amman_minishell$ echo ""'$USER'""
@@ -174,7 +193,7 @@ user@debian:~/Desktop/42Amman_minishell$ echo '"'"$USER"'"'
 "user"
 user@debian:~/Desktop/42Amman_minishell$ echo '"'"'$USER'"'"'
 "'user'"
-user@debian:~/Desktop/42Amman_minishell$ 
+user@debian:~/Desktop/42Amman_minishell$
 
 
 */

@@ -111,7 +111,13 @@ void execute_loop(t_minishell *mini, char **envp, pid_t *pids)
             if (handle_redirections(cmd, prev_fd, pipefd, i == mini->pipex_count) < 0)
                 exit(1);
             
-            // Handle empty command (just pass heredoc content through)
+            // NEW LINES
+            if (!cmd->argv || !cmd->argv[0] || cmd->argv[0][0] == '\0')
+            {
+                fprintf(stderr, "bash: %s: command not found\n", cmd->argv[0]);
+                exit(127);
+            }
+                // Handle empty command (just pass heredoc content through)
             if (!cmd->argv || !cmd->argv[0])
             {
                 // For empty command with heredoc, we need to pass the content through
