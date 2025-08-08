@@ -77,7 +77,7 @@ void put_token_to_commands(t_minishell *minishell)
 			{
 				perror(filename);
 				minishell->exit_status = 1;
-				//printf("Remove the exit 1\n");
+				// printf("Remove the exit 1\n");
 				// exit(EXIT_FAILURE);
 				return ;
 			}

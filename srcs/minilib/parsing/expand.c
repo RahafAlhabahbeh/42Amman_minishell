@@ -271,6 +271,35 @@ static char *expand_tilde(t_minishell *minishell, const char *str)
 }
 
 // Main variable replacement function
+// char *replace_var(t_minishell *minishell, const char *str, char quote)
+// {
+//     size_t capacity;
+//     char *result;
+//     int i;
+//     int j;
+
+//     if (quote == '\'')
+//         return (ft_strdup(str));
+//     // First, expand tilde if any
+//     char *tilde_expanded = expand_tilde(minishell, str);
+//     if (!tilde_expanded)
+//         return NULL;
+//     capacity = 1024;
+//     result = malloc(capacity);
+//     if (!result)
+//         return (NULL);
+//     result[0] = '\0';
+//     i = 0;
+//     j = 0;
+//     if (process_string_expansion(minishell, str, &result, &capacity, &i, &j) == -1)
+//     {
+//         free(result);
+//         return (NULL);
+//     }
+//     result[j] = '\0';
+//     return (result);
+// }
+
 char *replace_var(t_minishell *minishell, const char *str, char quote)
 {
     size_t capacity;
@@ -280,25 +309,36 @@ char *replace_var(t_minishell *minishell, const char *str, char quote)
 
     if (quote == '\'')
         return (ft_strdup(str));
-    // First, expand tilde if any
+
+    // Expand tilde first
     char *tilde_expanded = expand_tilde(minishell, str);
     if (!tilde_expanded)
         return NULL;
+
     capacity = 1024;
     result = malloc(capacity);
     if (!result)
-        return (NULL);
+    {
+        free(tilde_expanded);
+        return NULL;
+    }
     result[0] = '\0';
     i = 0;
     j = 0;
-    if (process_string_expansion(minishell, str, &result, &capacity, &i, &j) == -1)
+
+    // Use tilde_expanded (not str) for variable expansion
+    if (process_string_expansion(minishell, tilde_expanded, &result, &capacity, &i, &j) == -1)
     {
         free(result);
-        return (NULL);
+        free(tilde_expanded);
+        return NULL;
     }
+
     result[j] = '\0';
+    free(tilde_expanded);  // Free temporary tilde expanded string
     return (result);
 }
+
 
 t_token *expand(t_minishell *minishell)
 {
@@ -353,3 +393,5 @@ t_token *expand(t_minishell *minishell)
 
     return new_list;
 }
+
+

@@ -6,10 +6,10 @@ void execute_one_command(t_minishell *mini, char **envp)
     // fprintf(stderr, "Executing one command...\n");
     t_cmd *cmd = mini->cmd;
 
-    if (!cmd)
+    if (!cmd || !cmd->argv[0])
         return;
 
-    if (!cmd->argv[0] || cmd->argv[0][0] == '\0')
+    if (cmd->argv[0][0] == '\0')
     {
         fprintf(stderr, "bash: %s: command not found\n", cmd->argv[0]);
         mini->exit_status = 127; // Command not found

@@ -7,7 +7,7 @@ void handle_sigint(int sig)
 {
     // Store only the signal number - no access to main data structures
     g_received_signal = sig;
-    write(1, "\n", 1);
+    write(1, "^C\n", 3);
     rl_replace_line("", 0);
     rl_on_new_line();
     rl_redisplay();
