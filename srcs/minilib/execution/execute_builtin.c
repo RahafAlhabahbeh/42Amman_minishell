@@ -17,7 +17,7 @@ int is_builtin(char *cmd)
     if (!cmd)
         return 0;
     return (!ft_strcmp(cmd, "echo") || !ft_strcmp(cmd, "cd") || !ft_strcmp(cmd, "pwd") ||
-            !ft_strcmp(cmd, "env") || !ft_strcmp(cmd, "export") || !ft_strcmp(cmd, "unset") ||
+            !ft_strcmp(cmd, "export") || !ft_strcmp(cmd, "unset") ||
             !ft_strcmp(cmd, "exit"));
 }
 
@@ -33,8 +33,6 @@ void execute_builtin(t_minishell *minishell, int i)
         call_echo(minishell, minishell->cmd[i].argv);
     else if (!ft_strcmp(name, "pwd"))
         call_pwd(minishell);
-    else if (!ft_strcmp(name, "env"))
-        call_env(minishell, minishell->cmd[i].argv);
     else if (!ft_strcmp(name, "export"))
         call_export(minishell, minishell->cmd[i].argv);
     else if (!ft_strcmp(name, "unset"))
@@ -58,8 +56,6 @@ void execute_builtin_cmd(t_minishell *mini, t_cmd *cmd)
         call_echo(mini, cmd->argv);
     else if (!ft_strcmp(name, "pwd"))
         call_pwd(mini);
-    else if (!ft_strcmp(name, "env"))
-        call_env(mini, cmd->argv);
     else if (!ft_strcmp(name, "export"))
         call_export(mini, cmd->argv);
     else if (!ft_strcmp(name, "unset"))

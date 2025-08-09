@@ -36,15 +36,13 @@ int should_run_builtin_in_parent(t_cmd *cmd, int index, int total_pipes)
     int has_redir = is_redirection_present(cmd);
 
     // These builtins must be run in parent to affect shell state
-    if (is_str_in_set(cmd->argv[0], (char *[]) {"export", "unset", "exit", NULL}))
+    // Note: 'exit' is excluded - it should always run in child process in pipelines
+    if (is_str_in_set(cmd->argv[0], (char *[]) {"export", "unset", NULL}))
         return (!has_redir && is_last);
 
     // Special case for 'cd': run in parent if it is last and has no redirection
     if (ft_strcmp(cmd->argv[0], "cd") == 0)
-    {
-        write(2, "Running 'cd' in parent\n", 23);
         return (!has_redir && is_last);
-    }
 
     // Other builtins (like echo, pwd, env) don't need to run in parent
     return 0;
@@ -100,12 +98,15 @@ void execute_loop(t_minishell *mini, char **envp, pid_t *pids)
         pid = fork();
         if (pid == -1)
         {
+            set_child_running(0); // Reset on fork failure
             perror("fork");
             mini->exit_status = 1;  // General error
             exit(EXIT_FAILURE);
         }
         else if (pid == 0)
         {
+            // Mark that we're in a child process
+            set_in_child_process(1);
             signal(SIGINT, SIG_DFL);
             signal(SIGQUIT, SIG_DFL);
             if (handle_redirections(cmd, prev_fd, pipefd, i == mini->pipex_count) < 0)
@@ -138,7 +139,7 @@ void execute_loop(t_minishell *mini, char **envp, pid_t *pids)
                 execute_builtin(mini, i);
             else
             {
-                char *path = resolve_cmd_path(cmd->argv[0], envp);
+                char *path = resolve_cmd_path(cmd->argv[0], mini);
                 if (!path)
                 {
                     write(2, cmd->argv[0], ft_strlen(cmd->argv[0]));

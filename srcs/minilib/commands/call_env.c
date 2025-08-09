@@ -102,7 +102,7 @@ int is_executable(const char *path)
 }
 
 // Main function: resolve cmd path
-char *resolve_cmd_path(char *cmd, char **envp)
+char *resolve_cmd_path(char *cmd, t_minishell *mini)
 {
     if (!cmd || !*cmd)
         return NULL;
@@ -112,50 +112,52 @@ char *resolve_cmd_path(char *cmd, char **envp)
     {
         int status = is_executable(cmd);
         if (status == 0)
-            return strdup(cmd);
+            return ft_strdup(cmd);
         else if (status == -2)
         {
-            fprintf(stderr, "%s: Permission denied\n", cmd);
+            write(2, cmd, ft_strlen(cmd));
+            write(2, ": Permission denied\n", 20);
             exit(126);
         }
         return NULL; // Not found
     }
 
     // Case 2: Search in PATH
-    char *path_env = NULL;
-    for (int i = 0; envp[i]; i++)
-    {
-        if (strncmp(envp[i], "PATH=", 5) == 0)
-        {
-            path_env = envp[i] + 5;
-            break;
-        }
-    }
+    char *path_env = get_value_env(mini, "PATH");
     if (!path_env)
         return NULL;
 
     char **paths = ft_split(path_env, ':');
     for (int i = 0; paths[i]; i++)
     {
-        char *full = malloc(strlen(paths[i]) + strlen(cmd) + 2);
+        char *full = join_path(paths[i], cmd);
         if (!full) continue;
-        sprintf(full, "%s/%s", paths[i], cmd);
 
         int status = is_executable(full);
         if (status == 0)
         {
+            // Free all paths array elements before freeing the array
+            for (int j = 0; paths[j]; j++)
+                free(paths[j]);
             free(paths);
             return full;
         }
         else if (status == -2)
         {
-            fprintf(stderr, "%s: Permission denied\n", cmd);
+            write(2, cmd, ft_strlen(cmd));
+            write(2, ": Permission denied\n", 20);
+            // Free all paths array elements before freeing the array
+            for (int j = 0; paths[j]; j++)
+                free(paths[j]);
             free(paths);
             free(full);
             exit(126);
         }
         free(full);
     }
+    // Free all paths array elements before freeing the array
+    for (int i = 0; paths[i]; i++)
+        free(paths[i]);
     free(paths);
     return NULL; // Not found anywhere
 }

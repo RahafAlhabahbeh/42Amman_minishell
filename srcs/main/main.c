@@ -22,31 +22,37 @@ int main(int ac, char **av, char **envp)
     minishell.envp = envp;
     init_env_list(&minishell, envp); // put this inside init
 
+    // Setup signals once, not every iteration
+    setup_signals();
+
     // minishell_loop function
     while (1)
     {
-        setup_signals();
-
         init_shell(&minishell);
         
-        // Check if SIGINT was received during input
+        // Check for SIGINT after init_shell and set proper exit status (130)
         if (check_sigint_received())
         {
-            minishell.exit_status = 130;  // 128 + SIGINT (2)
-            free(minishell.promp_input);
-            minishell.promp_input = NULL;
+            minishell.exit_status = 130;
+            reset_minishell(&minishell);
+            continue;
+        }
+
+        // Check for SIGQUIT after init_shell (should be ignored but handled)
+        if (check_sigquit_received())
+        {
+            // SIGQUIT in interactive mode is ignored, no exit status change
+            reset_minishell(&minishell);
             continue;
         }
         
-        // printf("DEBUG: raw input = [%s]\n", minishell.promp_input);
-        // if (!minishell.promp_input || minishell.promp_input[0] == '\0')
-        //     continue;
         if (!minishell.promp_input || minishell.promp_input[0] == '\0')
         {
             free(minishell.promp_input);
             minishell.promp_input = NULL;
             continue;
         }
+
         // printf("DEBUG: raw input = [%s]\n", minishell.promp_input);
 
         minishell.token = tokenize(&minishell);
@@ -85,9 +91,13 @@ int main(int ac, char **av, char **envp)
 
         init_cmd(&minishell);
 
-        put_token_to_commands(&minishell);
-        // print_commands(minishell.cmd);
-        execute_command(&minishell, envp);
+        // Parse tokens into commands, checking for redirection errors
+        if (put_token_to_commands(&minishell) == 0)
+        {
+            // print_commands(minishell.cmd);
+            execute_command(&minishell, envp);
+        }
+        // If parsing failed, exit_status is already set by put_token_to_commands
         reset_minishell(&minishell);
         // free_tokens(minishell.token);
         // minishell.token = NULL;

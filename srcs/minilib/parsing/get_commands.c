@@ -1,5 +1,50 @@
 #include "../../../include/minishell.h"
 
+// Check if a string is a variable assignment (e.g., "var=value")
+static int is_variable_assignment(const char *str)
+{
+    if (!str)
+        return 0;
+    
+    char *eq_pos = ft_strchr(str, '=');
+    if (!eq_pos)
+        return 0;
+    
+    // Extract key part before '='
+    int key_len = eq_pos - str;
+    if (key_len == 0)
+        return 0;
+    
+    char *key = ft_substr(str, 0, key_len);
+    if (!key)
+        return 0;
+    
+    int is_valid = is_valid_identifier(key);
+    free(key);
+    
+    return is_valid;
+}
+
+// Handle variable assignment by setting environment variable
+static void handle_variable_assignment(t_minishell *minishell, const char *assignment)
+{
+    char *eq_pos = ft_strchr(assignment, '=');
+    if (!eq_pos)
+        return;
+    
+    int key_len = eq_pos - assignment;
+    char *key = ft_substr(assignment, 0, key_len);
+    char *value = ft_strdup(eq_pos + 1);
+    
+    if (key && value)
+    {
+        minishell->env_list = set_env_value(minishell, key, value);
+    }
+    
+    free(key);
+    free(value);
+}
+
 int count_args_for_command(t_token *start)
 {
 	int count = 0;
@@ -14,7 +59,7 @@ int count_args_for_command(t_token *start)
 
 #define MAX_ARGS 512
 
-void put_token_to_commands(t_minishell *minishell)
+int put_token_to_commands(t_minishell *minishell)
 {
 	t_token *cur = minishell->token;
 	int cmd_index = 0;
@@ -79,7 +124,7 @@ void put_token_to_commands(t_minishell *minishell)
 				minishell->exit_status = 1;
 				// printf("Remove the exit 1\n");
 				// exit(EXIT_FAILURE);
-				return ;
+				return -1;
 			}
 			if (fd >= 0)
 				close(fd);
@@ -153,14 +198,24 @@ void put_token_to_commands(t_minishell *minishell)
 		}
 		else if (cur->type == WORD)
 		{
-			minishell->cmd[cmd_index].argv[arg_index] = ft_strdup(cur->value);
-			if (!minishell->cmd[cmd_index].argv[arg_index])
+			// Check for variable assignment (only as first argument/command)
+			if (arg_index == 0 && is_variable_assignment(cur->value))
 			{
-				write(2, "minishell: memory allocation failed\n", 36);
-				minishell->exit_status = 1;  // General error
-				exit(EXIT_FAILURE);
+				handle_variable_assignment(minishell, cur->value);
+				// Don't add this to argv, it's a variable assignment not a command
+				// Continue to next token without incrementing arg_index
 			}
-			arg_index++;
+			else
+			{
+				minishell->cmd[cmd_index].argv[arg_index] = ft_strdup(cur->value);
+				if (!minishell->cmd[cmd_index].argv[arg_index])
+				{
+					write(2, "minishell: memory allocation failed\n", 36);
+					minishell->exit_status = 1;  // General error
+					exit(EXIT_FAILURE);
+				}
+				arg_index++;
+			}
 		}
 		cur = cur->next;
 	}
@@ -190,4 +245,5 @@ void put_token_to_commands(t_minishell *minishell)
 			// The heredoc content will flow to the next command
 		}
 	}
+	return 0; // Success
 }

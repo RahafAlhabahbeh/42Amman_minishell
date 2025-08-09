@@ -62,22 +62,35 @@ void call_exit(t_minishell *mini, char **argv)
 {
     long long code;
 
-    ft_putstr_fd("exit\n", STDERR_FILENO);
+    // Only print "exit" if we're in the main shell, not in a child process (pipe)
+    if (!is_in_child_process())
+        ft_putstr_fd("exit\n", STDERR_FILENO);
 
     if (!argv[1])
         exit(mini->exit_status);
 
     if (!is_valid_exit_arg(argv[1]))
     {
-        ft_putstr_fd("minishell: exit: ", STDERR_FILENO);
-        ft_putstr_fd(argv[1], STDERR_FILENO);
-        ft_putstr_fd(": numeric argument required\n", STDERR_FILENO);
+        // Only print error messages if we're in the main shell
+        if (!is_in_child_process())
+        {
+            ft_putstr_fd("minishell: exit: ", STDERR_FILENO);
+            ft_putstr_fd(argv[1], STDERR_FILENO);
+            ft_putstr_fd(": numeric argument required\n", STDERR_FILENO);
+        }
         exit(2);  // bash exits immediately with status 2 on invalid numeric arg
     }
 
     if (argv[2])
     {
-        ft_putstr_fd("minishell: exit: too many arguments\n", STDERR_FILENO);
+        // Only print error messages if we're in the main shell
+        if (!is_in_child_process())
+            ft_putstr_fd("minishell: exit: too many arguments\n", STDERR_FILENO);
+        
+        // In child process, just exit with error status
+        if (is_in_child_process())
+            exit(1);
+        
         mini->exit_status = 1;
         return;
     }

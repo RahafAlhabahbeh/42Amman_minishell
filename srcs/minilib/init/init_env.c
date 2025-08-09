@@ -60,6 +60,27 @@ void init_env_list(t_minishell *mini, char **envp)
     
     // Handle SHLVL environment variable
     handle_shlvl(mini);
+    
+    // Initialize PWD and OLDPWD if not present
+    char *pwd = get_value_env(mini, "PWD");
+    if (!pwd)
+    {
+        char cwd[1024];
+        if (getcwd(cwd, sizeof(cwd)) != NULL)
+            set_env_value(mini, "PWD", cwd);
+    }
+    
+    // Initialize OLDPWD if not present (critical for bash compatibility)
+    char *oldpwd = get_value_env(mini, "OLDPWD");
+    if (!oldpwd)
+    {
+        // Set OLDPWD to current PWD initially, or empty if PWD doesn't exist
+        char *current_pwd = get_value_env(mini, "PWD");
+        if (current_pwd)
+            set_env_value(mini, "OLDPWD", current_pwd);
+        else
+            set_env_value(mini, "OLDPWD", "");
+    }
 }
 
 char *get_env_value(const char *key, t_env *env)

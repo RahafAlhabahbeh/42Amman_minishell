@@ -20,6 +20,7 @@
 # include <sys/wait.h>
 # include <sys/types.h>
 # include <sys/stat.h>
+# include <signal.h>
 # include <readline/readline.h>
 # include <readline/history.h>
 
@@ -109,7 +110,7 @@ void    unset_env(t_env **env, const char *key);
 void count_pipe(t_minishell *minishell);
 void safe_pipe(int pipe_fds[2]);
 int count_args_for_command(t_token *start);
-void put_token_to_commands(t_minishell *minishell);
+int put_token_to_commands(t_minishell *minishell);
 
 int is_builtin(char *cmd);
 void execute_builtin(t_minishell *minishell, int i);
@@ -135,7 +136,7 @@ void call_cd(t_minishell *mini, char **argv);
 int is_valid_identifier(const char *s);
 
 char *join_path(const char *dir, const char *cmd);
-char *resolve_cmd_path(char *cmd, char **envp);
+char *resolve_cmd_path(char *cmd, t_minishell *mini);
 void free_minishell(t_minishell *mini);
 void free_tokens(t_token *head);
 void free_cmds_array(t_cmd *cmd_array, int count);
@@ -146,10 +147,21 @@ void execute_piped_commands(t_minishell *minishell, char **envp);
 
 void handle_sigint(int sig);
 void setup_signals(void);
-void set_child_process_flag(int flag);
+void set_child_running(int running);
+int is_child_running(void);
 void set_minishell_pointer(t_minishell *mini);
 int check_sigint_received(void);
 int peek_sigint_received(void);
+int check_sigquit_received(void);
+int get_received_signal(void);
+void reset_received_signal(void);
+
+// Process context functions
+void set_in_child_process(int in_child);
+int is_in_child_process(void);
+
+// Global signal variable for signal handling
+extern volatile sig_atomic_t g_received_signal;
 t_token *expand(t_minishell *minishell);
 void	call_exit(t_minishell *mini, char **argv);
 

@@ -1,4 +1,6 @@
 #include "../../../include/minishell.h"
+#include <pwd.h>
+#include <unistd.h>
 
 // Simple strcat implementation
 static char *simple_strcat(char *dest, const char *src)
@@ -223,7 +225,19 @@ static int process_string_expansion(t_minishell *mini, const char *str,
 
     while (str[*i])
     {
-        if (str[*i] == '$' && str[*i + 1])
+        // Check for escaped $ (marked with \x01$)
+        if (str[*i] == '\x01' && str[*i + 1] == '$')
+        {
+            // This is an escaped $, add literal $ and skip marker
+            temp = safe_resize_buffer(*result, capacity, *j + 2);
+            if (!temp)
+                return (-1);
+            *result = temp;
+            (*result)[(*j)++] = '$'; // Add literal $
+            (*result)[*j] = '\0';
+            *i += 2; // Skip both marker and $
+        }
+        else if (str[*i] == '$' && str[*i + 1])
         {
             (*i)++;
             special_result = handle_special_var(mini, result, capacity, j, str, i);
@@ -246,22 +260,47 @@ static int process_string_expansion(t_minishell *mini, const char *str,
     return (0);
 }
 
+// Get user's home directory from passwd database when HOME is unset
+static char *get_user_home_dir(void)
+{
+    struct passwd *pw = getpwuid(getuid());
+    if (pw && pw->pw_dir)
+        return ft_strdup(pw->pw_dir);
+    return NULL;
+}
+
 // Expand tilde at start (~ or ~/)
 static char *expand_tilde(t_minishell *minishell, const char *str)
 {
     if (str[0] == '~' && (str[1] == '/' || str[1] == '\0'))
     {
         const char *home = get_value_env(minishell, "HOME");
+        char *home_to_free = NULL;
+        
+        // If HOME is unset, get home directory from passwd database
         if (!home)
-            home = "";
+        {
+            home_to_free = get_user_home_dir();
+            home = home_to_free;
+            if (!home)
+                home = ""; // Fallback to empty string if passwd lookup fails
+        }
+        
         size_t home_len = ft_strlen(home);
         size_t rest_len = ft_strlen(str + 1); // skip '~'
         char *result = malloc(home_len + rest_len + 1);
         if (!result)
+        {
+            if (home_to_free)
+                free(home_to_free);
             return NULL;
+        }
         ft_memcpy(result, home, home_len);
         ft_memcpy(result + home_len, str + 1, rest_len);
         result[home_len + rest_len] = '\0';
+        
+        if (home_to_free)
+            free(home_to_free);
         return result;
     }
     else

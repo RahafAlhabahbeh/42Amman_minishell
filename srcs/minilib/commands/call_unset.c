@@ -19,7 +19,7 @@ void unset_env(t_env **env, const char *key)
 
     while (cur)
     {
-        if (ft_strncmp(cur->key, key, ft_strlen(key)) == 0)
+        if (ft_strcmp(cur->key, key) == 0)
         {
             if (prev)
                 prev->next = cur->next;
@@ -39,15 +39,27 @@ void unset_env(t_env **env, const char *key)
 void call_unset(t_minishell *mini, char **argv)
 {
     int has_error = 0;
+    
+    // Set successful exit status by default
+    mini->exit_status = 0;
+    
     for (int i = 1; argv[i]; i++)
     {
+        // Skip empty strings silently (bash behavior)
+        if (argv[i][0] == '\0')
+            continue;
+            
         if (!is_valid_identifier(argv[i]))
         {
+            write(2, "unset: `", 8);
+            write(2, argv[i], ft_strlen(argv[i]));
+            write(2, "': not a valid identifier\n", 26);
             has_error = 1;
             continue;
         }
         unset_env(&mini->env_list, argv[i]);
     }
+    
     if (has_error)
         mini->exit_status = 1;
 }

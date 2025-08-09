@@ -37,11 +37,67 @@ static char *simple_strcat(char *dest, const char *src)
     return dest;
 }
 
+// Custom getline implementation using only allowed functions
+static ssize_t ft_getline(char **lineptr, size_t *n, int fd)
+{
+    char c;
+    ssize_t bytes_read;
+    size_t pos = 0;
+    size_t size = 0;
+    
+    if (!lineptr || !n)
+        return -1;
+    
+    // Initialize buffer if needed
+    if (!*lineptr || *n == 0)
+    {
+        size = 128;
+        *lineptr = malloc(size);
+        if (!*lineptr)
+            return -1;
+        *n = size;
+    }
+    
+    while ((bytes_read = read(fd, &c, 1)) > 0)
+    {
+        // Expand buffer if needed
+        if (pos >= *n - 1)
+        {
+            size = *n * 2;
+            char *new_ptr = malloc(size);
+            if (!new_ptr)
+                return -1;
+            
+            // Copy old content
+            for (size_t i = 0; i < pos; i++)
+                new_ptr[i] = (*lineptr)[i];
+            
+            free(*lineptr);
+            *lineptr = new_ptr;
+            *n = size;
+        }
+        
+        (*lineptr)[pos++] = c;
+        
+        if (c == '\n')
+            break;
+    }
+    
+    if (bytes_read < 0)
+        return -1;
+    
+    if (pos == 0 && bytes_read == 0)
+        return -1; // EOF
+    
+    (*lineptr)[pos] = '\0';
+    return pos;
+}
+
 void handle_heredoc_sigint(int sig)
 {
-    (void)sig;
-    write(1, "\n", 1);
-    // Signal handling is done in signals.c through g_received_signal
+    // Set the global signal flag so check_sigint_received() can detect it
+    g_received_signal = sig;
+    write(1, "^C\n", 3);
 }
 
 static char *expand_heredoc_line(t_minishell *mini, char *line, int expand_vars)
@@ -277,7 +333,7 @@ static int create_heredoc_temp_file_with_quote(t_minishell *mini, const char *de
         write(1, "> ", 2);
         line = NULL;
         size_t line_size = 0;
-        ssize_t read_size = getline(&line, &line_size, stdin);
+        ssize_t read_size = ft_getline(&line, &line_size, 0); // 0 = STDIN_FILENO
         
         int sigint_received = check_sigint_received();
         if (read_size == -1 || sigint_received)

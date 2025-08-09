@@ -11,7 +11,7 @@ void execute_one_command(t_minishell *mini, char **envp)
 
     if (cmd->argv[0][0] == '\0')
     {
-        fprintf(stderr, "bash: %s: command not found\n", cmd->argv[0]);
+        write(2, "minishell: : command not found\n", 32);
         mini->exit_status = 127; // Command not found
         return;
     }
@@ -38,9 +38,11 @@ void execute_one_command(t_minishell *mini, char **envp)
     }
 
     // Fork and execute in child
+    set_child_running(1); // Mark child as running before fork
     pid_t pid = fork();
     if (pid < 0)
     {
+        set_child_running(0); // Reset on fork failure
         perror("fork");
         mini->exit_status = 1; // General error
         return;
@@ -56,7 +58,7 @@ void execute_one_command(t_minishell *mini, char **envp)
             execute_builtin_cmd(mini, cmd);
             exit(0);
         }
-        char *path = resolve_cmd_path(cmd->argv[0], envp);
+        char *path = resolve_cmd_path(cmd->argv[0], mini);
         if (!path)
         {
             write(2, cmd->argv[0], ft_strlen(cmd->argv[0]));
@@ -71,6 +73,7 @@ void execute_one_command(t_minishell *mini, char **envp)
     {
         int status;
         waitpid(pid, &status, 0);
+        set_child_running(0); // Child process finished
         if (WIFEXITED(status))
             mini->exit_status = WEXITSTATUS(status);
         else if (WIFSIGNALED(status))

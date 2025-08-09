@@ -9,7 +9,8 @@ void multiple_command_execution(t_minishell *mini, char **envp)
     // Initialize pids array to -1
     for (int i = 0; i < count; i++)
         pids[i] = -1;
-        
+    
+    set_child_running(1); // Mark children as running before pipe execution
     execute_loop(mini, envp, pids);
     for (int i = 0; i < count; i++)
     {
@@ -28,5 +29,6 @@ void multiple_command_execution(t_minishell *mini, char **envp)
             continue;
         }
     }
+    set_child_running(0); // All children finished
     cleanup_heredoc_files(mini);
 }

@@ -11,7 +11,7 @@ static char *simple_strcpy(char *dest, const char *src)
     return dest;
 }
 
-// Simple strcat implementation
+// Simple strcat implementation  
 static char *simple_strcat(char *dest, const char *src)
 {
     char *ptr = dest;
@@ -21,6 +21,12 @@ static char *simple_strcat(char *dest, const char *src)
         *ptr++ = *src++;
     *ptr = '\0';
     return dest;
+}
+
+// Custom implementation to replace ctype.h isspace
+static int ft_isspace(unsigned char c)
+{
+    return (c == ' ' || c == '\t' || c == '\n' || c == '\v' || c == '\f' || c == '\r');
 }
 
 void init_shell(t_minishell *minishell)
@@ -37,9 +43,28 @@ void init_shell(t_minishell *minishell)
     // Read the first line
     line = readline("minishell> ");
 
-    // Handle EOF (Ctrl+D) - exit shell cleanly
+    // Check if SIGINT was received during readline (Ctrl+C)
+    // Don't consume the signal here - let main loop handle it
+    if (peek_sigint_received())
+    {
+        if (line)
+            free(line);
+        minishell->promp_input = NULL;
+        return;
+    }
+
+    // Handle NULL return from readline
     if (!line)
     {
+        // Check if this was due to a signal interruption
+        if (peek_sigint_received())
+        {
+            // SIGINT interrupted readline - return to let main loop handle it
+            minishell->promp_input = NULL;
+            return;
+        }
+        
+        // True EOF (Ctrl+D) - exit shell cleanly
         write(2, "exit\n", 5);
         rl_clear_history();
         free_minishell(minishell);
@@ -63,23 +88,64 @@ void init_shell(t_minishell *minishell)
         return;
     }
 
-    // Check if line ends with pipe and continue reading
+    // Check if input contains only pipes and whitespace - these should be syntax errors
     len = ft_strlen(line);
-    while (len > 0 && (line[len - 1] == '|' || isspace((unsigned char)line[len - 1])))
+    int has_non_pipe_content = 0;
+    for (int i = 0; i < len; i++)
+    {
+        if (!ft_isspace((unsigned char)line[i]) && line[i] != '|')
+        {
+            has_non_pipe_content = 1;
+            break;
+        }
+    }
+    
+    // If input contains only pipes and spaces, don't show continuation prompt
+    // This will allow the syntax checker to catch the error later
+    if (!has_non_pipe_content)
+    {
+        // Input like "|", "|||", "| |", etc. - let tokenizer and syntax checker handle it
+        free(line);
+        minishell->promp_input = full_input;
+        add_history(minishell->promp_input);
+        return;
+    }
+    
+    // Check if line ends with pipe and continue reading (only for legitimate commands)
+    while (len > 0)
     {
         // Remove trailing spaces to check if it ends with pipe
-        while (len > 0 && isspace((unsigned char)line[len - 1]))
+        while (len > 0 && ft_isspace((unsigned char)line[len - 1]))
             len--;
 
         if (len > 0 && line[len - 1] == '|')
         {
-            // Line ends with pipe, read more input
+            // Line ends with pipe and has actual command content, read more input
             free(line);
             line = readline("> ");
 
+            // Check if SIGINT was received during continuation readline
+            if (peek_sigint_received())
+            {
+                if (line)
+                    free(line);
+                free(full_input);
+                minishell->promp_input = NULL;
+                return;
+            }
+
             if (!line)
             {
-                // EOF while waiting for more input
+                // Check if this was due to signal interruption
+                if (peek_sigint_received())
+                {
+                    // SIGINT interrupted continuation readline
+                    free(full_input);
+                    minishell->promp_input = NULL;
+                    return;
+                }
+                
+                // True EOF while waiting for more input
                 write(2, "exit\n", 5);
                 rl_clear_history();
                 free(full_input);
