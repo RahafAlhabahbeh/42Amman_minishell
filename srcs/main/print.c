@@ -1,63 +1,53 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   print.c                                            :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/08/12 00:00:00 by dal-mahr          #+#    #+#             */
+/*   Updated: 2025/08/12 17:30:00 by dal-mahr         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../../include/minishell.h"
 
-void print_tokens(t_token *token)
+static const char	*get_token_type_string(t_token_type type)
 {
-    printf("\n🧩 Token List:\n");
-    while (token)
-    {
-        const char *type_str;
-        switch (token->type)
-        {
-            case WORD: type_str = "WORD"; break;
-            case PIPE: type_str = "PIPE"; break;
-            case REDIR_IN: type_str = "REDIR_IN"; break;
-            case REDIR_OUT: type_str = "REDIR_OUT"; break;
-            case REDIR_APPEND: type_str = "REDIR_APPEND"; break;
-            case HERE_DOC: type_str = "HERE_DOC"; break;
-            default: type_str = "UNKNOWN"; break;
-        }
-
-        printf("  [%s] \"%s\" (quote: %c)\n", type_str, token->value, token->quote ? token->quote : '-');
-        token = token->next;
-    }
-    printf("🔚 End of Tokens\n");
+	if (type == WORD)
+		return ("WORD");
+	if (type == PIPE)
+		return ("PIPE");
+	if (type == REDIR_IN)
+		return ("REDIR_IN");
+	if (type == REDIR_OUT)
+		return ("REDIR_OUT");
+	if (type == REDIR_APPEND)
+		return ("REDIR_APPEND");
+	if (type == HERE_DOC)
+		return ("HERE_DOC");
+	return ("UNKNOWN");
 }
 
-void print_commands(t_cmd *cmd)
+static void	print_token_info(t_token *token)
 {
-    int i = 0;
-    printf("\n🚀 Command List:\n");
-    while (cmd)
-    {
-        printf("  Cmd[%d]:\n", i);
-        if (cmd->argv)
-        {
-            for (int j = 0; cmd->argv[j]; j++)
-                printf("    argv[%d]: [%s]\n", j, cmd->argv[j]);
-        }
-        else
-        {
-            printf("    (no argv)\n");
-        }
+	const char	*type_str;
+	char		quote_char;
 
-        switch (cmd->in_type)
-        {
-            case REDIR_IN: printf("    input: REDIR_IN <%s>\n", cmd->input_file_name); break;
-            case HERE_DOC: printf("    input: HERE_DOC\n"); break;
-            case PIPE:     printf("    input: PIPE\n"); break;
-            default:       printf("    input: none\n"); break;
-        }
+	type_str = get_token_type_string(token->type);
+	quote_char = '-';
+	if (token->quote)
+		quote_char = token->quote;
+	printf("  [%s] \"%s\" (quote: %c)\n", type_str, token->value, quote_char);
+}
 
-        switch (cmd->out_type)
-        {
-            case REDIR_OUT:    printf("    output: REDIR_OUT >%s\n", cmd->output_file_name); break;
-            case REDIR_APPEND: printf("    output: APPEND >>%s\n", cmd->output_file_name); break;
-            case PIPE:         printf("    output: PIPE\n"); break;
-            default:           printf("    output: none\n"); break;
-        }
-
-        cmd = cmd->next;
-        i++;
-    }
-    printf("🔚 End of Commands\n");
+void	print_tokens(t_token *token)
+{
+	printf("\n🧩 Token List:\n");
+	while (token)
+	{
+		print_token_info(token);
+		token = token->next;
+	}
+	printf("🔚 End of Tokens\n");
 }

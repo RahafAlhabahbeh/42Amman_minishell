@@ -17,9 +17,10 @@
 # include <unistd.h>
 # include <stdio.h>
 
-typedef struct s_list {
+typedef struct s_list
+{
 	void			*content;
-	struct s_list	*next;
+	struct s_list		*next;
 }	t_list;
 
 int		ft_atoi(const char *str);

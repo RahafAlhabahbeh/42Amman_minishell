@@ -401,32 +401,109 @@ t_token *expand(t_minishell *minishell)
             return NULL;
         }
 
-        t_token *new_tok = malloc(sizeof(t_token));
-        if (!new_tok)
+        // Check if we need word splitting (unquoted expansion with spaces)
+        if (!cur->quote && ft_strchr(expanded, ' '))
         {
+            // Split the expanded value into multiple tokens
+            char **words = ft_split(expanded, ' ');
             free(expanded);
-            // Free all previously allocated tokens
-            while (new_list)
+            
+            if (!words)
             {
-                t_token *tmp = new_list;
-                new_list = new_list->next;
-                free(tmp->value);
-                free(tmp);
+                while (new_list)
+                {
+                    t_token *tmp = new_list;
+                    new_list = new_list->next;
+                    free(tmp->value);
+                    free(tmp);
+                }
+                return NULL;
             }
-            return NULL;
+            
+            // Create tokens for each word
+            for (int i = 0; words[i]; i++)
+            {
+                t_token *new_tok = malloc(sizeof(t_token));
+                if (!new_tok)
+                {
+                    // Free remaining words
+                    for (int j = i; words[j]; j++)
+                        free(words[j]);
+                    free(words);
+                    // Free already created tokens
+                    while (new_list)
+                    {
+                        t_token *tmp = new_list;
+                        new_list = new_list->next;
+                        free(tmp->value);
+                        free(tmp);
+                    }
+                    return NULL;
+                }
+                
+                new_tok->value = ft_strdup(words[i]);
+                new_tok->type = cur->type;
+                new_tok->quote = 0; // No quote after expansion
+                new_tok->next = NULL;
+                
+                if (!new_tok->value)
+                {
+                    free(new_tok);
+                    // Free remaining words
+                    for (int j = i; words[j]; j++)
+                        free(words[j]);
+                    free(words);
+                    // Free already created tokens
+                    while (new_list)
+                    {
+                        t_token *tmp = new_list;
+                        new_list = new_list->next;
+                        free(tmp->value);
+                        free(tmp);
+                    }
+                    return NULL;
+                }
+                
+                if (!new_list)
+                    new_list = new_tok;
+                else
+                    tail->next = new_tok;
+                
+                tail = new_tok;
+                free(words[i]);
+            }
+            free(words);
         }
-
-        new_tok->value = expanded;
-        new_tok->type = cur->type;
-        new_tok->quote = cur->quote;
-        new_tok->next = NULL;
-
-        if (!new_list)
-            new_list = new_tok;
         else
-            tail->next = new_tok;
+        {
+            // No word splitting needed - create single token
+            t_token *new_tok = malloc(sizeof(t_token));
+            if (!new_tok)
+            {
+                free(expanded);
+                // Free all previously allocated tokens
+                while (new_list)
+                {
+                    t_token *tmp = new_list;
+                    new_list = new_list->next;
+                    free(tmp->value);
+                    free(tmp);
+                }
+                return NULL;
+            }
 
-        tail = new_tok;
+            new_tok->value = expanded;
+            new_tok->type = cur->type;
+            new_tok->quote = cur->quote;
+            new_tok->next = NULL;
+
+            if (!new_list)
+                new_list = new_tok;
+            else
+                tail->next = new_tok;
+
+            tail = new_tok;
+        }
         cur = cur->next;
     }
 

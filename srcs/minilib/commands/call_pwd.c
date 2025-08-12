@@ -13,21 +13,20 @@
 #include "../../../include/minishell.h"
 #include <limits.h>
 
-void call_pwd(t_minishell *mini)
+void	call_pwd(t_minishell *mini)
 {
-    char cwd[PATH_MAX];
+	char	cwd[PATH_MAX];
 
-    if (getcwd(cwd, sizeof(cwd)) != NULL)
-    {
-        ft_putstr_fd(cwd, STDOUT_FILENO);
-        ft_putchar_fd('\n', STDOUT_FILENO);
-    }
-    else
-    {
-        perror("pwd");
-        mini->exit_status = 1;
-        return;
-    }
-    mini->exit_status = 0;
+	if (getcwd(cwd, sizeof(cwd)) != NULL)
+	{
+		ft_putstr_fd(cwd, STDOUT_FILENO);
+		ft_putchar_fd('\n', STDOUT_FILENO);
+	}
+	else
+	{
+		perror("pwd");
+		mini->exit_status = 1;
+		return ;
+	}
+	mini->exit_status = 0;
 }
-

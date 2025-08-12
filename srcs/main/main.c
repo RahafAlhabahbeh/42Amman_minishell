@@ -12,105 +12,75 @@
 
 #include "../../include/minishell.h"
 
-int main(int ac, char **av, char **envp)
+static int	handle_signals_and_input(t_minishell *minishell)
 {
-    (void)ac;
-    (void)av;
-    t_minishell minishell;
+	if (check_sigint_received())
+	{
+		minishell->exit_status = 130;
+		reset_minishell(minishell);
+		return (1);
+	}
+	if (check_sigquit_received())
+	{
+		reset_minishell(minishell);
+		return (1);
+	}
+	if (!minishell->promp_input || minishell->promp_input[0] == '\0')
+	{
+		free(minishell->promp_input);
+		minishell->promp_input = NULL;
+		return (1);
+	}
+	return (0);
+}
 
-    init(&minishell);
-    minishell.envp = envp;
-    init_env_list(&minishell, envp); // put this inside init
+static int	process_tokens_and_commands(t_minishell *minishell, char **envp)
+{
+	t_token	*old;
 
-    // Setup signals once, not every iteration
-    setup_signals();
+	minishell->token = tokenize(minishell);
+	if (!minishell->token)
+		return (1);
+	if (!is_valid_syntax(minishell->token))
+	{
+		minishell->exit_status = 2;
+		return (1);
+	}
+	old = minishell->token;
+	minishell->token = expand(minishell);
+	free_tokens(old);
+	if (!minishell->token)
+		return (1);
+	count_pipe(minishell);
+	init_cmd(minishell);
+	if (put_token_to_commands(minishell) == 0)
+		execute_command(minishell, envp);
+	return (0);
+}
 
-    // minishell_loop function
-    while (1)
-    {
-        init_shell(&minishell);
-        
-        // Check for SIGINT after init_shell and set proper exit status (130)
-        if (check_sigint_received())
-        {
-            minishell.exit_status = 130;
-            reset_minishell(&minishell);
-            continue;
-        }
+int	main(int ac, char **av, char **envp)
+{
+	t_minishell	minishell;
 
-        // Check for SIGQUIT after init_shell (should be ignored but handled)
-        if (check_sigquit_received())
-        {
-            // SIGQUIT in interactive mode is ignored, no exit status change
-            reset_minishell(&minishell);
-            continue;
-        }
-        
-        if (!minishell.promp_input || minishell.promp_input[0] == '\0')
-        {
-            free(minishell.promp_input);
-            minishell.promp_input = NULL;
-            continue;
-        }
-
-        // printf("DEBUG: raw input = [%s]\n", minishell.promp_input);
-
-        minishell.token = tokenize(&minishell);
-        if (!minishell.token)
-            continue;
-
-        if (!is_valid_syntax(minishell.token))
-        {
-            minishell.exit_status = 2;  // Incorrect usage
-            reset_minishell(&minishell);
-            continue;
-        }
-        t_token *old = minishell.token;
-        minishell.token = expand(&minishell);
-        free_tokens(old);
-    
-        if (!minishell.token)
-        {
-            // If expand failed, continue to next iteration
-            continue;
-        }
-
-        // print_tokens(minishell.token);
-
-        count_pipe(&minishell);
-        // if (minishell.cmd)
-        //     free_commands(minishell.cmd, minishell.pipex_count);
-
-        // minishell.cmd_count = minishell.pipex_count + 1;
-        // minishell.cmd = malloc(sizeof(t_cmd) * minishell.cmd_count);
-
-        // if (!minishell.cmd)
-        //     exit(EXIT_FAILURE);
-
-        // ft_bzero(minishell.cmd, sizeof(t_cmd) * (minishell.pipex_count + 1));
-
-        init_cmd(&minishell);
-
-        // Parse tokens into commands, checking for redirection errors
-        if (put_token_to_commands(&minishell) == 0)
-        {
-            // print_commands(minishell.cmd);
-            execute_command(&minishell, envp);
-        }
-        // If parsing failed, exit_status is already set by put_token_to_commands
-        reset_minishell(&minishell);
-        // free_tokens(minishell.token);
-        // minishell.token = NULL;
-
-        // free_tokens(minishell.token);
-        // minishell.token = NULL;
-
-        // free(minishell.promp_input);
-        // minishell.promp_input = NULL;
-
-    }
-
-    rl_clear_history();
-    free_minishell(&minishell);
-    return 0;
+	(void)ac;
+	(void)av;
+	init(&minishell);
+	minishell.envp = envp;
+	init_env_list(&minishell, envp);
+	setup_signals();
+	while (1)
+	{
+		init_shell(&minishell);
+		if (handle_signals_and_input(&minishell))
+			continue ;
+		if (process_tokens_and_commands(&minishell, envp))
+		{
+			reset_minishell(&minishell);
+			continue ;
+		}
+		reset_minishell(&minishell);
+	}
+	rl_clear_history();
+	free_minishell(&minishell);
+	return (0);
 }

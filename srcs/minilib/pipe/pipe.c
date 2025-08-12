@@ -3,140 +3,163 @@
 /*                                                        :::      ::::::::   */
 /*   pipe.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dal-mahr <dal-mahr@student.42.fr>          +#+  +:+       +#+        */
+/*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:52:38 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/07/27 13:38:33 by dal-mahr         ###   ########.fr       */
+/*   Updated: 2025/08/12 17:30:00 by dal-mahr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../../include/minishell.h"
 
-void safe_pipe(int pipe_fds[2])
+void	safe_pipe(int pipe_fds[2])
 {
-    if (pipe(pipe_fds) == -1)
-    {
-        perror("pipe");
-        exit(EXIT_FAILURE); // Or handle error as you want
-    }
+	if (pipe(pipe_fds) == -1)
+	{
+		perror("pipe");
+		exit(EXIT_FAILURE);
+	}
 }
 
-void count_pipe(t_minishell *minishell)
+void	count_pipe(t_minishell *minishell)
 {
-    int count = 0;
-    t_token *cur = minishell->token;
+	int		count;
+	t_token	*cur;
 
-    while (cur)
-    {
-        if (cur->type == PIPE)
-            count++;
-        cur = cur->next;
-    }
-    minishell->pipex_count = count;
+	count = 0;
+	cur = minishell->token;
+	while (cur)
+	{
+		if (cur->type == PIPE)
+			count++;
+		cur = cur->next;
+	}
+	minishell->pipex_count = count;
 }
 
-void execute_piped_commands(t_minishell *minishell, char **envp)
+static void	create_pipes(int *pipefds, int n)
 {
-    printf("PIPE EXE\n");
-    int n = minishell->pipex_count + 1; // number of commands
-    int pipefds[2 * (n - 1)];
-    pid_t pid;
-    int i;
+	int	i;
 
-    // Create pipes
-    for (i = 0; i < n - 1; i++)
-    {
-        if (pipe(pipefds + i * 2) == -1)
-        {
-            perror("pipe");
-            exit(EXIT_FAILURE);
-        }
-    }
+	i = 0;
+	while (i < n - 1)
+	{
+		if (pipe(pipefds + i * 2) == -1)
+		{
+			perror("pipe");
+			exit(EXIT_FAILURE);
+		}
+		i++;
+	}
+}
 
-    for (i = 0; i < n; i++)
-    {
-        pid = fork();
-        if (pid == -1)
-        {
-            perror("fork");
-            exit(EXIT_FAILURE);
-        }
-        else if (pid == 0)
-        {
-            // Child process
+static void	setup_child_pipes(int *pipefds, int i, int n)
+{
+	if (i != 0)
+	{
+		if (dup2(pipefds[(i - 1) * 2], STDIN_FILENO) == -1)
+		{
+			perror("dup2");
+			exit(EXIT_FAILURE);
+		}
+	}
+	if (i != n - 1)
+	{
+		if (dup2(pipefds[i * 2 + 1], STDOUT_FILENO) == -1)
+		{
+			perror("dup2");
+			exit(EXIT_FAILURE);
+		}
+	}
+}
 
-            // Redirect input if not first command
-            if (i != 0)
-            {
-                if (dup2(pipefds[(i - 1) * 2], STDIN_FILENO) == -1)
-                {
-                    perror("dup2");
-                    exit(EXIT_FAILURE);
-                }
-            }
+static void	close_all_pipes(int *pipefds, int n)
+{
+	int	j;
 
-            // Redirect output if not last command
-            if (i != n - 1)
-            {
-                if (dup2(pipefds[i * 2 + 1], STDOUT_FILENO) == -1)
-                {
-                    perror("dup2");
-                    exit(EXIT_FAILURE);
-                }
-            }
+	j = 0;
+	while (j < 2 * (n - 1))
+	{
+		close(pipefds[j]);
+		j++;
+	}
+}
 
-            // Close all pipe fds in child
-            for (int j = 0; j < 2 * (n - 1); j++)
-                close(pipefds[j]);
+static void	handle_file_redirection(t_cmd *cmd)
+{
+	int	fd_in;
+	int	fd_out;
 
-            // Handle input/output redirection from minishell->cmd[i]
-            if (minishell->cmd[i].input_file_name)
-            {
-                int fd_in = open(minishell->cmd[i].input_file_name, O_RDONLY);
-                if (fd_in == -1)
-                {
-                    perror("open input file");
-                    printf("Remove the exit 2\n");
-                    exit(EXIT_FAILURE);
-                }
-                if (dup2(fd_in, STDIN_FILENO) == -1)
-                {
-                    perror("dup2 input");
-                    exit(EXIT_FAILURE);
-                }
-                close(fd_in);
-            }
-            if (minishell->cmd[i].output_file_name)
-            {
-                int fd_out = open(minishell->cmd[i].output_file_name, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-                if (fd_out == -1)
-                {
-                    perror("open output file");
-                    printf("Remove the exit 3\n");
-                    exit(EXIT_FAILURE);
-                }
-                if (dup2(fd_out, STDOUT_FILENO) == -1)
-                {
-                    perror("dup2 output");
-                    exit(EXIT_FAILURE);
-                }
-                close(fd_out);
-            }
+	if (cmd->input_file_name)
+	{
+		fd_in = open(cmd->input_file_name, O_RDONLY);
+		if (fd_in == -1)
+		{
+			perror("open input file");
+			exit(EXIT_FAILURE);
+		}
+		if (dup2(fd_in, STDIN_FILENO) == -1)
+		{
+			perror("dup2 input");
+			exit(EXIT_FAILURE);
+		}
+		close(fd_in);
+	}
+	if (cmd->output_file_name)
+	{
+		fd_out = open(cmd->output_file_name, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+		if (fd_out == -1)
+		{
+			perror("open output file");
+			exit(EXIT_FAILURE);
+		}
+		if (dup2(fd_out, STDOUT_FILENO) == -1)
+		{
+			perror("dup2 output");
+			exit(EXIT_FAILURE);
+		}
+		close(fd_out);
+	}
+}
 
-            // Execute command
-            execve(minishell->cmd[i].argv[0], minishell->cmd[i].argv, envp);
+static void	execute_child_command(t_minishell *minishell, int *pipefds,
+	int i, int n, char **envp)
+{
+	setup_child_pipes(pipefds, i, n);
+	close_all_pipes(pipefds, n);
+	handle_file_redirection(&minishell->cmd[i]);
+	execve(minishell->cmd[i].argv[0], minishell->cmd[i].argv, envp);
+	perror("execve");
+	exit(EXIT_FAILURE);
+}
 
-            // If execve returns, there was an error
-            perror("execve");
-            exit(EXIT_FAILURE);
-        }
-    }
+void	execute_piped_commands(t_minishell *minishell, char **envp)
+{
+	int		n;
+	int		pipefds[2 * (minishell->pipex_count)];
+	pid_t	pid;
+	int		i;
 
-    // Parent closes all pipe fds
-    for (i = 0; i < 2 * (n - 1); i++)
-        close(pipefds[i]);
-
-    // Parent waits for all children
-    for (i = 0; i < n; i++)
-        wait(NULL);
+	n = minishell->pipex_count + 1;
+	create_pipes(pipefds, n);
+	i = 0;
+	while (i < n)
+	{
+		pid = fork();
+		if (pid == -1)
+		{
+			perror("fork");
+			exit(EXIT_FAILURE);
+		}
+		else if (pid == 0)
+			execute_child_command(minishell, pipefds, i, n, envp);
+		i++;
+	}
+	close_all_pipes(pipefds, n);
+	i = 0;
+	while (i < n)
+	{
+		wait(NULL);
+		i++;
+	}
 }

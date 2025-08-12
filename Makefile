@@ -16,6 +16,7 @@ SRC = \
     $(SRC_DIR)/parsing/get_commands.c \
     $(MAIN_DIR)/main.c \
     $(MAIN_DIR)/print.c \
+    $(MAIN_DIR)/print_debug.c \
 	$(SRC_DIR)/init/init.c \
 	$(SRC_DIR)/init/init_shell.c \
 	$(SRC_DIR)/init/init_env.c \
@@ -27,6 +28,8 @@ SRC = \
 	$(SRC_DIR)/commands/call_unset.c \
 	$(SRC_DIR)/commands/call_exit.c \
 	$(SRC_DIR)/commands/call_cd.c \
+	$(SRC_DIR)/utils/resolve_path.c \
+	$(SRC_DIR)/utils/export_utils.c \
 	$(SRC_DIR)/pipe/pipe.c \
 	$(SRC_DIR)/execution/execute_command.c \
 	$(SRC_DIR)/execution/execute_builtin.c \
@@ -37,7 +40,8 @@ SRC = \
 	$(SRC_DIR)/redirection/heredoc.c \
 	$(SRC_DIR)/free/free_minishell.c	\
 	$(SRC_DIR)/check_error/syntax_error.c	\
-	$(SRC_DIR)/signal/signals.c
+	$(SRC_DIR)/signal/signals.c \
+	$(SRC_DIR)/signal/signal_utils.c
 
 
 # Object files (mirror the SRC tree under obj/)

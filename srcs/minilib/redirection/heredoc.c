@@ -113,8 +113,9 @@ static char *expand_heredoc_line(t_minishell *mini, char *line, int expand_vars)
     int i = 0, j = 0;
     while (line[i])
     {
-        if (line[i] == '$' && line[i + 1] && 
-            (ft_isalnum(line[i + 1]) || line[i + 1] == '_' || line[i + 1] == '?'))
+        if (line[i] == '$' && line[i + 1] &&
+			(ft_isalnum(line[i + 1]) || line[i + 1] == '_'
+				|| line[i + 1] == '?'))
         {
             i++; // skip $
             char var_name[256] = {0};
@@ -194,8 +195,8 @@ static char *expand_heredoc_line(t_minishell *mini, char *line, int expand_vars)
     return result;
 }
 
-static int create_heredoc_temp_file_with_quote(t_minishell *mini, const char *delimiter, 
-                                               char **temp_filename_ptr, char quote_char)
+static int create_heredoc_temp_file_with_quote(t_minishell *mini,
+	const char *delimiter, char **temp_filename_ptr, char quote_char)
 {
     char temp_filename[256];
     static int heredoc_counter = 0;
@@ -254,7 +255,7 @@ static int create_heredoc_temp_file_with_quote(t_minishell *mini, const char *de
         return -1;
     }
     
-    // Determine if we should expand variables based on quote information from tokenizer
+    // Determine if we should expand variables based on quote information
     int expand_vars = (quote_char != '\'' && quote_char != '"');
     // Use delimiter as-is since quotes are already handled by tokenizer
     char *clean_delimiter = ft_strdup(delimiter);
@@ -318,7 +319,8 @@ static int create_heredoc_temp_file_with_quote(t_minishell *mini, const char *de
         end2--;
     }
     simple_strcat(temp_content_filename, counter_str2);
-    temp_content_fd = open(temp_content_filename, O_WRONLY | O_CREAT | O_TRUNC, 0600);
+    temp_content_fd = open(temp_content_filename,
+		O_WRONLY | O_CREAT | O_TRUNC, 0600);
     if (temp_content_fd < 0)
     {
         close(temp_fd);

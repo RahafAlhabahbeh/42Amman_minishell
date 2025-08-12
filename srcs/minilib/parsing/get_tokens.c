@@ -130,6 +130,12 @@ t_token *tokenize(t_minishell *minishell)
                 current_quote = c;
                 if (buf_i == 0)
                     token_quote = c;
+                else
+                {
+                    // Quote in the middle of a token (like VAR='value')
+                    // We need to handle this specially for assignment patterns
+                    token_quote = c;
+                }
             }
             else
             {
