@@ -30,23 +30,38 @@ int is_redirection_present(t_cmd *cmd)
             cmd->out_type == REDIR_OUT || cmd->out_type == REDIR_APPEND);
 }
 
+// int should_run_builtin_in_parent(t_cmd *cmd, int index, int total_pipes)
+// {
+//     int is_last = (index == total_pipes);
+//     int has_redir = is_redirection_present(cmd);
+
+//     // These builtins must be run in parent to affect shell state
+//     // Note: 'exit' is excluded - it should always run in child process in pipelines
+//     if (is_str_in_set(cmd->argv[0], (char *[]) {"export", "unset", NULL}))
+//         return (!has_redir && is_last);
+
+//     // Special case for 'cd': run in parent if it is last and has no redirection
+//     if (ft_strcmp(cmd->argv[0], "cd") == 0)
+//         return (!has_redir && is_last);
+
+//     // Other builtins (like echo, pwd, env) don't need to run in parent
+//     return 0;
+// }
 int should_run_builtin_in_parent(t_cmd *cmd, int index, int total_pipes)
 {
     int is_last = (index == total_pipes);
     int has_redir = is_redirection_present(cmd);
 
-    // These builtins must be run in parent to affect shell state
-    // Note: 'exit' is excluded - it should always run in child process in pipelines
+    // Don't run export/unset in parent if inside any pipe (pipeline)
     if (is_str_in_set(cmd->argv[0], (char *[]) {"export", "unset", NULL}))
-        return (!has_redir && is_last);
+        return (!has_redir && is_last && total_pipes == 0);
 
-    // Special case for 'cd': run in parent if it is last and has no redirection
     if (ft_strcmp(cmd->argv[0], "cd") == 0)
         return (!has_redir && is_last);
 
-    // Other builtins (like echo, pwd, env) don't need to run in parent
     return 0;
 }
+
 
 
 int execute_parent_process(int prev_fd, int *pipe_fds, int is_last)
@@ -87,6 +102,7 @@ void execute_loop(t_minishell *mini, char **envp, pid_t *pids)
         // Handle builtins that should run in parent process (no pipes, no redirections)
         if (is_builtin(cmd->argv[0]) && should_run_builtin_in_parent(cmd, i, mini->pipex_count))
         {
+            printf("Running builtin in parent: %s\n", cmd->argv[0]);
             save_original_fds(cmd);
             if (handle_redirections(cmd, prev_fd, pipefd, i == mini->pipex_count) == 0)
                 execute_builtin(mini, i);
@@ -113,7 +129,7 @@ void execute_loop(t_minishell *mini, char **envp, pid_t *pids)
                 exit(1);
             
             // NEW LINES
-            if (!cmd->argv || !cmd->argv[0] || cmd->argv[0][0] == '\0')
+            if (cmd->argv[0][0] == '\0')
             {
                 fprintf(stderr, "bash: %s: command not found\n", cmd->argv[0]);
                 exit(127);
@@ -134,9 +150,14 @@ void execute_loop(t_minishell *mini, char **envp, pid_t *pids)
                 }
                 exit(0);
             }
-            
             if (is_builtin(cmd->argv[0]))
+            {
+                printf("Executing builtin: %s\n", cmd->argv[0]);
+                if (is_str_in_set(cmd->argv[0], (char *[]) {"export", "unset", NULL}) && mini->pipex_count > 0)
+                    exit(0);
+
                 execute_builtin(mini, i);
+            }
             else
             {
                 char *path = resolve_cmd_path(cmd->argv[0], mini);

@@ -6,7 +6,7 @@
 /*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:54:23 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/08 08:39:38 by dal-mahr         ###   ########.fr       */
+/*   Updated: 2025/08/12 06:48:08 by dal-mahr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,27 +101,39 @@ int is_executable(const char *path)
     return -2;
 }
 
+int is_directory(const char *path)
+{
+    struct stat st;
+    if (stat(path, &st) == 0)
+        return S_ISDIR(st.st_mode);
+    return 0;
+}
+
 // Main function: resolve cmd path
 char *resolve_cmd_path(char *cmd, t_minishell *mini)
 {
-    if (!cmd || !*cmd)
-        return NULL;
-
-    // Case 1: Absolute or relative path
+    // if (!cmd || !cmd->argv[0])
+    //     return;
+    
     if (cmd[0] == '/' || (cmd[0] == '.' && (cmd[1] == '/' || cmd[1] == '.')))
     {
         int status = is_executable(cmd);
         if (status == 0)
             return ft_strdup(cmd);
-        else if (status == -2)
+        
+        if (status == -2)
         {
+            if (is_directory(cmd))
+            {
+                // Directory, treat as command not found
+                return NULL;
+            }
             write(2, cmd, ft_strlen(cmd));
             write(2, ": Permission denied\n", 20);
             exit(126);
         }
-        return NULL; // Not found
+        return NULL;
     }
-
     // Case 2: Search in PATH
     char *path_env = get_value_env(mini, "PATH");
     if (!path_env)
