@@ -56,11 +56,42 @@ static int	has_command_content(char *line, int len)
 	return (0);
 }
 
+static char	*handle_continuation_eof(t_minishell *ms, char *full_input)
+{
+	if (peek_sigint_received())
+	{
+		free(full_input);
+		return (NULL);
+	}
+	write(2, "exit\n", 5);
+	rl_clear_history();
+	free(full_input);
+	free_minishell(ms);
+	exit(0);
+}
+
+static char	*append_continuation_line(char *full_input, char *line)
+{
+	char	*new_input;
+
+	new_input = malloc(ft_strlen(full_input) + ft_strlen(line) + 2);
+	if (!new_input)
+	{
+		free(full_input);
+		free(line);
+		return (NULL);
+	}
+	simple_strcpy(new_input, full_input);
+	simple_strcat(new_input, " ");
+	simple_strcat(new_input, line);
+	free(full_input);
+	free(line);
+	return (new_input);
+}
+
 static char	*handle_continuation(t_minishell *minishell, char *full_input)
 {
 	char	*line;
-	char	*temp;
-	char	*new_input;
 
 	line = readline("> ");
 	if (peek_sigint_received())
@@ -71,61 +102,71 @@ static char	*handle_continuation(t_minishell *minishell, char *full_input)
 		return (NULL);
 	}
 	if (!line)
-	{
-		if (peek_sigint_received())
-		{
-			free(full_input);
-			return (NULL);
-		}
-		write(2, "exit\n", 5);
-		rl_clear_history();
-		free(full_input);
-		free_minishell(minishell);
-		exit(0);
-	}
-	temp = full_input;
-	new_input = malloc(ft_strlen(temp) + ft_strlen(line) + 2);
-	if (!new_input)
-	{
-		free(temp);
-		free(line);
-		return (NULL);
-	}
-	simple_strcpy(new_input, temp);
-	simple_strcat(new_input, " ");
-	simple_strcat(new_input, line);
-	free(temp);
-	free(line);
-	return (new_input);
+		return (handle_continuation_eof(minishell, full_input));
+	return (append_continuation_line(full_input, line));
 }
 
-void	init_shell(t_minishell *minishell)
+static char	*handle_readline_input(t_minishell *minishell)
 {
-	char			*line;
-	char			*full_input;
-	int				len;
-	extern int		rl_catch_signals;
+	char	*line;
 
-	rl_catch_signals = 0;
 	line = readline("minishell> ");
 	if (peek_sigint_received())
 	{
 		if (line)
 			free(line);
-		minishell->promp_input = NULL;
-		return ;
+		return (NULL);
 	}
 	if (!line)
 	{
 		if (peek_sigint_received())
-		{
-			minishell->promp_input = NULL;
-			return ;
-		}
+			return (NULL);
 		write(2, "exit\n", 5);
 		rl_clear_history();
 		free_minishell(minishell);
 		exit(minishell->exit_status);
+	}
+	return (line);
+}
+
+static char	*process_pipe_continuation(t_minishell *ms, char *line, 
+	char *full_input)
+{
+	int	len;
+
+	len = ft_strlen(line);
+	while (len > 0)
+	{
+		while (len > 0 && ft_isspace((unsigned char)line[len - 1]))
+			len--;
+		if (len > 0 && line[len - 1] == '|')
+		{
+			free(line);
+			full_input = handle_continuation(ms, full_input);
+			if (!full_input)
+				return (NULL);
+			line = ft_strdup(full_input);
+			len = ft_strlen(line);
+		}
+		else
+			break ;
+	}
+	free(line);
+	return (full_input);
+}
+
+void	init_shell(t_minishell *minishell)
+{
+	char	*line;
+	char	*full_input;
+	extern int	rl_catch_signals;
+
+	rl_catch_signals = 0;
+	line = handle_readline_input(minishell);
+	if (!line)
+	{
+		minishell->promp_input = NULL;
+		return ;
 	}
 	if (line[0] == '\0')
 	{
@@ -140,34 +181,19 @@ void	init_shell(t_minishell *minishell)
 		minishell->promp_input = NULL;
 		return ;
 	}
-	len = ft_strlen(line);
-	if (!has_command_content(line, len))
+	if (!has_command_content(line, ft_strlen(line)))
 	{
 		free(line);
 		minishell->promp_input = full_input;
 		add_history(minishell->promp_input);
 		return ;
 	}
-	while (len > 0)
+	full_input = process_pipe_continuation(minishell, line, full_input);
+	if (!full_input)
 	{
-		while (len > 0 && ft_isspace((unsigned char)line[len - 1]))
-			len--;
-		if (len > 0 && line[len - 1] == '|')
-		{
-			free(line);
-			full_input = handle_continuation(minishell, full_input);
-			if (!full_input)
-			{
-				minishell->promp_input = NULL;
-				return ;
-			}
-			line = ft_strdup(full_input);
-			len = ft_strlen(line);
-		}
-		else
-			break ;
+		minishell->promp_input = NULL;
+		return ;
 	}
-	free(line);
 	minishell->promp_input = full_input;
 	add_history(minishell->promp_input);
 }

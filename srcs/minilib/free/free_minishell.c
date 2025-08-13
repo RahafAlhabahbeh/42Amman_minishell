@@ -137,3 +137,18 @@ void	reset_minishell(t_minishell *mini)
 	}
 	mini->pipex_count = 0;
 }
+
+void	cleanup_child_process(t_minishell *mini)
+{
+	if (mini)
+	{
+		if (mini->promp_input)
+			free(mini->promp_input);
+		if (mini->token)
+			free_tokens(mini->token);
+		if (mini->cmd)
+			free_cmds_array(mini->cmd, mini->pipex_count);
+		if (mini->env_list)
+			free_env_list(mini->env_list);
+	}
+}

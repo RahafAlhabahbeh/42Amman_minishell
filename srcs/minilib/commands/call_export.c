@@ -12,21 +12,56 @@
 
 #include "../../../include/minishell.h"
 
+static int	count_env_vars(t_env *env_list)
+{
+	int		count;
+	t_env	*cur;
+
+	count = 0;
+	cur = env_list;
+	while (cur)
+	{
+		count++;
+		cur = cur->next;
+	}
+	return (count);
+}
+
+static char	*create_env_string(t_env *env)
+{
+	char	*str;
+	int		len;
+
+	if (env->value)
+	{
+		len = ft_strlen(env->key) + ft_strlen(env->value) + 2;
+		str = malloc(len);
+		if (!str)
+			return (NULL);
+		ft_strlcpy(str, env->key, len);
+		ft_strlcat(str, "=", len);
+		ft_strlcat(str, env->value, len);
+	}
+	else
+		str = ft_strdup(env->key);
+	return (str);
+}
+
+static void	free_env_array(char **arr, int count)
+{
+	while (count > 0)
+		free(arr[--count]);
+	free(arr);
+}
+
 static char	**create_env_array(t_minishell *mini)
 {
 	t_env	*cur;
 	char	**arr;
 	int		count;
 	int		i;
-	int		len;
 
-	count = 0;
-	cur = mini->env_list;
-	while (cur)
-	{
-		count++;
-		cur = cur->next;
-	}
+	count = count_env_vars(mini->env_list);
 	arr = malloc(sizeof(char *) * count);
 	if (!arr)
 		return (NULL);
@@ -34,31 +69,11 @@ static char	**create_env_array(t_minishell *mini)
 	i = 0;
 	while (cur)
 	{
-		if (cur->value)
+		arr[i] = create_env_string(cur);
+		if (!arr[i])
 		{
-			len = ft_strlen(cur->key) + ft_strlen(cur->value) + 2;
-			arr[i] = malloc(len);
-			if (!arr[i])
-			{
-				while (i > 0)
-					free(arr[--i]);
-				free(arr);
-				return (NULL);
-			}
-			ft_strlcpy(arr[i], cur->key, len);
-			ft_strlcat(arr[i], "=", len);
-			ft_strlcat(arr[i], cur->value, len);
-		}
-		else
-		{
-			arr[i] = ft_strdup(cur->key);
-			if (!arr[i])
-			{
-				while (i > 0)
-					free(arr[--i]);
-				free(arr);
-				return (NULL);
-			}
+			free_env_array(arr, i);
+			return (NULL);
 		}
 		cur = cur->next;
 		i++;

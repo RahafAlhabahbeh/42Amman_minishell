@@ -81,12 +81,7 @@ static void	handle_empty_command(t_cmd *cmd)
 	char	buffer[1024];
 	ssize_t	bytes_read;
 
-	if (cmd->argv[0][0] == '\0')
-	{
-		fprintf(stderr, "bash: %s: command not found\n", cmd->argv[0]);
-		exit(127);
-	}
-	if (!cmd->argv || !cmd->argv[0])
+	if (!cmd->argv || !cmd->argv[0] || cmd->argv[0][0] == '\0')
 	{
 		if (cmd->in_type == REDIR_IN)
 		{
@@ -98,7 +93,11 @@ static void	handle_empty_command(t_cmd *cmd)
 				write(STDOUT_FILENO, buffer, bytes_read);
 			}
 		}
-		exit(0);
+		else
+		{
+			write(2, ": command not found\n", 20);
+		}
+		exit(127);
 	}
 }
 
@@ -106,6 +105,7 @@ static void	execute_child_command(t_minishell *mini, t_cmd *cmd, int i,
 	char **envp)
 {
 	char	*path;
+	int		status;
 	char	*child_builtins[3];
 
 	if (is_builtin(cmd->argv[0]))
@@ -115,22 +115,49 @@ static void	execute_child_command(t_minishell *mini, t_cmd *cmd, int i,
 		child_builtins[2] = NULL;
 		if (is_str_in_set(cmd->argv[0], child_builtins)
 			&& mini->pipex_count > 0)
+		{
+			cleanup_child_process(mini);
 			exit(0);
+		}
 		execute_builtin(mini, i);
 	}
 	else
 	{
-		path = resolve_cmd_path(cmd->argv[0], mini);
-		if (!path)
+		status = resolve_cmd_path_with_status(cmd->argv[0], mini, &path);
+		if (status != 0)
 		{
-			write(2, cmd->argv[0], ft_strlen(cmd->argv[0]));
-			write(2, ": command not found\n", 20);
-			exit(127);
+			if (status == 126)
+			{
+				if (is_directory(cmd->argv[0]))
+				{
+					write(2, cmd->argv[0], ft_strlen(cmd->argv[0]));
+					write(2, ": Is a directory\n", 17);
+				}
+				else
+				{
+					write(2, cmd->argv[0], ft_strlen(cmd->argv[0]));
+					write(2, ": Permission denied\n", 20);
+				}
+			}
+			else
+			{
+				write(2, cmd->argv[0], ft_strlen(cmd->argv[0]));
+				if (cmd->argv[0][0] == '/' || 
+					(cmd->argv[0][0] == '.' && ft_strchr(cmd->argv[0], '/')))
+					write(2, ": No such file or directory\n", 28);
+				else
+					write(2, ": command not found\n", 20);
+			}
+			cleanup_child_process(mini);
+			exit(status);
 		}
 		execve(path, cmd->argv, envp);
 		perror("execve");
+		free(path);
+		cleanup_child_process(mini);
 		exit(126);
 	}
+	cleanup_child_process(mini);
 	exit(0);
 }
 

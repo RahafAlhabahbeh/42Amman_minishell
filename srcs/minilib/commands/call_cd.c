@@ -48,6 +48,34 @@ static char	*handle_tilde_expansion(t_minishell *mini, char *path)
 	return (expanded);
 }
 
+static char	*handle_cd_home(t_minishell *mini)
+{
+	char	*path;
+
+	path = get_value_env(mini, "HOME");
+	if (!path)
+	{
+		ft_putstr_fd("minishell: cd: HOME not set\n", STDERR_FILENO);
+		mini->exit_status = 1;
+		return (NULL);
+	}
+	return (path);
+}
+
+static char	*handle_cd_oldpwd(t_minishell *mini)
+{
+	char	*path;
+
+	path = get_value_env(mini, "OLDPWD");
+	if (!path)
+	{
+		ft_putstr_fd("minishell: cd: OLDPWD not set\n", STDERR_FILENO);
+		mini->exit_status = 1;
+		return (NULL);
+	}
+	return (path);
+}
+
 static char	*resolve_cd_path(t_minishell *mini, char **argv)
 {
 	char	*path;
@@ -60,36 +88,16 @@ static char	*resolve_cd_path(t_minishell *mini, char **argv)
 	}
 	path = argv[1];
 	if (!path)
-	{
-		path = get_value_env(mini, "HOME");
-		if (!path)
-		{
-			ft_putstr_fd("minishell: cd: HOME not set\n", STDERR_FILENO);
-			mini->exit_status = 1;
-			return (NULL);
-		}
-	}
+		return (handle_cd_home(mini));
 	else if (ft_strcmp(path, "-") == 0)
-	{
-		path = get_value_env(mini, "OLDPWD");
-		if (!path)
-		{
-			ft_putstr_fd("minishell: cd: OLDPWD not set\n", STDERR_FILENO);
-			mini->exit_status = 1;
-			return (NULL);
-		}
-	}
+		return (handle_cd_oldpwd(mini));
 	else if (path[0] == '~')
 		return (handle_tilde_expansion(mini, path));
 	return (path);
 }
 
-static int	validate_and_change_directory(t_minishell *mini, char *path,
-	char **argv)
+static int	check_path_access(t_minishell *mini, char *path, char **argv)
 {
-	char	*old_pwd;
-	char	cwd[1024];
-
 	if (access(path, F_OK) != 0)
 	{
 		ft_putstr_fd("minishell: cd: ", STDERR_FILENO);
@@ -110,21 +118,14 @@ static int	validate_and_change_directory(t_minishell *mini, char *path,
 			free(path);
 		return (1);
 	}
-	if (mini->pipex_count > 0)
-	{
-		mini->exit_status = 0;
-		if (path != argv[1] && path[0] == '~')
-			free(path);
-		return (1);
-	}
-	if (chdir(path) != 0)
-	{
-		ft_putstr_fd("minishell: cd: ", STDERR_FILENO);
-		ft_putstr_fd(path, STDERR_FILENO);
-		ft_putstr_fd(": Not a directory\n", STDERR_FILENO);
-		mini->exit_status = 1;
-		return (1);
-	}
+	return (0);
+}
+
+static void	update_pwd_env(t_minishell *mini)
+{
+	char	*old_pwd;
+	char	cwd[1024];
+
 	old_pwd = get_value_env(mini, "PWD");
 	if (getcwd(cwd, sizeof(cwd)) != NULL)
 	{
@@ -140,6 +141,29 @@ static int	validate_and_change_directory(t_minishell *mini, char *path,
 			STDERR_FILENO);
 		ft_putstr_fd("No such file or directory\n", STDERR_FILENO);
 	}
+}
+
+static int	validate_and_change_directory(t_minishell *mini, char *path,
+	char **argv)
+{
+	if (check_path_access(mini, path, argv))
+		return (1);
+	if (mini->pipex_count > 0)
+	{
+		mini->exit_status = 0;
+		if (path != argv[1] && path[0] == '~')
+			free(path);
+		return (1);
+	}
+	if (chdir(path) != 0)
+	{
+		ft_putstr_fd("minishell: cd: ", STDERR_FILENO);
+		ft_putstr_fd(path, STDERR_FILENO);
+		ft_putstr_fd(": Not a directory\n", STDERR_FILENO);
+		mini->exit_status = 1;
+		return (1);
+	}
+	update_pwd_env(mini);
 	mini->exit_status = 0;
 	return (0);
 }

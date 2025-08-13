@@ -195,7 +195,9 @@ int put_token_to_commands(t_minishell *minishell)
 		}
 		else if (cur->type == WORD)
 		{
-			if (cur->value[0] == '\0') // skip empty tokens
+			// Allow empty tokens for the first argument (command name)
+			// to trigger proper "command not found" error
+			if (cur->value[0] == '\0' && arg_index > 0)
 			{
 				cur = cur->next;
 				continue;

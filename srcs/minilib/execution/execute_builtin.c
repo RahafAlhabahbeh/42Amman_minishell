@@ -32,7 +32,6 @@ void	execute_builtin(t_minishell *minishell, int i)
 		|| !minishell->cmd[i].argv[0])
 		return ;
 	name = minishell->cmd[i].argv[0];
-
 	if (!ft_strcmp(name, "echo"))
 		call_echo(minishell, minishell->cmd[i].argv);
 	else if (!ft_strcmp(name, "pwd"))
@@ -56,7 +55,6 @@ void	execute_builtin_cmd(t_minishell *mini, t_cmd *cmd)
 	if (!cmd || !cmd->argv || !cmd->argv[0])
 		return ;
 	name = cmd->argv[0];
-
 	if (!ft_strcmp(name, "echo"))
 		call_echo(mini, cmd->argv);
 	else if (!ft_strcmp(name, "pwd"))

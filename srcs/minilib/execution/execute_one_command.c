@@ -14,9 +14,9 @@
 
 static int	handle_empty_command(t_minishell *mini, t_cmd *cmd)
 {
-	if (cmd->argv[0][0] == '\0')
+	if (!cmd->argv || !cmd->argv[0] || cmd->argv[0][0] == '\0')
 	{
-		write(2, "minishell: : command not found\n", 32);
+		write(2, ": command not found\n", 20);
 		mini->exit_status = 127;
 		return (1);
 	}
@@ -51,6 +51,7 @@ static int	handle_parent_builtin(t_minishell *mini, t_cmd *cmd)
 static void	handle_child_process(t_minishell *mini, t_cmd *cmd, char **envp)
 {
 	char	*path;
+	int		status;
 
 	signal(SIGINT, SIG_DFL);
 	signal(SIGQUIT, SIG_DFL);
@@ -59,17 +60,41 @@ static void	handle_child_process(t_minishell *mini, t_cmd *cmd, char **envp)
 	if (is_builtin(cmd->argv[0]))
 	{
 		execute_builtin_cmd(mini, cmd);
+		cleanup_child_process(mini);
 		exit(0);
 	}
-	path = resolve_cmd_path(cmd->argv[0], mini);
-	if (!path)
+	status = resolve_cmd_path_with_status(cmd->argv[0], mini, &path);
+	if (status != 0)
 	{
-		write(2, cmd->argv[0], ft_strlen(cmd->argv[0]));
-		write(2, ": command not found\n", 20);
-		exit(127);
+		if (status == 126)
+		{
+			if (is_directory(cmd->argv[0]))
+			{
+				write(2, cmd->argv[0], ft_strlen(cmd->argv[0]));
+				write(2, ": Is a directory\n", 17);
+			}
+			else
+			{
+				write(2, cmd->argv[0], ft_strlen(cmd->argv[0]));
+				write(2, ": Permission denied\n", 20);
+			}
+		}
+		else
+		{
+			write(2, cmd->argv[0], ft_strlen(cmd->argv[0]));
+			if (cmd->argv[0][0] == '/' || 
+				(cmd->argv[0][0] == '.' && ft_strchr(cmd->argv[0], '/')))
+				write(2, ": No such file or directory\n", 28);
+			else
+				write(2, ": command not found\n", 20);
+		}
+		cleanup_child_process(mini);
+		exit(status);
 	}
 	execve(path, cmd->argv, envp);
 	perror("execve");
+	free(path);
+	cleanup_child_process(mini);
 	exit(126);
 }
 
@@ -82,7 +107,16 @@ static void	handle_parent_process(t_minishell *mini, pid_t pid)
 	if (WIFEXITED(status))
 		mini->exit_status = WEXITSTATUS(status);
 	else if (WIFSIGNALED(status))
+	{
 		mini->exit_status = 128 + WTERMSIG(status);
+		if (WTERMSIG(status) == SIGINT)
+		{
+			write(1, "^C\n", 3);
+			rl_replace_line("", 0);
+			rl_on_new_line();
+			rl_redisplay();
+		}
+	}
 }
 
 void	execute_one_command(t_minishell *mini, char **envp)

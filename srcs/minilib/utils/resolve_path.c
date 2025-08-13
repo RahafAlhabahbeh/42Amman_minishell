@@ -12,7 +12,7 @@
 
 #include "../../../include/minishell.h"
 
-static int	is_directory(const char *path)
+int	is_directory(const char *path)
 {
 	struct stat	st;
 
@@ -38,18 +38,28 @@ static char	*check_absolute_path(char *cmd)
 {
 	int	status;
 
-	if (cmd[0] == '/' || (cmd[0] == '.' && (cmd[1] == '/' || cmd[1] == '.')))
+	if (cmd[0] == '/' || (cmd[0] == '.' && ft_strchr(cmd, '/')))
 	{
+		if (is_directory(cmd))
+		{
+			write(2, cmd, ft_strlen(cmd));
+			write(2, ": Is a directory\n", 17);
+			return (NULL);
+		}
 		status = is_executable(cmd);
 		if (status == 0)
 			return (ft_strdup(cmd));
+		if (status == -1)
+		{
+			write(2, cmd, ft_strlen(cmd));
+			write(2, ": No such file or directory\n", 28);
+			return (NULL);
+		}
 		if (status == -2)
 		{
-			if (is_directory(cmd))
-				return (NULL);
 			write(2, cmd, ft_strlen(cmd));
 			write(2, ": Permission denied\n", 20);
-			exit(126);
+			return (NULL);
 		}
 		return (NULL);
 	}
@@ -107,11 +117,73 @@ char	*resolve_cmd_path(char *cmd, t_minishell *mini)
 			write(2, ": Permission denied\n", 20);
 			free_paths_array(paths);
 			free(full);
-			exit(126);
+			return (NULL);
 		}
 		free(full);
 		i++;
 	}
 	free_paths_array(paths);
 	return (NULL);
+}
+
+int	resolve_cmd_path_with_status(char *cmd, t_minishell *mini, char **path)
+{
+	char	*path_env;
+	char	**paths;
+	char	*full;
+	int		status;
+	int		i;
+
+	*path = NULL;
+	if (!cmd)
+		return (127);
+	if (cmd[0] == '/' || (cmd[0] == '.' && ft_strchr(cmd, '/')))
+	{
+		status = is_executable(cmd);
+		if (status == 0)
+		{
+			*path = ft_strdup(cmd);
+			return (0);
+		}
+		if (status == -1)
+			return (127);
+		return (126);
+	}
+	path_env = get_value_env(mini, "PATH");
+	if (!path_env)
+		return (127);
+	paths = ft_split(path_env, ':');
+	i = 0;
+	while (paths[i])
+	{
+		full = join_path(paths[i], cmd);
+		if (!full)
+		{
+			i++;
+			continue ;
+		}
+		if (is_directory(full))
+		{
+			free(full);
+			i++;
+			continue ;
+		}
+		status = is_executable(full);
+		if (status == 0)
+		{
+			free_paths_array(paths);
+			*path = full;
+			return (0);
+		}
+		else if (status == -2)
+		{
+			free_paths_array(paths);
+			free(full);
+			return (126);
+		}
+		free(full);
+		i++;
+	}
+	free_paths_array(paths);
+	return (127);
 }

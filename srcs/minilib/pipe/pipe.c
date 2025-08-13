@@ -107,7 +107,8 @@ static void	handle_file_redirection(t_cmd *cmd)
 	}
 	if (cmd->output_file_name)
 	{
-		fd_out = open(cmd->output_file_name, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+		fd_out = open(cmd->output_file_name, 
+			O_WRONLY | O_CREAT | O_TRUNC, 0644);
 		if (fd_out == -1)
 		{
 			perror("open output file");
@@ -122,26 +123,85 @@ static void	handle_file_redirection(t_cmd *cmd)
 	}
 }
 
-static void	execute_child_command(t_minishell *minishell, int *pipefds,
-	int i, int n, char **envp)
+typedef struct s_pipe_data
 {
-	setup_child_pipes(pipefds, i, n);
-	close_all_pipes(pipefds, n);
-	handle_file_redirection(&minishell->cmd[i]);
-	execve(minishell->cmd[i].argv[0], minishell->cmd[i].argv, envp);
+	int		*pipefds;
+	int		i;
+	int		n;
+	char	**envp;
+}	t_pipe_data;
+
+static void	execute_child_command(t_minishell *minishell, t_pipe_data *data)
+{
+	char	*path;
+	int		status;
+
+	setup_child_pipes(data->pipefds, data->i, data->n);
+	close_all_pipes(data->pipefds, data->n);
+	handle_file_redirection(&minishell->cmd[data->i]);
+	if (!minishell->cmd[data->i].argv || !minishell->cmd[data->i].argv[0] || 
+		minishell->cmd[data->i].argv[0][0] == '\0')
+	{
+		write(2, ": command not found\n", 20);
+		cleanup_child_process(minishell);
+		exit(127);
+	}
+	status = resolve_cmd_path_with_status(minishell->cmd[data->i].argv[0], 
+		minishell, &path);
+	if (status != 0)
+	{
+		if (status == 126)
+		{
+			if (is_directory(minishell->cmd[data->i].argv[0]))
+			{
+				write(2, minishell->cmd[data->i].argv[0], 
+					ft_strlen(minishell->cmd[data->i].argv[0]));
+				write(2, ": Is a directory\n", 17);
+			}
+			else
+			{
+				write(2, minishell->cmd[data->i].argv[0], 
+					ft_strlen(minishell->cmd[data->i].argv[0]));
+				write(2, ": Permission denied\n", 20);
+			}
+		}
+		else
+		{
+			write(2, minishell->cmd[data->i].argv[0], 
+				ft_strlen(minishell->cmd[data->i].argv[0]));
+			if (minishell->cmd[data->i].argv[0][0] == '/' || 
+				(minishell->cmd[data->i].argv[0][0] == '.' && 
+				ft_strchr(minishell->cmd[data->i].argv[0], '/')))
+				write(2, ": No such file or directory\n", 28);
+			else
+				write(2, ": command not found\n", 20);
+		}
+		cleanup_child_process(minishell);
+		exit(status);
+	}
+	execve(path, minishell->cmd[data->i].argv, data->envp);
 	perror("execve");
+	free(path);
+	cleanup_child_process(minishell);
 	exit(EXIT_FAILURE);
 }
 
-void	execute_piped_commands(t_minishell *minishell, char **envp)
+static int	*init_pipes(int n)
 {
-	int		n;
-	int		pipefds[2 * (minishell->pipex_count)];
+	int	*pipefds;
+
+	pipefds = malloc(sizeof(int) * 2 * (n - 1));
+	if (!pipefds)
+		exit(EXIT_FAILURE);
+	create_pipes(pipefds, n);
+	return (pipefds);
+}
+
+static void	fork_and_execute(t_minishell *ms, t_pipe_data *data, int n)
+{
 	pid_t	pid;
 	int		i;
 
-	n = minishell->pipex_count + 1;
-	create_pipes(pipefds, n);
 	i = 0;
 	while (i < n)
 	{
@@ -152,10 +212,18 @@ void	execute_piped_commands(t_minishell *minishell, char **envp)
 			exit(EXIT_FAILURE);
 		}
 		else if (pid == 0)
-			execute_child_command(minishell, pipefds, i, n, envp);
+		{
+			data->i = i;
+			execute_child_command(ms, data);
+		}
 		i++;
 	}
-	close_all_pipes(pipefds, n);
+}
+
+static void	wait_for_children(int n)
+{
+	int	i;
+
 	i = 0;
 	while (i < n)
 	{
@@ -163,3 +231,21 @@ void	execute_piped_commands(t_minishell *minishell, char **envp)
 		i++;
 	}
 }
+
+void	execute_piped_commands(t_minishell *minishell, char **envp)
+{
+	int			n;
+	int			*pipefds;
+	t_pipe_data	data;
+
+	n = minishell->pipex_count + 1;
+	pipefds = init_pipes(n);
+	data.pipefds = pipefds;
+	data.n = n;
+	data.envp = envp;
+	fork_and_execute(minishell, &data, n);
+	close_all_pipes(pipefds, n);
+	wait_for_children(n);
+	free(pipefds);
+}
+

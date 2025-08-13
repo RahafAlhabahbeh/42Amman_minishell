@@ -12,23 +12,26 @@
 
 #include "../../../include/minishell.h"
 
-static void	handle_shlvl(t_minishell *mini)
+static int	get_current_shlvl(t_minishell *mini)
 {
 	char	*shlvl_str;
-	char	*shlvl_str_warning;
-	char	*new_shlvl;
 	int		shlvl;
 
 	shlvl_str = get_value_env(mini, "SHLVL");
 	shlvl = 0;
-
 	if (shlvl_str)
 	{
 		shlvl = ft_atoi(shlvl_str);
 		if (shlvl < 0)
 			shlvl = 0;
 	}
-	shlvl++;
+	return (shlvl + 1);
+}
+
+static int	check_shlvl_limit(int shlvl)
+{
+	char	*shlvl_str_warning;
+
 	if (shlvl > 999)
 	{
 		shlvl_str_warning = ft_itoa(shlvl);
@@ -36,8 +39,18 @@ static void	handle_shlvl(t_minishell *mini)
 		ft_putstr_fd(shlvl_str_warning, STDERR_FILENO);
 		ft_putstr_fd(") too high, resetting to 1\n", STDERR_FILENO);
 		free(shlvl_str_warning);
-		shlvl = 1;
+		return (1);
 	}
+	return (shlvl);
+}
+
+static void	handle_shlvl(t_minishell *mini)
+{
+	char	*new_shlvl;
+	int		shlvl;
+
+	shlvl = get_current_shlvl(mini);
+	shlvl = check_shlvl_limit(shlvl);
 	new_shlvl = ft_itoa(shlvl);
 	if (new_shlvl)
 	{
@@ -70,41 +83,40 @@ static void	init_pwd_env(t_minishell *mini)
 	}
 }
 
-void	init_env_list(t_minishell *mini, char **envp)
+static void	parse_env_entry(t_minishell *mini, char *env_str)
 {
 	char	*eq;
 	char	*key;
 	char	*value;
 	int		key_len;
-	int		i;
+
+	eq = ft_strchr(env_str, '=');
+	if (!eq)
+		return ;
+	key_len = eq - env_str;
+	key = ft_substr(env_str, 0, key_len);
+	if (!key)
+		return ;
+	value = ft_strdup(eq + 1);
+	if (!value)
+	{
+		free(key);
+		return ;
+	}
+	mini->env_list = set_env_value(mini, key, value);
+	free(key);
+	free(value);
+}
+
+void	init_env_list(t_minishell *mini, char **envp)
+{
+	int	i;
 
 	mini->env_list = NULL;
 	i = 0;
 	while (envp[i])
 	{
-		eq = ft_strchr(envp[i], '=');
-		if (!eq)
-		{
-			i++;
-			continue ;
-		}
-		key_len = eq - envp[i];
-		key = ft_substr(envp[i], 0, key_len);
-		if (!key)
-		{
-			i++;
-			continue ;
-		}
-		value = ft_strdup(eq + 1);
-		if (!value)
-		{
-			free(key);
-			i++;
-			continue ;
-		}
-		mini->env_list = set_env_value(mini, key, value);
-		free(key);
-		free(value);
+		parse_env_entry(mini, envp[i]);
 		i++;
 	}
 	handle_shlvl(mini);
@@ -122,14 +134,11 @@ char	*get_env_value(const char *key, t_env *env)
 	return (NULL);
 }
 
-t_env	*set_env_value(t_minishell *mini, char *key, char *value)
+static t_env	*update_existing_env(t_env *env, char *key, char *value)
 {
 	t_env	*cur;
-	t_env	*new_node;
-	t_env	*last;
 
-	cur = mini->env_list;
-
+	cur = env;
 	while (cur)
 	{
 		if (ft_strcmp(cur->key, key) == 0)
@@ -139,18 +148,25 @@ t_env	*set_env_value(t_minishell *mini, char *key, char *value)
 				cur->value = ft_strdup(value);
 			else
 				cur->value = NULL;
-			return (mini->env_list);
+			return (env);
 		}
 		cur = cur->next;
 	}
+	return (NULL);
+}
+
+static t_env	*create_new_env_node(char *key, char *value)
+{
+	t_env	*new_node;
+
 	new_node = malloc(sizeof(t_env));
 	if (!new_node)
-		return (mini->env_list);
+		return (NULL);
 	new_node->key = ft_strdup(key);
 	if (!new_node->key)
 	{
 		free(new_node);
-		return (mini->env_list);
+		return (NULL);
 	}
 	if (value)
 	{
@@ -159,20 +175,41 @@ t_env	*set_env_value(t_minishell *mini, char *key, char *value)
 		{
 			free(new_node->key);
 			free(new_node);
-			return (mini->env_list);
+			return (NULL);
 		}
 	}
 	else
 		new_node->value = NULL;
 	new_node->next = NULL;
-	if (!mini->env_list)
-		mini->env_list = new_node;
+	return (new_node);
+}
+
+static void	add_env_to_list(t_env **env_list, t_env *new_node)
+{
+	t_env	*last;
+
+	if (!*env_list)
+		*env_list = new_node;
 	else
 	{
-		last = mini->env_list;
+		last = *env_list;
 		while (last->next)
 			last = last->next;
 		last->next = new_node;
 	}
+}
+
+t_env	*set_env_value(t_minishell *mini, char *key, char *value)
+{
+	t_env	*updated;
+	t_env	*new_node;
+
+	updated = update_existing_env(mini->env_list, key, value);
+	if (updated)
+		return (updated);
+	new_node = create_new_env_node(key, value);
+	if (!new_node)
+		return (mini->env_list);
+	add_env_to_list(&mini->env_list, new_node);
 	return (mini->env_list);
 }

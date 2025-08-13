@@ -131,12 +131,15 @@ char	*merge_args(char **argv, int start, int *consumed);
 
 char	*join_path(const char *dir, const char *cmd);
 char	*resolve_cmd_path(char *cmd, t_minishell *mini);
+int	resolve_cmd_path_with_status(char *cmd, t_minishell *mini, char **path);
+int	is_directory(const char *path);
 void	free_minishell(t_minishell *mini);
 void	free_tokens(t_token *head);
 void	free_cmds_array(t_cmd *cmd_array, int count);
 void	free_env_list(t_env *env);
 void	free_commands(t_cmd *cmds, int count);
 void	reset_minishell(t_minishell *mini);
+void	cleanup_child_process(t_minishell *mini);
 void	execute_piped_commands(t_minishell *minishell, char **envp);
 
 void	handle_sigint(int sig);

@@ -1,5 +1,5 @@
 CC         = cc
-CFLAGS     = -Wall -Werror -Wextra # -fsanitize=address -g
+CFLAGS     = -Wall -Werror -Wextra -g # -fsanitize=address -g
 
 # Directories
 OBJ_DIR    = obj

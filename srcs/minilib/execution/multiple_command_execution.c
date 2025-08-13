@@ -41,7 +41,16 @@ static void	wait_for_processes(t_minishell *mini, pid_t *pids, int count,
 				if (WIFEXITED(status))
 					mini->exit_status = WEXITSTATUS(status);
 				else if (WIFSIGNALED(status))
+				{
 					mini->exit_status = 128 + WTERMSIG(status);
+					if (WTERMSIG(status) == SIGINT)
+					{
+						write(1, "^C\n", 3);
+						rl_replace_line("", 0);
+						rl_on_new_line();
+						rl_redisplay();
+					}
+				}
 			}
 		}
 		else if (pids[i] == -2)
