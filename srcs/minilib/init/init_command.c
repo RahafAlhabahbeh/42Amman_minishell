@@ -44,6 +44,7 @@ static void	init_cmd_values(t_minishell *mini, int i)
 	mini->cmd[i].input_quote = 0;
 	mini->cmd[i].heredoc_temp_file = NULL;
 	mini->cmd[i].heredoc_fd = -1;
+	mini->cmd[i].heredoc_list = NULL;
 }
 
 static void	set_cmd_links(t_minishell *mini, int i)

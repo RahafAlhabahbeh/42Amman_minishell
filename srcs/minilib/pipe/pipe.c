@@ -142,9 +142,8 @@ static void	execute_child_command(t_minishell *minishell, t_pipe_data *data)
 	if (!minishell->cmd[data->i].argv || !minishell->cmd[data->i].argv[0] || 
 		minishell->cmd[data->i].argv[0][0] == '\0')
 	{
-		write(2, ": command not found\n", 20);
 		cleanup_child_process(minishell);
-		exit(127);
+		exit(0);
 	}
 	status = resolve_cmd_path_with_status(minishell->cmd[data->i].argv[0], 
 		minishell, &path);

@@ -16,8 +16,7 @@ static int	handle_empty_command(t_minishell *mini, t_cmd *cmd)
 {
 	if (!cmd->argv || !cmd->argv[0] || cmd->argv[0][0] == '\0')
 	{
-		write(2, ": command not found\n", 20);
-		mini->exit_status = 127;
+		mini->exit_status = 0;
 		return (1);
 	}
 	return (0);
@@ -25,14 +24,7 @@ static int	handle_empty_command(t_minishell *mini, t_cmd *cmd)
 
 static int	handle_parent_builtin(t_minishell *mini, t_cmd *cmd)
 {
-	char	*parent_builtins[5];
-
-	parent_builtins[0] = "export";
-	parent_builtins[1] = "unset";
-	parent_builtins[2] = "cd";
-	parent_builtins[3] = "exit";
-	parent_builtins[4] = NULL;
-	if (is_builtin(cmd->argv[0]) && is_str_in_set(cmd->argv[0], parent_builtins))
+	if (is_builtin(cmd->argv[0]))
 	{
 		save_original_fds(cmd);
 		if (handle_redirections(cmd, -1, NULL, 1) < 0)
@@ -100,21 +92,25 @@ static void	handle_child_process(t_minishell *mini, t_cmd *cmd, char **envp)
 
 static void	handle_parent_process(t_minishell *mini, pid_t pid)
 {
-	int	status;
+	int	status = 0;
+	int	wait_result;
 
-	waitpid(pid, &status, 0);
+	wait_result = waitpid(pid, &status, 0);
 	set_child_running(0);
-	if (WIFEXITED(status))
-		mini->exit_status = WEXITSTATUS(status);
-	else if (WIFSIGNALED(status))
+	if (wait_result > 0)
 	{
-		mini->exit_status = 128 + WTERMSIG(status);
-		if (WTERMSIG(status) == SIGINT)
+		if (WIFEXITED(status))
+			mini->exit_status = WEXITSTATUS(status);
+		else if (WIFSIGNALED(status))
 		{
-			write(1, "^C\n", 3);
-			rl_replace_line("", 0);
-			rl_on_new_line();
-			rl_redisplay();
+			mini->exit_status = 128 + WTERMSIG(status);
+			if (WTERMSIG(status) == SIGINT)
+			{
+				write(1, "^C\n", 3);
+				rl_replace_line("", 0);
+				rl_on_new_line();
+				rl_redisplay();
+			}
 		}
 	}
 }

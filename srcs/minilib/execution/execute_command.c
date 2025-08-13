@@ -34,19 +34,9 @@ int	is_redirection_present(t_cmd *cmd)
 
 int	should_run_builtin_in_parent(t_cmd *cmd, int index, int total_pipes)
 {
-	int		is_last;
-	int		has_redir;
-	char	*parent_builtins[3];
-
-	is_last = (index == total_pipes);
-	has_redir = is_redirection_present(cmd);
-	parent_builtins[0] = "export";
-	parent_builtins[1] = "unset";
-	parent_builtins[2] = NULL;
-	if (is_str_in_set(cmd->argv[0], parent_builtins))
-		return (!has_redir && is_last && total_pipes == 0);
-	if (ft_strcmp(cmd->argv[0], "cd") == 0)
-		return (!has_redir && is_last);
+	(void)cmd;
+	(void)index;
+	(void)total_pipes;
 	return (0);
 }
 
@@ -93,11 +83,7 @@ static void	handle_empty_command(t_cmd *cmd)
 				write(STDOUT_FILENO, buffer, bytes_read);
 			}
 		}
-		else
-		{
-			write(2, ": command not found\n", 20);
-		}
-		exit(127);
+		exit(0);
 	}
 }
 

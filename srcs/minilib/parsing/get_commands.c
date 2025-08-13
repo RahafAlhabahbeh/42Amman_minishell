@@ -186,6 +186,10 @@ int put_token_to_commands(t_minishell *minishell)
 			}
 			const char *filename = cur->next->value;
 
+			// Add heredoc to the list for multiple heredoc support
+			add_heredoc_to_list(&minishell->cmd[cmd_index], filename, cur->next->quote);
+			
+			// Keep the last heredoc info for backward compatibility
 			free(minishell->cmd[cmd_index].input_file_name);
 			minishell->cmd[cmd_index].input_file_name = ft_strdup(filename);
 			minishell->cmd[cmd_index].in_type = HERE_DOC;

@@ -52,6 +52,13 @@ typedef struct s_token
 	struct s_token	*next;
 }	t_token;
 
+typedef struct s_heredoc
+{
+	char		*delimiter;
+	char		quote;
+	struct s_heredoc	*next;
+}	t_heredoc;
+
 typedef struct s_cmd
 {
 	char		**argv;
@@ -62,6 +69,7 @@ typedef struct s_cmd
 	char		input_quote;
 	char		*heredoc_temp_file;
 	int		heredoc_fd;
+	t_heredoc	*heredoc_list;
 	struct s_cmd	*next;
 	struct s_cmd	*prev;
 	int		original_stdin;
@@ -117,6 +125,9 @@ int	handle_heredoc(t_minishell *mini, t_cmd *cmd);
 void	redirect_heredoc_input(t_cmd *cmd);
 void	cleanup_heredoc_files(t_minishell *mini);
 void	handle_heredoc_sigint(int sig);
+void	add_heredoc_to_list(t_cmd *cmd, const char *delimiter, char quote);
+void	free_heredoc_list(t_heredoc *list);
+int	process_multiple_heredocs(t_minishell *mini, t_cmd *cmd);
 void	execute_command(t_minishell *minishell, char **envp);
 void	call_env(t_minishell *mini, char **argv);
 void	call_export(t_minishell *mini, char **argv);

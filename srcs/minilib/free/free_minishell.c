@@ -69,6 +69,11 @@ static void	free_single_cmd(t_cmd *cmd)
 		close(cmd->heredoc_fd);
 		cmd->heredoc_fd = -1;
 	}
+	if (cmd->heredoc_list)
+	{
+		free_heredoc_list(cmd->heredoc_list);
+		cmd->heredoc_list = NULL;
+	}
 }
 
 void	free_cmds_array(t_cmd *cmd_array, int count)

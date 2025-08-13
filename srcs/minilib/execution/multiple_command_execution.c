@@ -27,16 +27,17 @@ static void	init_pids_array(pid_t *pids, int count)
 static void	wait_for_processes(t_minishell *mini, pid_t *pids, int count,
 	int last_was_parent_builtin)
 {
-	int	status;
+	int	status = 0;
 	int	i;
+	int	wait_result;
 
 	i = 0;
 	while (i < count)
 	{
 		if (pids[i] > 0)
 		{
-			waitpid(pids[i], &status, 0);
-			if (!last_was_parent_builtin || i == count - 1)
+			wait_result = waitpid(pids[i], &status, 0);
+			if (wait_result > 0 && (!last_was_parent_builtin || i == count - 1))
 			{
 				if (WIFEXITED(status))
 					mini->exit_status = WEXITSTATUS(status);

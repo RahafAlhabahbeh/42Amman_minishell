@@ -79,8 +79,7 @@ void handle_heredoc_sigint(int sig)
 {
     // Set the global signal flag so check_sigint_received() can detect it
     g_received_signal = sig;
-    // exit(130);
-    // write(1, "^C\n", 3);
+    write(1, "\n", 1);
 }
 
 static char *expand_heredoc_line(t_minishell *mini, char *line, int expand_vars)
@@ -185,7 +184,7 @@ static int create_heredoc_temp_file_with_quote(t_minishell *mini,
     static int heredoc_counter = 0;
     
     // Build filename manually without sprintf
-    ft_strlcpy(temp_filename, "/home/ral-haba/heredoc_", sizeof(temp_filename));
+    ft_strlcpy(temp_filename, "/tmp/heredoc_", sizeof(temp_filename));
     // Convert getpid() to string and append
     char *pid_str = ft_itoa(getpid());
     if (!pid_str)
@@ -231,7 +230,7 @@ static int create_heredoc_temp_file_with_quote(t_minishell *mini,
     
     // Create a temporary file to store all content first
     // Build filename manually without sprintf
-    ft_strlcpy(temp_content_filename, "/home/ral-haba/heredoc_content_", sizeof(temp_content_filename));
+    ft_strlcpy(temp_content_filename, "/tmp/heredoc_content_", sizeof(temp_content_filename));
     // Convert getpid() to string and append
     char *pid_str2 = ft_itoa(getpid());
     if (!pid_str2)
@@ -341,6 +340,7 @@ static int create_heredoc_temp_file_with_quote(t_minishell *mini,
     if (check_sigint_received())
     {
         unlink(temp_filename);
+        unlink(temp_content_filename);
         return -1;
     }
     
@@ -351,14 +351,19 @@ static int create_heredoc_temp_file_with_quote(t_minishell *mini,
 
 int handle_heredoc(t_minishell *mini, t_cmd *cmd)
 {
-    if (cmd->in_type != HERE_DOC || !cmd->input_file_name)
+    if (cmd->in_type != HERE_DOC)
         return 0;
     
-    // Check if there are multiple heredocs in the command
-    // For now, we'll use the current delimiter and let the command parsing handle multiple heredocs
-    // by only keeping the last one
+    // Handle multiple heredocs if they exist
+    if (cmd->heredoc_list)
+    {
+        return process_multiple_heredocs(mini, cmd);
+    }
     
-    // Pass the delimiter and quote information for proper variable expansion handling
+    // Handle single heredoc (fallback for backward compatibility)
+    if (!cmd->input_file_name)
+        return 0;
+    
     int heredoc_fd = create_heredoc_temp_file_with_quote(mini, cmd->input_file_name, 
                                                         &cmd->heredoc_temp_file, cmd->input_quote);
     if (heredoc_fd < 0)
@@ -367,9 +372,8 @@ int handle_heredoc(t_minishell *mini, t_cmd *cmd)
         return -1;
     }
     
-    // Store the file descriptor directly instead of converting to string
     cmd->heredoc_fd = heredoc_fd;
-    cmd->in_type = REDIR_IN; // Change to regular input redirection
+    cmd->in_type = REDIR_IN;
     
     return 0;
 }
@@ -384,11 +388,103 @@ void redirect_heredoc_input(t_cmd *cmd)
     cmd->heredoc_fd = -1;
 }
 
+void add_heredoc_to_list(t_cmd *cmd, const char *delimiter, char quote)
+{
+    t_heredoc *new_heredoc = malloc(sizeof(t_heredoc));
+    if (!new_heredoc)
+        return;
+    
+    new_heredoc->delimiter = ft_strdup(delimiter);
+    new_heredoc->quote = quote;
+    new_heredoc->next = NULL;
+    
+    if (!cmd->heredoc_list)
+    {
+        cmd->heredoc_list = new_heredoc;
+    }
+    else
+    {
+        t_heredoc *current = cmd->heredoc_list;
+        while (current->next)
+            current = current->next;
+        current->next = new_heredoc;
+    }
+}
+
+void free_heredoc_list(t_heredoc *list)
+{
+    t_heredoc *current = list;
+    t_heredoc *next;
+    
+    while (current)
+    {
+        next = current->next;
+        free(current->delimiter);
+        free(current);
+        current = next;
+    }
+}
+
+int process_multiple_heredocs(t_minishell *mini, t_cmd *cmd)
+{
+    t_heredoc *current = cmd->heredoc_list;
+    char *last_temp_file = NULL;
+    int last_fd = -1;
+    
+    if (!current)
+        return 0;
+    
+    // Process each heredoc in sequence
+    while (current)
+    {
+        // Close previous temp file if exists
+        if (last_fd >= 0)
+        {
+            close(last_fd);
+            if (last_temp_file)
+                unlink(last_temp_file);
+        }
+        
+        // Create temp file for this heredoc
+        last_fd = create_heredoc_temp_file_with_quote(mini, current->delimiter, 
+                                                     &last_temp_file, current->quote);
+        if (last_fd < 0)
+        {
+            if (last_temp_file)
+                free(last_temp_file);
+            return -1;
+        }
+        
+        // If not the last heredoc, consume and discard the input
+        if (current->next)
+        {
+            close(last_fd);
+            unlink(last_temp_file);
+            free(last_temp_file);
+            last_temp_file = NULL;
+            last_fd = -1;
+        }
+        
+        current = current->next;
+    }
+    
+    // Store the last heredoc result
+    if (last_fd >= 0)
+    {
+        cmd->heredoc_fd = last_fd;
+        cmd->heredoc_temp_file = last_temp_file;
+        cmd->in_type = REDIR_IN;
+        return 0;
+    }
+    
+    return -1;
+}
+
 void cleanup_heredoc_files(t_minishell *mini)
 {
     if (!mini || !mini->cmd)
         return;
-        
+    
     t_cmd *cmd = mini->cmd;
     for (int i = 0; i <= mini->pipex_count; i++)
     {
@@ -402,6 +498,11 @@ void cleanup_heredoc_files(t_minishell *mini)
             unlink(cmd[i].heredoc_temp_file);
             free(cmd[i].heredoc_temp_file);
             cmd[i].heredoc_temp_file = NULL;
+        }
+        if (cmd[i].heredoc_list)
+        {
+            free_heredoc_list(cmd[i].heredoc_list);
+            cmd[i].heredoc_list = NULL;
         }
     }
 }
