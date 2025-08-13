@@ -19,7 +19,7 @@ void	handle_sigint(int sig)
 	g_received_signal = sig;
 	if (!is_child_running())
 	{
-		write(1, "^C\n", 3);
+		// write(1, "^C\n", 3);
 		rl_replace_line("", 0);
 		rl_on_new_line();
 		rl_redisplay();

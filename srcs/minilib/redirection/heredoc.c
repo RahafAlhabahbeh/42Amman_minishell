@@ -97,7 +97,8 @@ void handle_heredoc_sigint(int sig)
 {
     // Set the global signal flag so check_sigint_received() can detect it
     g_received_signal = sig;
-    write(1, "^C\n", 3);
+    // exit(130);
+    // write(1, "^C\n", 3);
 }
 
 static char *expand_heredoc_line(t_minishell *mini, char *line, int expand_vars)
@@ -202,7 +203,7 @@ static int create_heredoc_temp_file_with_quote(t_minishell *mini,
     static int heredoc_counter = 0;
     
     // Build filename manually without sprintf
-    simple_strcpy(temp_filename, "/tmp/heredoc_");
+    simple_strcpy(temp_filename, "/home/ral-haba/heredoc_");//ft_strcpy
     // Convert getpid() to string and append
     char pid_str[16];
     int pid = getpid();
@@ -213,6 +214,7 @@ static int create_heredoc_temp_file_with_quote(t_minishell *mini,
         pid /= 10;
     }
     pid_str[i] = '\0';
+    //itoa
     // Reverse pid_str
     int start = 0, end = i - 1;
     while (start < end)
@@ -223,8 +225,8 @@ static int create_heredoc_temp_file_with_quote(t_minishell *mini,
         start++;
         end--;
     }
-    simple_strcat(temp_filename, pid_str);
-    simple_strcat(temp_filename, "_");
+    simple_strcat(temp_filename, pid_str);//ft_strcat
+    simple_strcat(temp_filename, "_");//ft_strcat
     // Convert counter to string and append
     char counter_str[16];
     int counter = heredoc_counter++;
@@ -245,6 +247,7 @@ static int create_heredoc_temp_file_with_quote(t_minishell *mini,
         start++;
         end--;
     }
+    //itoa
     simple_strcat(temp_filename, counter_str);
     *temp_filename_ptr = ft_strdup(temp_filename);
     
@@ -275,7 +278,7 @@ static int create_heredoc_temp_file_with_quote(t_minishell *mini,
     
     // Create a temporary file to store all content first
     // Build filename manually without sprintf
-    simple_strcpy(temp_content_filename, "/tmp/heredoc_content_");
+    simple_strcpy(temp_content_filename, "/home/ral-haba/heredoc_content_");
     // Convert getpid() to string and append
     char pid_str2[16];
     int pid2 = getpid();
@@ -296,6 +299,7 @@ static int create_heredoc_temp_file_with_quote(t_minishell *mini,
         start2++;
         end2--;
     }
+    //itoa
     simple_strcat(temp_content_filename, pid_str2);
     simple_strcat(temp_content_filename, "_");
     // Convert counter to string and append
@@ -465,4 +469,4 @@ void cleanup_heredoc_files(t_minishell *mini)
             cmd[i].heredoc_temp_file = NULL;
         }
     }
-} 
+}
