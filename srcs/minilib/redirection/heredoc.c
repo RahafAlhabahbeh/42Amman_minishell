@@ -15,27 +15,9 @@
 // Use external signal handling from signals.c
 extern int check_sigint_received(void);
 
-// Simple strcpy implementation
-static char *simple_strcpy(char *dest, const char *src)
-{
-    char *ptr = dest;
-    while (*src)
-        *ptr++ = *src++;
-    *ptr = '\0';
-    return dest;
-}
 
-// Simple strcat implementation  
-static char *simple_strcat(char *dest, const char *src)
-{
-    char *ptr = dest;
-    while (*ptr)
-        ptr++;
-    while (*src)
-        *ptr++ = *src++;
-    *ptr = '\0';
-    return dest;
-}
+
+
 
 // Custom getline implementation using only allowed functions
 static ssize_t ft_getline(char **lineptr, size_t *n, int fd)
@@ -203,52 +185,23 @@ static int create_heredoc_temp_file_with_quote(t_minishell *mini,
     static int heredoc_counter = 0;
     
     // Build filename manually without sprintf
-    simple_strcpy(temp_filename, "/home/ral-haba/heredoc_");//ft_strcpy
+    ft_strlcpy(temp_filename, "/home/ral-haba/heredoc_", sizeof(temp_filename));
     // Convert getpid() to string and append
-    char pid_str[16];
-    int pid = getpid();
-    int i = 0;
-    while (pid > 0)
-    {
-        pid_str[i++] = (pid % 10) + '0';
-        pid /= 10;
-    }
-    pid_str[i] = '\0';
-    //itoa
-    // Reverse pid_str
-    int start = 0, end = i - 1;
-    while (start < end)
-    {
-        char temp = pid_str[start];
-        pid_str[start] = pid_str[end];
-        pid_str[end] = temp;
-        start++;
-        end--;
-    }
-    simple_strcat(temp_filename, pid_str);//ft_strcat
-    simple_strcat(temp_filename, "_");//ft_strcat
+    char *pid_str = ft_itoa(getpid());
+    if (!pid_str)
+        return (-1);
+    
+    ft_strlcat(temp_filename, pid_str, sizeof(temp_filename));
+    ft_strlcat(temp_filename, "_", sizeof(temp_filename));
+    free(pid_str);
+    
     // Convert counter to string and append
-    char counter_str[16];
-    int counter = heredoc_counter++;
-    i = 0;
-    while (counter > 0)
-    {
-        counter_str[i++] = (counter % 10) + '0';
-        counter /= 10;
-    }
-    counter_str[i] = '\0';
-    // Reverse counter_str
-    start = 0, end = i - 1;
-    while (start < end)
-    {
-        char temp = counter_str[start];
-        counter_str[start] = counter_str[end];
-        counter_str[end] = temp;
-        start++;
-        end--;
-    }
-    //itoa
-    simple_strcat(temp_filename, counter_str);
+    char *counter_str = ft_itoa(heredoc_counter++);
+    if (!counter_str)
+        return (-1);
+    
+    ft_strlcat(temp_filename, counter_str, sizeof(temp_filename));
+    free(counter_str);
     *temp_filename_ptr = ft_strdup(temp_filename);
     
     int temp_fd = open(temp_filename, O_WRONLY | O_CREAT | O_TRUNC, 0600);
@@ -278,51 +231,33 @@ static int create_heredoc_temp_file_with_quote(t_minishell *mini,
     
     // Create a temporary file to store all content first
     // Build filename manually without sprintf
-    simple_strcpy(temp_content_filename, "/home/ral-haba/heredoc_content_");
+    ft_strlcpy(temp_content_filename, "/home/ral-haba/heredoc_content_", sizeof(temp_content_filename));
     // Convert getpid() to string and append
-    char pid_str2[16];
-    int pid2 = getpid();
-    int j = 0;
-    while (pid2 > 0)
+    char *pid_str2 = ft_itoa(getpid());
+    if (!pid_str2)
     {
-        pid_str2[j++] = (pid2 % 10) + '0';
-        pid2 /= 10;
+        close(temp_fd);
+        unlink(temp_filename);
+        free(clean_delimiter);
+        return (-1);
     }
-    pid_str2[j] = '\0';
-    // Reverse pid_str2
-    int start2 = 0, end2 = j - 1;
-    while (start2 < end2)
-    {
-        char temp = pid_str2[start2];
-        pid_str2[start2] = pid_str2[end2];
-        pid_str2[end2] = temp;
-        start2++;
-        end2--;
-    }
-    //itoa
-    simple_strcat(temp_content_filename, pid_str2);
-    simple_strcat(temp_content_filename, "_");
+    
+    ft_strlcat(temp_content_filename, pid_str2, sizeof(temp_content_filename));
+    ft_strlcat(temp_content_filename, "_", sizeof(temp_content_filename));
+    free(pid_str2);
+    
     // Convert counter to string and append
-    char counter_str2[16];
-    j = 0;
-    int counter2 = heredoc_counter;
-    while (counter2 > 0)
+    char *counter_str2 = ft_itoa(heredoc_counter);
+    if (!counter_str2)
     {
-        counter_str2[j++] = (counter2 % 10) + '0';
-        counter2 /= 10;
+        close(temp_fd);
+        unlink(temp_filename);
+        free(clean_delimiter);
+        return (-1);
     }
-    counter_str2[j] = '\0';
-    // Reverse counter_str2
-    start2 = 0, end2 = j - 1;
-    while (start2 < end2)
-    {
-        char temp = counter_str2[start2];
-        counter_str2[start2] = counter_str2[end2];
-        counter_str2[end2] = temp;
-        start2++;
-        end2--;
-    }
-    simple_strcat(temp_content_filename, counter_str2);
+    
+    ft_strlcat(temp_content_filename, counter_str2, sizeof(temp_content_filename));
+    free(counter_str2);
     temp_content_fd = open(temp_content_filename,
 		O_WRONLY | O_CREAT | O_TRUNC, 0600);
     if (temp_content_fd < 0)

@@ -12,29 +12,7 @@
 
 #include "../../../include/minishell.h"
 
-static char	*simple_strcpy(char *dest, const char *src)
-{
-	char	*ptr;
 
-	ptr = dest;
-	while (*src)
-		*ptr++ = *src++;
-	*ptr = '\0';
-	return (dest);
-}
-
-static char	*simple_strcat(char *dest, const char *src)
-{
-	char	*ptr;
-
-	ptr = dest;
-	while (*ptr)
-		ptr++;
-	while (*src)
-		*ptr++ = *src++;
-	*ptr = '\0';
-	return (dest);
-}
 
 static int	ft_isspace(unsigned char c)
 {
@@ -73,17 +51,19 @@ static char	*handle_continuation_eof(t_minishell *ms, char *full_input)
 static char	*append_continuation_line(char *full_input, char *line)
 {
 	char	*new_input;
+	size_t	new_len;
 
-	new_input = malloc(ft_strlen(full_input) + ft_strlen(line) + 2);
+	new_len = ft_strlen(full_input) + ft_strlen(line) + 2;
+	new_input = malloc(new_len);
 	if (!new_input)
 	{
 		free(full_input);
 		free(line);
 		return (NULL);
 	}
-	simple_strcpy(new_input, full_input);
-	simple_strcat(new_input, " ");
-	simple_strcat(new_input, line);
+	ft_strlcpy(new_input, full_input, new_len);
+	ft_strlcat(new_input, " ", new_len);
+	ft_strlcat(new_input, line, new_len);
 	free(full_input);
 	free(line);
 	return (new_input);

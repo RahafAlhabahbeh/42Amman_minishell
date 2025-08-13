@@ -12,18 +12,7 @@
 
 #include "../../../include/minishell.h"
 
-static char	*simple_strcat(char *dest, const char *src)
-{
-	char	*ptr;
 
-	ptr = dest;
-	while (*ptr)
-		ptr++;
-	while (*src)
-		*ptr++ = *src++;
-	*ptr = '\0';
-	return (dest);
-}
 
 void	call_env(t_minishell *shell, char **argv)
 {
@@ -65,16 +54,15 @@ char	*get_value_env(t_minishell *mini, const char *key)
 
 char	*join_path(const char *dir, const char *cmd)
 {
+	char	*dir_slash;
 	char	*full;
 
 	if (!dir || !cmd)
 		return (NULL);
-	full = malloc(ft_strlen(dir) + ft_strlen(cmd) + 2);
-	if (!full)
+	dir_slash = ft_strjoin(dir, "/");
+	if (!dir_slash)
 		return (NULL);
-	full[0] = '\0';
-	simple_strcat(full, dir);
-	simple_strcat(full, "/");
-	simple_strcat(full, cmd);
+	full = ft_strjoin(dir_slash, cmd);
+	free(dir_slash);
 	return (full);
 }

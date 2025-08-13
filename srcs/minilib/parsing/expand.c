@@ -2,60 +2,7 @@
 #include <pwd.h>
 #include <unistd.h>
 
-// Simple strcat implementation
-static char *simple_strcat(char *dest, const char *src)
-{
-    char *ptr = dest;
-    while (*ptr)
-        ptr++;
-    while (*src)
-        *ptr++ = *src++;
-    *ptr = '\0';
-    return dest;
-}
 
-// Simple function to convert int to string (replaces snprintf)
-static void int_to_str(int num, char *str)
-{
-    int i = 0;
-    int is_negative = 0;
-
-    if (num == 0)
-    {
-        str[0] = '0';
-        str[1] = '\0';
-        return;
-    }
-
-    if (num < 0)
-    {
-        is_negative = 1;
-        num = -num;
-    }
-
-    while (num > 0)
-    {
-        str[i++] = (num % 10) + '0';
-        num /= 10;
-    }
-
-    if (is_negative)
-        str[i++] = '-';
-
-    str[i] = '\0';
-
-    // Reverse the string
-    int start = 0;
-    int end = i - 1;
-    while (start < end)
-    {
-        char temp = str[start];
-        str[start] = str[end];
-        str[end] = temp;
-        start++;
-        end--;
-    }
-}
 
 // Enhanced function to extract variable name with support for braced syntax
 static int extract_var_name(const char *str, int *pos, char *var_name, int *is_braced)
@@ -118,34 +65,49 @@ static char *safe_resize_buffer(char *buffer, size_t *capacity, size_t needed)
 static int handle_special_var(t_minishell *mini, char **result,
                               size_t *capacity, int *j, const char *str, int *i)
 {
-    char status_str[12];
     char *temp;
     size_t len;
 
     if (str[*i] == '?')
     {
+        char	*status_str;
+
         (*i)++;
-        int_to_str(mini->exit_status, status_str);
+        status_str = ft_itoa(mini->exit_status);
+        if (!status_str)
+            return (-1);
         len = ft_strlen(status_str);
         temp = safe_resize_buffer(*result, capacity, *j + len + 1);
         if (!temp)
+        {
+            free(status_str);
             return (-1);
+        }
         *result = temp;
-        simple_strcat(*result + *j, status_str);
+        ft_strlcat(*result + *j, status_str, len + 1);
         *j += len;
+        free(status_str);
         return (1);
     }
     else if (str[*i] == '$')
     {
+        char	*pid_str;
+
         (*i)++;
-        int_to_str(getpid(), status_str);
-        len = ft_strlen(status_str);
+        pid_str = ft_itoa(getpid());
+        if (!pid_str)
+            return (-1);
+        len = ft_strlen(pid_str);
         temp = safe_resize_buffer(*result, capacity, *j + len + 1);
         if (!temp)
+        {
+            free(pid_str);
             return (-1);
+        }
         *result = temp;
-        simple_strcat(*result + *j, status_str);
+        ft_strlcat(*result + *j, pid_str, len + 1);
         *j += len;
+        free(pid_str);
         return (1);
     }
     return (0);
@@ -178,28 +140,42 @@ static int handle_variable_expansion(t_minishell *mini, const char *str,
     // Handle special variables in braced syntax
     if (var_len == 1 && var[0] == '?')
     {
-        char status_str[12];
-        int_to_str(mini->exit_status, status_str);
+        char *status_str;
+
+        status_str = ft_itoa(mini->exit_status);
+        if (!status_str)
+            return (-1);
         len = ft_strlen(status_str);
         temp = safe_resize_buffer(*result, capacity, *j + len + 1);
         if (!temp)
+        {
+            free(status_str);
             return (-1);
+        }
         *result = temp;
-        simple_strcat(*result + *j, status_str);
+        ft_strlcat(*result + *j, status_str, len + 1);
         *j += len;
+        free(status_str);
         return (0);
     }
     else if (var_len == 1 && var[0] == '$')
     {
-        char pid_str[12];
-        int_to_str(getpid(), pid_str);
+        char *pid_str;
+
+        pid_str = ft_itoa(getpid());
+        if (!pid_str)
+            return (-1);
         len = ft_strlen(pid_str);
         temp = safe_resize_buffer(*result, capacity, *j + len + 1);
         if (!temp)
+        {
+            free(pid_str);
             return (-1);
+        }
         *result = temp;
-        simple_strcat(*result + *j, pid_str);
+        ft_strlcat(*result + *j, pid_str, len + 1);
         *j += len;
+        free(pid_str);
         return (0);
     }
 
@@ -211,7 +187,7 @@ static int handle_variable_expansion(t_minishell *mini, const char *str,
     if (!temp)
         return (-1);
     *result = temp;
-    simple_strcat(*result + *j, val);
+    ft_strlcat(*result + *j, val, len + 1);
     *j += len;
     return (0);
 }
