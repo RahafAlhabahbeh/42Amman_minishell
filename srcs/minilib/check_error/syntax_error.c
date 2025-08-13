@@ -53,8 +53,8 @@ static int	validate_pipe(t_token *curr)
 {
 	if (!curr->next)
 	{
-		ft_putstr_fd("minishell: syntax error near unexpected token `newline'\n",
-			2);
+		ft_putstr_fd("minishell: syntax error near unexpected token ", 2);
+		ft_putstr_fd("`newline'\n", 2);
 		return (0);
 	}
 	if (curr->next->type == PIPE)

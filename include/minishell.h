@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
+/*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/14 00:00:00 by rahaf             #+#    #+#             */
-/*   Updated: 2025/08/08 09:27:48 by dal-mahr         ###   ########.fr       */
+/*   Updated: 2025/08/13 16:23:22 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,8 @@
 # include <signal.h>
 # include <readline/readline.h>
 # include <readline/history.h>
+#include <pwd.h>
+
 
 # include "../libft/libft.h"
 
@@ -135,6 +137,11 @@ void	call_unset(t_minishell *mini, char **argv);
 void	call_echo(t_minishell *mini, char **argv);
 void	call_pwd(t_minishell *mini);
 void	call_cd(t_minishell *mini, char **argv);
+char	*get_user_home_dir(void);
+char	*handle_tilde_expansion(t_minishell *mini, char *path);
+char	*handle_cd_home(t_minishell *mini);
+char	*handle_cd_oldpwd(t_minishell *mini);
+char	*resolve_cd_path(t_minishell *mini, char **argv);
 
 int	is_valid_identifier(const char *s);
 void	export_print_sorted_env(char **arr, int count);

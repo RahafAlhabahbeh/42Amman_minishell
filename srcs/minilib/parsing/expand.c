@@ -236,15 +236,6 @@ static int process_string_expansion(t_minishell *mini, const char *str,
     return (0);
 }
 
-// Get user's home directory from passwd database when HOME is unset
-static char *get_user_home_dir(void)
-{
-    struct passwd *pw = getpwuid(getuid());
-    if (pw && pw->pw_dir)
-        return ft_strdup(pw->pw_dir);
-    return NULL;
-}
-
 // Expand tilde at start (~ or ~/)
 static char *expand_tilde(t_minishell *minishell, const char *str)
 {
