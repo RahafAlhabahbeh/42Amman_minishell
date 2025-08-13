@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   execute_child_process.c                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
+/*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:55:21 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/12 17:30:00 by dal-mahr         ###   ########.fr       */
+/*   Updated: 2025/08/13 18:49:27 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,18 @@ void	execute_child_process(t_minishell *mini, t_cmd *cmd, int prev_fd,
 	signal(SIGQUIT, SIG_DFL);
 
 	save_original_fds(cmd);
-	handle_redirections(cmd, prev_fd, pipe_fds, is_last);
+	if (handle_redirections(cmd, prev_fd, pipe_fds, is_last) < 0)
+	{
+		cleanup_child_process(mini);
+		exit(1);
+	}
+
+	// Handle heredoc without command - just exit successfully
+	if (!cmd->argv || !cmd->argv[0])
+	{
+		cleanup_child_process(mini);
+		exit(0);
+	}
 
 	if (is_builtin(cmd->argv[0]))
 	{

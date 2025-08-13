@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   resolve_path.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
+/*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/12 00:00:00 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/12 17:30:00 by dal-mahr         ###   ########.fr       */
+/*   Updated: 2025/08/13 18:59:49 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,6 +96,8 @@ char	*resolve_cmd_path(char *cmd, t_minishell *mini)
 	if (!path_env)
 		return (NULL);
 	paths = ft_split(path_env, ':');
+	if (!paths)
+		return (NULL);
 	i = 0;
 	while (paths[i])
 	{
@@ -153,6 +155,8 @@ int	resolve_cmd_path_with_status(char *cmd, t_minishell *mini, char **path)
 	if (!path_env)
 		return (127);
 	paths = ft_split(path_env, ':');
+	if (!paths)
+		return (127);
 	i = 0;
 	while (paths[i])
 	{

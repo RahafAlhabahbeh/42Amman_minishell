@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   execute_command.c                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
+/*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/12 00:00:00 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/12 17:30:00 by dal-mahr         ###   ########.fr       */
+/*   Updated: 2025/08/13 18:49:27 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,14 +40,35 @@ int	should_run_builtin_in_parent(t_cmd *cmd, int index, int total_pipes)
 	return (0);
 }
 
+static void	close_pipe_fds(int *pipe_fds)
+{
+	if (pipe_fds[0] != -1)
+	{
+		close(pipe_fds[0]);
+		pipe_fds[0] = -1;
+	}
+	if (pipe_fds[1] != -1)
+	{
+		close(pipe_fds[1]);
+		pipe_fds[1] = -1;
+	}
+}
+
 int	execute_parent_process(int prev_fd, int *pipe_fds, int is_last)
 {
 	if (prev_fd != -1)
 		close(prev_fd);
 	if (!is_last)
+	{
 		close(pipe_fds[1]);
-	if (!is_last)
+		pipe_fds[1] = -1;
 		return (pipe_fds[0]);
+	}
+	else
+	{
+		// For the last command, close both pipe ends if they exist
+		close_pipe_fds(pipe_fds);
+	}
 	return (-1);
 }
 
@@ -93,6 +114,13 @@ static void	execute_child_command(t_minishell *mini, t_cmd *cmd, int i,
 	char	*path;
 	int		status;
 	char	*child_builtins[3];
+
+	// Handle heredoc without command - should not reach here but safety check
+	if (!cmd->argv || !cmd->argv[0])
+	{
+		cleanup_child_process(mini);
+		exit(0);
+	}
 
 	if (is_builtin(cmd->argv[0]))
 	{
@@ -156,6 +184,12 @@ static void	handle_child_process(t_minishell *mini, t_cmd *cmd, int prev_fd,
 	if (handle_redirections(cmd, prev_fd, pipefd,
 			i == mini->pipex_count) < 0)
 		exit(1);
+	// Handle heredoc without command - just exit successfully
+	if (!cmd->argv || !cmd->argv[0])
+	{
+		cleanup_child_process(mini);
+		exit(0);
+	}
 	handle_empty_command(cmd);
 	execute_child_command(mini, cmd, i, envp);
 }
@@ -163,13 +197,19 @@ static void	handle_child_process(t_minishell *mini, t_cmd *cmd, int prev_fd,
 static int	handle_parent_builtin(t_minishell *mini, t_cmd *cmd, int prev_fd,
 	int *pipefd, int i, pid_t *pids)
 {
-	if (is_builtin(cmd->argv[0])
+	if (cmd->argv && cmd->argv[0] && is_builtin(cmd->argv[0])
 		&& should_run_builtin_in_parent(cmd, i, mini->pipex_count))
 	{
 		save_original_fds(cmd);
 		if (handle_redirections(cmd, prev_fd, pipefd,
 				i == mini->pipex_count) == 0)
 			execute_builtin(mini, i);
+		else
+		{
+			// Handle redirection failure - cleanup pipes
+			if (i < mini->pipex_count)
+				close_pipe_fds(pipefd);
+		}
 		restore_original_fds(cmd);
 		pids[i] = -2;
 		return (1);
@@ -190,8 +230,14 @@ void	execute_loop(t_minishell *mini, char **envp, pid_t *pids)
 	i = 0;
 	while (i <= mini->pipex_count)
 	{
+		// Initialize pipe fds to -1 for proper cleanup
+		pipefd[0] = -1;
+		pipefd[1] = -1;
+		
 		if (i < mini->pipex_count && pipe(pipefd) == -1)
 		{
+			if (prev_fd != -1)
+				close(prev_fd);
 			perror("pipe");
 			mini->exit_status = 1;
 			exit(EXIT_FAILURE);
@@ -207,6 +253,10 @@ void	execute_loop(t_minishell *mini, char **envp, pid_t *pids)
 		pid = fork();
 		if (pid == -1)
 		{
+			// Clean up pipe fds on fork failure
+			close_pipe_fds(pipefd);
+			if (prev_fd != -1)
+				close(prev_fd);
 			set_child_running(0);
 			perror("fork");
 			mini->exit_status = 1;
@@ -222,6 +272,9 @@ void	execute_loop(t_minishell *mini, char **envp, pid_t *pids)
 		}
 		i++;
 	}
+	// Final cleanup of any remaining prev_fd
+	if (prev_fd != -1)
+		close(prev_fd);
 }
 
 void	execute_command(t_minishell *mini, char **envp)

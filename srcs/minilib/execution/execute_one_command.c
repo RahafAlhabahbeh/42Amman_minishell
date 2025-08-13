@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   execute_one_command.c                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
+/*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:55:21 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/12 17:30:00 by dal-mahr         ###   ########.fr       */
+/*   Updated: 2025/08/13 18:26:51 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,6 +49,12 @@ static void	handle_child_process(t_minishell *mini, t_cmd *cmd, char **envp)
 	signal(SIGQUIT, SIG_DFL);
 	if (handle_redirections(cmd, -1, NULL, 1) < 0)
 		exit(1);
+	// Handle heredoc without command - just exit successfully
+	if (!cmd->argv || !cmd->argv[0])
+	{
+		cleanup_child_process(mini);
+		exit(0);
+	}
 	if (is_builtin(cmd->argv[0]))
 	{
 		execute_builtin_cmd(mini, cmd);
@@ -121,11 +127,17 @@ void	execute_one_command(t_minishell *mini, char **envp)
 	pid_t	pid;
 
 	cmd = mini->cmd;
-	if (!cmd || !cmd->argv[0])
-		return ;
-	if (handle_empty_command(mini, cmd))
+	if (!cmd)
 		return ;
 	if (cmd->in_type == HERE_DOC && handle_heredoc(mini, cmd) < 0)
+		return ;
+	// Handle heredoc without command - just process heredocs and exit
+	if (!cmd->argv || !cmd->argv[0])
+	{
+		mini->exit_status = 0;
+		return ;
+	}
+	if (handle_empty_command(mini, cmd))
 		return ;
 	if (handle_parent_builtin(mini, cmd))
 		return ;

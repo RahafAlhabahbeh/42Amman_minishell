@@ -229,24 +229,8 @@ int put_token_to_commands(t_minishell *minishell)
 		merge_equal_sign_tokens(&minishell->cmd[i]);
 	}
 
-	// Handle heredoc without command default to cat
-	for (int i = 0; i <= minishell->pipex_count; i++)
-	{
-		if (minishell->cmd[i].in_type == HERE_DOC &&
-			(!minishell->cmd[i].argv || !minishell->cmd[i].argv[0]))
-		{
-			if (i == minishell->pipex_count)
-			{
-				minishell->cmd[i].argv[0] = ft_strdup("cat");
-				if (!minishell->cmd[i].argv[0])
-				{
-					write(2, "minishell: memory allocation failed\n", 36);
-					minishell->exit_status = 1;
-					exit(EXIT_FAILURE);
-				}
-			}
-		}
-	}
+	// Handle heredoc without command - no automatic cat to prevent unwanted output
+	// Heredocs without commands will be processed but won't execute anything
 	return 0;
 }
 

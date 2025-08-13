@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   call_export.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
+/*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:54:38 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/12 17:30:00 by dal-mahr         ###   ########.fr       */
+/*   Updated: 2025/08/13 18:59:49 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,6 +79,7 @@ static char	**create_env_array(t_minishell *mini)
 		i++;
 	}
 	export_print_sorted_env(arr, count);
+	free_env_array(arr, count);
 	return (NULL);
 }
 
@@ -120,7 +121,7 @@ static void	export_with_args(t_minishell *mini, char **argv)
 		merged = merge_args(argv, i, &consumed);
 		if (!is_valid_identifier(merged))
 		{
-			fprintf(stderr, "export: `%s`: not a valid identifier\n", merged);
+			printf("export: `%s`: not a valid identifier\n", merged);
 			has_error = 1;
 			free(merged);
 			i += consumed;

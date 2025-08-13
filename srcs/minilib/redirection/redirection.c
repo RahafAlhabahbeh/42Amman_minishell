@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   redirection.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
+/*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:55:21 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/12 17:30:00 by dal-mahr         ###   ########.fr       */
+/*   Updated: 2025/08/13 18:49:27 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,33 +73,65 @@ void	restore_original_fds(t_cmd *cmd)
 		close(cmd->original_stdin);
 	if (cmd->original_stdout != -1)
 		close(cmd->original_stdout);
+	cmd->original_stdin = -1;
+	cmd->original_stdout = -1;
+}
+
+static void	close_pipe_fds_on_error(int *pipe_fds, int is_last)
+{
+	if (!is_last && pipe_fds)
+	{
+		if (pipe_fds[0] != -1)
+			close(pipe_fds[0]);
+		if (pipe_fds[1] != -1)
+			close(pipe_fds[1]);
+	}
 }
 
 int	handle_redirections(t_cmd *cmd, int prev_fd, int *pipe_fds, int is_last)
 {
+	// Handle input redirection
 	if (cmd->heredoc_fd >= 0)
 		redirect_heredoc_input(cmd);
 	else if (cmd->input_file_name)
 	{
 		if (redirect_input(cmd->input_file_name) < 0)
+		{
+			close_pipe_fds_on_error(pipe_fds, is_last);
+			if (prev_fd != -1)
+				close(prev_fd);
 			return (-1);
+		}
 	}
 	else if (prev_fd != -1)
+	{
 		dup2(prev_fd, STDIN_FILENO);
+		close(prev_fd);
+	}
+	
+	// Handle output redirection
 	if (cmd->output_file_name)
 	{
 		if (cmd->out_type == REDIR_APPEND)
 		{
 			if (redirect_output_append(cmd->output_file_name) < 0)
+			{
+				close_pipe_fds_on_error(pipe_fds, is_last);
 				return (-1);
+			}
 		}
 		else
 		{
 			if (redirect_output(cmd->output_file_name) < 0)
+			{
+				close_pipe_fds_on_error(pipe_fds, is_last);
 				return (-1);
+			}
 		}
+		// Close pipe fds if output redirected to file
+		close_pipe_fds_on_error(pipe_fds, is_last);
 	}
-	else if (!is_last)
+	else if (!is_last && pipe_fds && pipe_fds[0] != -1 && pipe_fds[1] != -1)
 	{
 		close(pipe_fds[0]);
 		dup2(pipe_fds[1], STDOUT_FILENO);
