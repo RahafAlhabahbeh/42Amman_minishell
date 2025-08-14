@@ -166,175 +166,107 @@ static char *expand_heredoc_line(t_minishell *mini, char *line, int expand_vars)
     return result;
 }
 
-static int create_heredoc_temp_file_with_quote(t_minishell *mini,
-	const char *delimiter, char **temp_filename_ptr, char quote_char)
+static int	create_heredoc_temp_file_with_quote(t_minishell *mini,
+			const char *delimiter, char **temp_filename_ptr, char quote_char)
 {
-    char temp_filename[256];
-    static int heredoc_counter = 0;
-    
-    // Build filename manually without sprintf
-    ft_strlcpy(temp_filename, "/tmp/heredoc_", sizeof(temp_filename));
-    // Convert getpid() to string and append
-    char *pid_str = ft_itoa(getpid());
-    if (!pid_str)
-        return (-1);
-    
-    ft_strlcat(temp_filename, pid_str, sizeof(temp_filename));
-    ft_strlcat(temp_filename, "_", sizeof(temp_filename));
-    free(pid_str);
-    
-    // Convert counter to string and append
-    char *counter_str = ft_itoa(heredoc_counter++);
-    if (!counter_str)
-        return (-1);
-    
-    ft_strlcat(temp_filename, counter_str, sizeof(temp_filename));
-    free(counter_str);
-    *temp_filename_ptr = ft_strdup(temp_filename);
-    
-    int temp_fd = open(temp_filename, O_WRONLY | O_CREAT | O_TRUNC, 0600);
-    if (temp_fd < 0)
-    {
-        perror("minishell: heredoc temp file creation failed");
-        return -1;
-    }
-    
-    // Determine if we should expand variables based on quote information
-    int expand_vars = (quote_char != '\'' && quote_char != '"');
-    // Use delimiter as-is since quotes are already handled by tokenizer
-    char *clean_delimiter = ft_strdup(delimiter);
-    if (!clean_delimiter)
-    {
-        close(temp_fd);
-        unlink(temp_filename);
-        return -1;
-    }
-    
-    // Set up signal handler for heredoc
-    void (*old_sigint)(int) = signal(SIGINT, handle_heredoc_sigint);
-    
-    char *line;
-    int temp_content_fd = -1;
-    char temp_content_filename[256];
-    
-    // Create a temporary file to store all content first
-    // Build filename manually without sprintf
-    ft_strlcpy(temp_content_filename, "/tmp/heredoc_content_", sizeof(temp_content_filename));
-    // Convert getpid() to string and append
-    char *pid_str2 = ft_itoa(getpid());
-    if (!pid_str2)
-    {
-        close(temp_fd);
-        unlink(temp_filename);
-        free(clean_delimiter);
-        return (-1);
-    }
-    
-    ft_strlcat(temp_content_filename, pid_str2, sizeof(temp_content_filename));
-    ft_strlcat(temp_content_filename, "_", sizeof(temp_content_filename));
-    free(pid_str2);
-    
-    // Convert counter to string and append
-    char *counter_str2 = ft_itoa(heredoc_counter);
-    if (!counter_str2)
-    {
-        close(temp_fd);
-        unlink(temp_filename);
-        free(clean_delimiter);
-        return (-1);
-    }
-    
-    ft_strlcat(temp_content_filename, counter_str2, sizeof(temp_content_filename));
-    free(counter_str2);
-    temp_content_fd = open(temp_content_filename,
-		O_WRONLY | O_CREAT | O_TRUNC, 0600);
-    if (temp_content_fd < 0)
-    {
-        close(temp_fd);
-        unlink(temp_filename);
-        free(clean_delimiter);
-        return -1;
-    }
-    
-    // Read all content until the final delimiter
-    while (!check_sigint_received())
-    {
-        write(1, "> ", 2);
-        line = NULL;
-        size_t line_size = 0;
-        ssize_t read_size = ft_getline(&line, &line_size, 0); // 0 = STDIN_FILENO
-        
-        int sigint_received = check_sigint_received();
-        if (read_size == -1 || sigint_received)
-        {
-            if (read_size == -1 && !sigint_received)
-            {
-                write(2, "bash: warning: here-document at line ", 35);
-                write(2, "delimited by end-of-file (wanted '", 33);
-                write(2, clean_delimiter, ft_strlen(clean_delimiter));
-                write(2, "')\n", 3);
-            }
-            free(line);
-            break;
-        }
-        
-        // Remove newline from the end
-        if (line && line[read_size - 1] == '\n')
-            line[read_size - 1] = '\0';
-        
-        // Check for exact delimiter match
-        if (ft_strcmp(line, clean_delimiter) == 0)
-        {
-            free(line);
-            break;
-        }
-        
-        // Store all content in temporary file
-        char *expanded_line = expand_heredoc_line(mini, line, expand_vars);
-        if (expanded_line)
-        {
-            write(temp_content_fd, expanded_line, ft_strlen(expanded_line));
-            write(temp_content_fd, "\n", 1);
-            free(expanded_line);
-        }
-        free(line);
-    }
-    
-    // Close temporary content file
-    close(temp_content_fd);
-    
-    // Simply copy the content to the final temp file
-    temp_content_fd = open(temp_content_filename, O_RDONLY);
-    if (temp_content_fd >= 0)
-    {
-        char buffer[1024];
-        ssize_t bytes_read;
-        
-        while ((bytes_read = read(temp_content_fd, buffer, sizeof(buffer))) > 0)
-        {
-            write(temp_fd, buffer, bytes_read);
-        }
-        
-        close(temp_content_fd);
-        unlink(temp_content_filename);
-    }
-    
-    // Restore original signal handler
-    signal(SIGINT, old_sigint);
-    
-    close(temp_fd);
-    free(clean_delimiter);
-    
-    // Check if SIGINT was received during heredoc processing
-    if (check_sigint_received())
-    {
-        unlink(temp_filename);
-        unlink(temp_content_filename);
-        return -1;
-    }
-    
-    return open(temp_filename, O_RDONLY);
+	char	temp_filename[256];
+	static int	heredoc_counter = 0;
+
+	// Build temp filename
+	ft_strlcpy(temp_filename, "/tmp/heredoc_", sizeof(temp_filename));
+	char *pid_str = ft_itoa(getpid());
+	ft_strlcat(temp_filename, pid_str, sizeof(temp_filename));
+	free(pid_str);
+
+	char *counter_str = ft_itoa(heredoc_counter++);
+	ft_strlcat(temp_filename, "_", sizeof(temp_filename));
+	ft_strlcat(temp_filename, counter_str, sizeof(temp_filename));
+	free(counter_str);
+
+	*temp_filename_ptr = ft_strdup(temp_filename);
+	if (!*temp_filename_ptr)
+		return (-1);
+
+	int temp_fd = open(temp_filename, O_WRONLY | O_CREAT | O_TRUNC, 0600);
+	if (temp_fd < 0)
+	{
+		perror("minishell: heredoc temp file creation failed");
+		return (-1);
+	}
+
+	// Determine if we should expand variables
+	int expand_vars = (quote_char != '\'' && quote_char != '"');
+	char *clean_delimiter = ft_strdup(delimiter);
+	if (!clean_delimiter)
+	{
+		close(temp_fd);
+		unlink(temp_filename);
+		return (-1);
+	}
+
+	// ---------------- SIGINT Handling ----------------
+	struct sigaction sa, old_sa;
+	memset(&sa, 0, sizeof(sa));
+	sa.sa_handler = handle_heredoc_sigint;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = 0; // do NOT use SA_RESTART
+	sigaction(SIGINT, &sa, &old_sa);
+	// -------------------------------------------------
+
+	char *line = NULL;
+	size_t line_size = 0;
+	ssize_t read_size;
+
+	while (!check_sigint_received())
+	{
+		write(1, "> ", 2);
+
+		read_size = ft_getline(&line, &line_size, 0); // STDIN
+
+		if (read_size < 0 || check_sigint_received())
+		{
+			free(line);
+			mini->exit_status = 130; // Bash uses 130 on Ctrl+C
+			close(temp_fd);
+			unlink(temp_filename);
+			break;
+		}
+
+		// Remove trailing newline
+		if (line[read_size - 1] == '\n')
+			line[read_size - 1] = '\0';
+
+		// Stop on delimiter
+		if (ft_strcmp(line, clean_delimiter) == 0)
+		{
+			free(line);
+			break;
+		}
+
+		// Expand variables if needed
+		char *expanded_line = expand_heredoc_line(mini, line, expand_vars);
+		if (expanded_line)
+		{
+			write(temp_fd, expanded_line, ft_strlen(expanded_line));
+			write(temp_fd, "\n", 1);
+			free(expanded_line);
+		}
+		free(line);
+		line = NULL;
+	}
+
+	close(temp_fd);
+	free(clean_delimiter);
+
+	// Restore previous SIGINT handler
+	sigaction(SIGINT, &old_sa, NULL);
+
+	if (check_sigint_received())
+		return (-1); // signal interrupted
+
+	return open(temp_filename, O_RDONLY);
 }
+
 
 
 
