@@ -56,6 +56,10 @@ static void	close_pipe_fds(int *pipe_fds)
 
 int	execute_parent_process(int prev_fd, int *pipe_fds, int is_last)
 {
+	struct sigaction	sa;
+	sa.sa_flags = 0;
+
+	sigaction(SIGINT, &sa, NULL);
 	if (prev_fd != -1)
 		close(prev_fd);
 	if (!is_last)
@@ -224,6 +228,7 @@ void	execute_loop(t_minishell *mini, char **envp, pid_t *pids)
 	int		prev_fd;
 	pid_t	pid;
 	t_cmd	*cmd;
+	struct sigaction	sa;
 
 	prev_fd = -1;
 	process_heredocs(mini);
@@ -242,11 +247,14 @@ void	execute_loop(t_minishell *mini, char **envp, pid_t *pids)
 			mini->exit_status = 1;
 			exit(EXIT_FAILURE);
 		}
+		sa.sa_handler = SIG_IGN;
+		sigaction(SIGINT, &sa, NULL);
 		cmd = &mini->cmd[i];
 		if (handle_parent_builtin(mini, cmd, prev_fd, pipefd, i, pids))
 		{
 			prev_fd = execute_parent_process(prev_fd, pipefd,
 					i == mini->pipex_count);
+				
 			i++;
 			continue ;
 		}
@@ -278,9 +286,12 @@ void	execute_loop(t_minishell *mini, char **envp, pid_t *pids)
 }
 
 void	execute_command(t_minishell *mini, char **envp)
-{
+{/* 
+	signal(SIGINT, SIG_IGN);
+	signal(SIGQUIT, SIG_IGN); */
 	if (mini->pipex_count == 0)
 		execute_one_command(mini, envp);
 	else
 		multiple_command_execution(mini, envp);
+	setup_signals();
 }

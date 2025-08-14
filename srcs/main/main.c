@@ -77,6 +77,7 @@ int	main(int ac, char **av, char **envp)
 		{
 			reset_minishell(&minishell);
 			continue ;
+
 		}
 		reset_minishell(&minishell);
 	}

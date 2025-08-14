@@ -30,12 +30,18 @@ static void	wait_for_processes(t_minishell *mini, pid_t *pids, int count,
 	int	status = 0;
 	int	i;
 	int	wait_result;
+	struct sigaction sa;
 
 	i = 0;
 	while (i < count)
 	{
 		if (pids[i] > 0)
 		{
+			memset(&sa, 0, sizeof(sa));
+			sa.sa_handler = SIG_IGN;
+			sigemptyset(&sa.sa_mask);
+			sa.sa_flags = 0;
+			sigaction(SIGINT, &sa, NULL);
 			wait_result = waitpid(pids[i], &status, 0);
 			if (wait_result > 0 && (!last_was_parent_builtin || i == count - 1))
 			{
@@ -44,15 +50,15 @@ static void	wait_for_processes(t_minishell *mini, pid_t *pids, int count,
 				else if (WIFSIGNALED(status))
 				{
 					mini->exit_status = 128 + WTERMSIG(status);
-					if (WTERMSIG(status) == SIGINT)
-					{
-						write(1, "^C\n", 3);
-						rl_replace_line("", 0);
-						rl_on_new_line();
-						rl_redisplay();
-					}
+					// {
+					// 	write(1, "^C\n", 3);
+					// 	rl_replace_line("", 0);
+					// 	rl_on_new_line();
+					// 	rl_redisplay();
+					// }
 				}
 			}
+			
 		}
 		else if (pids[i] == -2)
 		{
@@ -66,6 +72,9 @@ static void	wait_for_processes(t_minishell *mini, pid_t *pids, int count,
 		}
 		i++;
 	}
+	if (WTERMSIG(status) == SIGINT)
+		printf("\n");
+	setup_signals();
 }
 
 void	multiple_command_execution(t_minishell *mini, char **envp)
@@ -73,19 +82,22 @@ void	multiple_command_execution(t_minishell *mini, char **envp)
 	int		count;
 	pid_t	*pids;
 	int		last_command_was_parent_builtin;
+	// struct sigaction	sa;
 
 	count = mini->pipex_count + 1;
 	pids = malloc(sizeof(pid_t) * count);
 	if (!pids)
 		return ;
 	last_command_was_parent_builtin = 0;
-
+	// sa.sa_flags = 0;
+	// sigaction(SIGINT, &sa, NULL);
 	init_pids_array(pids, count);
 	set_child_running(1);
 	execute_loop(mini, envp, pids);
 	if (pids[count - 1] == -2)
 		last_command_was_parent_builtin = 1;
 	wait_for_processes(mini, pids, count, last_command_was_parent_builtin);
+	//signal(SIGINT,handle_sigint);
 	set_child_running(0);
 	cleanup_heredoc_files(mini);
 	free(pids);

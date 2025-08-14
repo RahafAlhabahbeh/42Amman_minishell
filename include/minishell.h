@@ -178,6 +178,7 @@ int	is_in_child_process(void);
 /* Global signal variable for signal handling */
 extern volatile sig_atomic_t	g_received_signal;
 void	call_exit(t_minishell *mini, char **argv);
+void	child_sig();
 
 void	execute_builtin_cmd(t_minishell *mini, t_cmd *cmd);
 int	is_str_in_set(const char *str, char **set);

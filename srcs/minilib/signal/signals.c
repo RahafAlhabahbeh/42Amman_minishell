@@ -24,6 +24,7 @@ void	handle_sigint(int sig)
 		rl_on_new_line();
 		rl_redisplay();
 	}
+	g_received_signal = 130;
 }
 
 void	handle_sigquit(int sig)
@@ -34,7 +35,7 @@ void	handle_sigquit(int sig)
 void	setup_signals(void)
 {
 	struct sigaction	sa;
-	extern int			rl_catch_signals;
+	//extern int			rl_catch_signals;
 
 	sa.sa_handler = handle_sigint;
 	sigemptyset(&sa.sa_mask);
@@ -42,10 +43,29 @@ void	setup_signals(void)
 	sigaction(SIGINT, &sa, NULL);
 	sa.sa_handler = handle_sigquit;
 	sigaction(SIGQUIT, &sa, NULL);
-	rl_catch_signals = 0;
+	sa.sa_handler = SIG_IGN; // ignore SIGQUIT
+	sigaction(SIGQUIT, &sa, NULL);
+	//rl_catch_signals = 0;
 }
 
 void	set_minishell_pointer(t_minishell *mini)
 {
 	(void)mini;
+}
+
+void	child_sig()
+{
+	struct sigaction sa;
+
+    sa.sa_handler = SIG_DFL;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = SA_RESTART;
+    sigaction(SIGINT, &sa, NULL);
+	struct sigaction sas;
+
+    sas.sa_handler = SIG_DFL;
+    sigemptyset(&sas.sa_mask);
+    sas.sa_flags = SA_RESTART;
+    sigaction(SIGQUIT, &sas, NULL);
+	
 }

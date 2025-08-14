@@ -110,13 +110,15 @@ static void	handle_parent_process(t_minishell *mini, pid_t pid)
 		else if (WIFSIGNALED(status))
 		{
 			mini->exit_status = 128 + WTERMSIG(status);
-			if (WTERMSIG(status) == SIGINT)
+			printf("\n");
+			g_received_signal = 0;
+			/* if (WTERMSIG(status) == SIGINT)
 			{
 				write(1, "^C\n", 3);
 				rl_replace_line("", 0);
 				rl_on_new_line();
 				rl_redisplay();
-			}
+			} */
 		}
 	}
 }
@@ -145,7 +147,6 @@ void	execute_one_command(t_minishell *mini, char **envp)
 	pid = fork();
 	if (pid < 0)
 	{
-		set_child_running(0);
 		perror("fork");
 		mini->exit_status = 1;
 		return ;

@@ -692,6 +692,7 @@ void execute_command(const char *path, char *const argv[], char *const envp[]) {
         return;
     } else if (pid == 0) {
         // Child process
+        
         execve(path, argv, envp);
         
         // If we reach here, execve failed

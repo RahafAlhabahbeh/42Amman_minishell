@@ -91,6 +91,11 @@ static char	*handle_readline_input(t_minishell *minishell)
 	char	*line;
 
 	line = readline("minishell> ");
+	if (g_received_signal == 130)
+	{
+		minishell->exit_status = 130;
+		g_received_signal = 0;
+	}
 	if (peek_sigint_received())
 	{
 		if (line)
