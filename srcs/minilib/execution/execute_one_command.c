@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   execute_one_command.c                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
+/*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:55:21 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/13 18:26:51 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/14 11:28:13 by dal-mahr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,9 @@ static int	handle_empty_command(t_minishell *mini, t_cmd *cmd)
 {
 	if (!cmd->argv || !cmd->argv[0] || cmd->argv[0][0] == '\0')
 	{
-		mini->exit_status = 0;
+		write(2, cmd->argv[0], ft_strlen(cmd->argv[0]));
+		write(2, ": command not found\n", 20);
+		mini->exit_status = 127;
 		return (1);
 	}
 	return (0);

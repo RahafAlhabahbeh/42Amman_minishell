@@ -3,19 +3,19 @@
 /*                                                        :::      ::::::::   */
 /*   call_export.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
+/*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:54:38 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/13 18:59:49 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/14 12:33:26 by dal-mahr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../../include/minishell.h"
 
-static int	count_env_vars(t_env *env_list)
+static int count_env_vars(t_env *env_list)
 {
-	int		count;
-	t_env	*cur;
+	int count;
+	t_env *cur;
 
 	count = 0;
 	cur = env_list;
@@ -27,10 +27,10 @@ static int	count_env_vars(t_env *env_list)
 	return (count);
 }
 
-static char	*create_env_string(t_env *env)
+static char *create_env_string(t_env *env)
 {
-	char	*str;
-	int		len;
+	char *str;
+	int len;
 
 	if (env->value)
 	{
@@ -47,22 +47,22 @@ static char	*create_env_string(t_env *env)
 	return (str);
 }
 
-static void	free_env_array(char **arr, int count)
+static void free_env_array(char **arr, int count)
 {
 	while (count > 0)
 		free(arr[--count]);
 	free(arr);
 }
 
-static char	**create_env_array(t_minishell *mini)
+static char **create_env_array(t_minishell *mini)
 {
-	t_env	*cur;
-	char	**arr;
-	int		count;
-	int		i;
+	t_env *cur;
+	char **arr;
+	int count;
+	int i;
 
 	count = count_env_vars(mini->env_list);
-	arr = malloc(sizeof(char *) * count);
+	arr = malloc(sizeof(char *) * (count + 1));
 	if (!arr)
 		return (NULL);
 	cur = mini->env_list;
@@ -78,21 +78,22 @@ static char	**create_env_array(t_minishell *mini)
 		cur = cur->next;
 		i++;
 	}
+	arr[count] = NULL;
 	export_print_sorted_env(arr, count);
-	free_env_array(arr, count);
 	return (NULL);
 }
 
-static void	export_no_args(t_minishell *mini)
+static void export_no_args(t_minishell *mini)
 {
+	printf("export: export_no_args\n");
 	create_env_array(mini);
 }
 
-static void	export_process_assignment(t_minishell *mini, char *merged)
+static void export_process_assignment(t_minishell *mini, char *merged)
 {
-	char	*eq;
-	char	*key;
-	char	*value;
+	char *eq;
+	char *key;
+	char *value;
 
 	eq = ft_strchr(merged, '=');
 	if (!eq)
@@ -107,25 +108,38 @@ static void	export_process_assignment(t_minishell *mini, char *merged)
 	}
 }
 
-static void	export_with_args(t_minishell *mini, char **argv)
+static void export_with_args(t_minishell *mini, char **argv)
 {
-	int		has_error;
-	int		i;
-	int		consumed;
-	char	*merged;
+	int has_error;
+	int i;
+	int consumed;
+	char *merged;
 
 	has_error = 0;
 	i = 1;
 	while (argv[i])
 	{
+		if (argv[i][0] == '\0') // skip empty tokens
+		{
+			i++;
+			continue;
+		}
 		merged = merge_args(argv, i, &consumed);
+		if (merged[0] == '\0' || !is_valid_identifier(merged))
+		{
+			printf("export: `%s`: not a valid identifier\n", merged);
+			has_error = 1;
+			free(merged);
+			i += consumed;
+			continue;
+		}
 		if (!is_valid_identifier(merged))
 		{
 			printf("export: `%s`: not a valid identifier\n", merged);
 			has_error = 1;
 			free(merged);
 			i += consumed;
-			continue ;
+			continue;
 		}
 		export_process_assignment(mini, merged);
 		free(merged);
@@ -135,7 +149,7 @@ static void	export_with_args(t_minishell *mini, char **argv)
 		mini->exit_status = 1;
 }
 
-void	call_export(t_minishell *mini, char **argv)
+void call_export(t_minishell *mini, char **argv)
 {
 	if (!argv[1])
 		export_no_args(mini);

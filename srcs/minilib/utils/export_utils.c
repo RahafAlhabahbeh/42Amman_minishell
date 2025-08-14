@@ -6,7 +6,7 @@
 /*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/12 17:30:00 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/12 17:30:00 by dal-mahr         ###   ########.fr       */
+/*   Updated: 2025/08/14 12:31:01 by dal-mahr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,28 +72,59 @@ void	export_print_sorted_env(char **arr, int count)
 	}
 	free(arr);
 }
-
-char	*merge_args(char **argv, int start, int *consumed)
+char *merge_args(char **argv, int start, int *consumed)
 {
-	char	*res;
-	char	*tmp;
-	int		i;
+    char *res;
+    char *tmp;
+    int i;
 
-	*consumed = 1;
-	res = ft_strdup(argv[start]);
-	i = start + 1;
-	while (argv[i])
-	{
-		if (argv[i][0] == '\0')
-		{
-			tmp = ft_strjoin(res, argv[i]);
-			free(res);
-			res = tmp;
-			(*consumed)++;
-		}
-		else
-			break ;
-		i++;
-	}
-	return (res);
+    *consumed = 1;
+    if (!argv[start])
+        return ft_strdup("");
+
+    res = ft_strdup(argv[start]);
+    if (!res)
+        return NULL;
+
+    i = start + 1;
+    while (argv[i])
+    {
+        // Merge empty tokens or tokens until we hit a new valid identifier
+        if (argv[i][0] == '\0' || ft_strchr(argv[i], '='))
+        {
+            tmp = ft_strjoin(res, argv[i]);
+            free(res);
+            res = tmp;
+            (*consumed)++;
+        }
+        else
+            break;
+        i++;
+    }
+    return res;
 }
+
+// char	*merge_args(char **argv, int start, int *consumed)
+// {
+// 	char	*res;
+// 	char	*tmp;
+// 	int		i;
+
+// 	*consumed = 1;
+// 	res = ft_strdup(argv[start]);
+// 	i = start + 1;
+// 	while (argv[i])
+// 	{
+// 		if (argv[i][0] == '\0')
+// 		{
+// 			tmp = ft_strjoin(res, argv[i]);
+// 			free(res);
+// 			res = tmp;
+// 			(*consumed)++;
+// 		}
+// 		else
+// 			break ;
+// 		i++;
+// 	}
+// 	return (res);
+// }

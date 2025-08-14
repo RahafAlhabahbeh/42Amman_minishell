@@ -188,7 +188,7 @@ int put_token_to_commands(t_minishell *minishell)
 
 			// Add heredoc to the list for multiple heredoc support
 			add_heredoc_to_list(&minishell->cmd[cmd_index], filename, cur->next->quote);
-			
+
 			// Keep the last heredoc info for backward compatibility
 			free(minishell->cmd[cmd_index].input_file_name);
 			minishell->cmd[cmd_index].input_file_name = ft_strdup(filename);
@@ -201,11 +201,11 @@ int put_token_to_commands(t_minishell *minishell)
 		{
 			// Allow empty tokens for the first argument (command name)
 			// to trigger proper "command not found" error
-			if (cur->value[0] == '\0' && arg_index > 0)
-			{
-				cur = cur->next;
-				continue;
-			}
+			// if (cur->value[0] == '\0' && arg_index > 0)
+			// {
+			// 	cur = cur->next;
+			// 	continue;
+			// }
 			// your variable assignment check here if needed
 
 			minishell->cmd[cmd_index].argv[arg_index] = ft_strdup(cur->value);
