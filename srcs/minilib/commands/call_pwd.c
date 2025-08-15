@@ -13,6 +13,21 @@
 #include "../../../include/minishell.h"
 #include <limits.h>
 
+int	count_env_vars(t_env *env_list)
+{
+	t_env	*cur;
+	int		count;
+
+	count = 0;
+	cur = env_list;
+	while (cur)
+	{
+		count++;
+		cur = cur->next;
+	}
+	return (count);
+}
+
 void	call_pwd(t_minishell *mini)
 {
 	char	cwd[PATH_MAX];

@@ -20,31 +20,20 @@ void	execute_child_process(t_minishell *mini, t_cmd *cmd, int prev_fd,
 
 	signal(SIGINT, SIG_DFL);
 	signal(SIGQUIT, SIG_DFL);
-
-	// Close any heredoc file descriptors from other commands that this child doesn't need
 	close_unused_heredoc_fds(mini, cmd);
-	
 	save_original_fds(cmd);
 	if (handle_redirections(cmd, prev_fd, pipe_fds, is_last) < 0)
 	{
 		cleanup_child_process(mini);
 		exit(1);
 	}
-	
-	// After redirections are handled, close ALL heredoc file descriptors 
-	// since the needed ones are already redirected to stdin
 	close_all_heredoc_fds(mini);
-	
-	// Also close any extra file descriptors that might be inherited
 	close_extra_fds(prev_fd, pipe_fds, is_last);
-
-	// Handle heredoc without command - just exit successfully
 	if (!cmd->argv || !cmd->argv[0])
 	{
 		cleanup_child_process(mini);
 		exit(0);
 	}
-
 	if (is_builtin(cmd->argv[0]))
 	{
 		execute_builtin_cmd(mini, cmd);

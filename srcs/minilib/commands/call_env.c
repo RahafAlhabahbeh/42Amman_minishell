@@ -12,8 +12,6 @@
 
 #include "../../../include/minishell.h"
 
-
-
 static void	print_env_vars(t_minishell *shell)
 {
 	t_env	*curr;
@@ -46,9 +44,6 @@ static void	execute_env_command(t_minishell *shell, char **argv)
 		shell->exit_status = 127;
 		return ;
 	}
-	
-	// Command exists - for minishell we just succeed without execution
-	// Full env command execution would require complex fork/exec handling
 	free(path);
 	shell->exit_status = 0;
 }

@@ -66,7 +66,6 @@ static int	validate_and_change_directory(t_minishell *mini, char *path,
 		return (1);
 	if (mini->pipex_count > 0)
 	{
-		// Don't change exit status - preserve any error status set by check_path_access
 		if (path != argv[1] && path[0] == '~')
 			free(path);
 		return (1);

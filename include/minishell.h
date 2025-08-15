@@ -141,6 +141,7 @@ void	call_unset(t_minishell *mini, char **argv);
 void	call_echo(t_minishell *mini, char **argv);
 void	call_pwd(t_minishell *mini);
 void	call_cd(t_minishell *mini, char **argv);
+int	count_env_vars(t_env *env_list);
 char	*get_user_home_dir(void);
 char	*handle_tilde_expansion(t_minishell *mini, char *path);
 char	*handle_cd_home(t_minishell *mini);
@@ -160,6 +161,7 @@ void	free_tokens(t_token *head);
 void	free_cmds_array(t_cmd *cmd_array, int count);
 void	free_env_list(t_env *env);
 void	free_commands(t_cmd *cmds, int count);
+void	free_env_array(char **arr, int count);
 void	reset_minishell(t_minishell *mini);
 void	cleanup_child_process(t_minishell *mini);
 void	execute_piped_commands(t_minishell *minishell, char **envp);
@@ -178,7 +180,12 @@ void	reset_received_signal(void);
 /* Process context functions */
 void	set_in_child_process(int in_child);
 int	is_in_child_process(void);
-
+void	handle_child_process(t_minishell *mini, t_cmd *cmd, char **envp);
+void	execute_child_process(t_minishell *mini, t_cmd *cmd, int prev_fd, int *pipe_fds, int is_last, char **envp);
+void	close_pipe_fds(int *pipe_fds);
+void	process_heredocs(t_minishell *mini);
+void	handle_empty_command(t_cmd *cmd);
+int	execute_parent_process(int prev_fd, int *pipe_fds, int is_last);
 /* Global signal variable for signal handling */
 extern volatile sig_atomic_t	g_received_signal;
 void	call_exit(t_minishell *mini, char **argv);
@@ -200,13 +207,20 @@ void	execute_one_command(t_minishell *mini, char **envp);
 void	multiple_command_execution(t_minishell *mini, char **envp);
 void	execute_loop(t_minishell *mini, char **envp, pid_t *pids);
 pid_t	handle_command_iteration(t_minishell *mini, char **envp, t_cmd *cmd, int i);
-int	execute_parent_process(int prev_fd, int *pipe_fds, int is_last);
-void	execute_child_process(t_minishell *mini, t_cmd *cmd, int prev_fd,
-	int *pipe_fds, int is_last, char **envp);
 int	should_run_builtin_in_parent(t_cmd *cmd, int index, int total_pipes);
 int	is_redirection_present(t_cmd *cmd);
+void	handle_child_process2(t_minishell *mini, t_cmd *cmd, int prev_fd, int *pipefd, int i, char **envp);
+int	handle_empty_command2(t_minishell *mini, t_cmd *cmd);
+int	handle_parent_builtin_child(t_minishell *mini, t_cmd *cmd);
+int	handle_parent_builtin(t_minishell *mini, t_cmd *cmd, int prev_fd, int *pipefd, int i, pid_t *pids);
+void	handle_parent_process(t_minishell *mini, pid_t pid);
+void	execute_child_command(t_minishell *mini, t_cmd *cmd, int i, char **envp);
 
 void	save_original_fds(t_cmd *cmd);
 void	restore_original_fds(t_cmd *cmd);
+int	is_numeric(const char *str);
+int	is_valid_exit_arg(const char *str);
+void	handle_invalid_exit_arg(char *arg, t_minishell *mini);
+void	handle_too_many_args(t_minishell *mini);
 
 #endif

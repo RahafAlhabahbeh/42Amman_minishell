@@ -210,3 +210,10 @@ void	close_extra_fds(int prev_fd, int *pipe_fds, int is_last)
 		fd++;
 	}
 }
+
+void	free_env_array(char **arr, int count)
+{
+	while (count > 0)
+		free(arr[--count]);
+	free(arr);
+}

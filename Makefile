@@ -29,6 +29,7 @@ SRC = \
 	$(SRC_DIR)/commands/call_exit.c \
 	$(SRC_DIR)/commands/call_cd.c \
 	$(SRC_DIR)/commands/call_cd2.c \
+	$(SRC_DIR)/commands/exit_utils.c \
 	$(SRC_DIR)/utils/resolve_path.c \
 	$(SRC_DIR)/utils/export_utils.c \
 	$(SRC_DIR)/pipe/pipe.c \
@@ -37,6 +38,11 @@ SRC = \
 	$(SRC_DIR)/execution/execute_child_process.c \
 	$(SRC_DIR)/execution/execute_one_command.c \
 	$(SRC_DIR)/execution/multiple_command_execution.c \
+	$(SRC_DIR)/execution/handle_child_process.c \
+	$(SRC_DIR)/execution/execute_command2.c \
+	$(SRC_DIR)/execution//execute_child_command.c   \
+	$(SRC_DIR)/execution//execute_loop.c      \
+	$(SRC_DIR)/execution//handle_empty_command.c \
 	$(SRC_DIR)/redirection/redirection.c \
 	$(SRC_DIR)/redirection/heredoc.c \
 	$(SRC_DIR)/free/free_minishell.c	\

@@ -12,7 +12,7 @@
 
 #include "../../../include/minishell.h"
 
-static int	handle_empty_command(t_minishell *mini, t_cmd *cmd)
+int	handle_empty_command2(t_minishell *mini, t_cmd *cmd)
 {
 	if (!cmd->argv || !cmd->argv[0] || cmd->argv[0][0] == '\0')
 	{
@@ -24,7 +24,7 @@ static int	handle_empty_command(t_minishell *mini, t_cmd *cmd)
 	return (0);
 }
 
-static int	handle_parent_builtin(t_minishell *mini, t_cmd *cmd)
+int	handle_parent_builtin_child(t_minishell *mini, t_cmd *cmd)
 {
 	if (is_builtin(cmd->argv[0]))
 	{
@@ -42,67 +42,12 @@ static int	handle_parent_builtin(t_minishell *mini, t_cmd *cmd)
 	return (0);
 }
 
-static void	handle_child_process(t_minishell *mini, t_cmd *cmd, char **envp)
+void	handle_parent_process(t_minishell *mini, pid_t pid)
 {
-	char	*path;
-	int		status;
-
-	signal(SIGINT, SIG_DFL);
-	signal(SIGQUIT, SIG_DFL);
-	if (handle_redirections(cmd, -1, NULL, 1) < 0)
-		exit(1);
-	// Handle heredoc without command - just exit successfully
-	if (!cmd->argv || !cmd->argv[0])
-	{
-		cleanup_child_process(mini);
-		exit(0);
-	}
-	if (is_builtin(cmd->argv[0]))
-	{
-		execute_builtin_cmd(mini, cmd);
-		cleanup_child_process(mini);
-		exit(mini->exit_status);
-	}
-	status = resolve_cmd_path_with_status(cmd->argv[0], mini, &path);
-	if (status != 0)
-	{
-		if (status == 126)
-		{
-			if (is_directory(cmd->argv[0]))
-			{
-				write(2, cmd->argv[0], ft_strlen(cmd->argv[0]));
-				write(2, ": Is a directory\n", 17);
-			}
-			else
-			{
-				write(2, cmd->argv[0], ft_strlen(cmd->argv[0]));
-				write(2, ": Permission denied\n", 20);
-			}
-		}
-		else
-		{
-			write(2, cmd->argv[0], ft_strlen(cmd->argv[0]));
-			if (cmd->argv[0][0] == '/' || 
-				(cmd->argv[0][0] == '.' && ft_strchr(cmd->argv[0], '/')))
-				write(2, ": No such file or directory\n", 28);
-			else
-				write(2, ": command not found\n", 20);
-		}
-		cleanup_child_process(mini);
-		exit(status);
-	}
-	execve(path, cmd->argv, envp);
-	perror("execve");
-	free(path);
-	cleanup_child_process(mini);
-	exit(126);
-}
-
-static void	handle_parent_process(t_minishell *mini, pid_t pid)
-{
-	int	status = 0;
+	int	status;
 	int	wait_result;
 
+	status = 0;
 	wait_result = waitpid(pid, &status, 0);
 	set_child_running(0);
 	if (wait_result > 0)
@@ -114,13 +59,6 @@ static void	handle_parent_process(t_minishell *mini, pid_t pid)
 			mini->exit_status = 128 + WTERMSIG(status);
 			printf("\n");
 			g_received_signal = 0;
-			/* if (WTERMSIG(status) == SIGINT)
-			{
-				write(1, "^C\n", 3);
-				rl_replace_line("", 0);
-				rl_on_new_line();
-				rl_redisplay();
-			} */
 		}
 	}
 }
@@ -131,20 +69,14 @@ void	execute_one_command(t_minishell *mini, char **envp)
 	pid_t	pid;
 
 	cmd = mini->cmd;
-	if (!cmd)
-		return ;
-	if (cmd->in_type == HERE_DOC && handle_heredoc(mini, cmd) < 0)
-		return ;
-	// Handle heredoc without command - just process heredocs and exit
-	if (!cmd->argv || !cmd->argv[0])
+	if (!cmd || (cmd->in_type == HERE_DOC && handle_heredoc(mini, cmd) < 0)
+		|| (!cmd->argv || !cmd->argv[0]) || handle_empty_command2(mini, cmd)
+		|| handle_parent_builtin_child(mini, cmd))
 	{
-		mini->exit_status = 0;
+		if (!cmd->argv || !cmd->argv[0])
+			mini->exit_status = 0;
 		return ;
 	}
-	if (handle_empty_command(mini, cmd))
-		return ;
-	if (handle_parent_builtin(mini, cmd))
-		return ;
 	set_child_running(1);
 	pid = fork();
 	if (pid < 0)
@@ -158,9 +90,4 @@ void	execute_one_command(t_minishell *mini, char **envp)
 	else
 		handle_parent_process(mini, pid);
 	cleanup_heredoc_files(mini);
-}
-
-int	is_one_command(t_minishell *mini)
-{
-	return (mini->pipex_count == 0);
 }

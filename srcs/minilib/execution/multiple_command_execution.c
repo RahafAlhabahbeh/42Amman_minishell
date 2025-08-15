@@ -27,12 +27,13 @@ static void	init_pids_array(pid_t *pids, int count)
 static void	wait_for_processes(t_minishell *mini, pid_t *pids, int count,
 	int last_was_parent_builtin)
 {
-	int	status = 0;
+	struct sigaction sa;
+	int	status;
 	int	i;
 	int	wait_result;
-	struct sigaction sa;
 
 	i = 0;
+	status = 0;
 	while (i < count)
 	{
 		if (pids[i] > 0)
@@ -48,24 +49,10 @@ static void	wait_for_processes(t_minishell *mini, pid_t *pids, int count,
 				if (WIFEXITED(status))
 					mini->exit_status = WEXITSTATUS(status);
 				else if (WIFSIGNALED(status))
-				{
 					mini->exit_status = 128 + WTERMSIG(status);
-					// {
-					// 	write(1, "^C\n", 3);
-					// 	rl_replace_line("", 0);
-					// 	rl_on_new_line();
-					// 	rl_redisplay();
-					// }
-				}
 			}
-			
 		}
-		else if (pids[i] == -2)
-		{
-			i++;
-			continue ;
-		}
-		else if (pids[i] == 0)
+		else if (pids[i] == -2 || pids[i] == 0)
 		{
 			i++;
 			continue ;
@@ -93,18 +80,13 @@ void	multiple_command_execution(t_minishell *mini, char **envp)
 	last_command_was_parent_builtin = 0;
 	init_pids_array(pids, count);
 	set_child_running(1);
-	
-	// Ensure cleanup even if execute_loop fails
 	execute_loop(mini, envp, pids);
-	
 	if (pids && pids[count - 1] == -2)
 		last_command_was_parent_builtin = 1;
 	if (pids)
 		wait_for_processes(mini, pids, count, last_command_was_parent_builtin);
 	set_child_running(0);
 	cleanup_heredoc_files(mini);
-	
-	// Always free pids regardless of what happened
 	if (pids)
 	{
 		free(pids);

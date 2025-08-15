@@ -131,7 +131,7 @@ typedef struct s_pipe_data
 	char	**envp;
 }	t_pipe_data;
 
-static void	execute_child_command(t_minishell *minishell, t_pipe_data *data)
+static void	execute_child_command_pipe(t_minishell *minishell, t_pipe_data *data)
 {
 	char	*path;
 	int		status;
@@ -213,7 +213,7 @@ static void	fork_and_execute(t_minishell *ms, t_pipe_data *data, int n)
 		else if (pid == 0)
 		{
 			data->i = i;
-			execute_child_command(ms, data);
+			execute_child_command_pipe(ms, data);
 		}
 		i++;
 	}

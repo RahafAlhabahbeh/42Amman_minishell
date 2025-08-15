@@ -12,25 +12,10 @@
 
 #include "../../../include/minishell.h"
 
-static int count_env_vars(t_env *env_list)
+static char	*create_env_string(t_env *env)
 {
-	int count;
-	t_env *cur;
-
-	count = 0;
-	cur = env_list;
-	while (cur)
-	{
-		count++;
-		cur = cur->next;
-	}
-	return (count);
-}
-
-static char *create_env_string(t_env *env)
-{
-	char *str;
-	int len;
+	char	*str;
+	int		len;
 
 	if (env->value)
 	{
@@ -47,19 +32,12 @@ static char *create_env_string(t_env *env)
 	return (str);
 }
 
-static void free_env_array(char **arr, int count)
+static char	**create_env_array(t_minishell *mini)
 {
-	while (count > 0)
-		free(arr[--count]);
-	free(arr);
-}
-
-static char **create_env_array(t_minishell *mini)
-{
-	t_env *cur;
-	char **arr;
-	int count;
-	int i;
+	t_env	*cur;
+	char	**arr;
+	int		i;
+	int		count;
 
 	count = count_env_vars(mini->env_list);
 	arr = malloc(sizeof(char *) * (count + 1));
@@ -83,17 +61,11 @@ static char **create_env_array(t_minishell *mini)
 	return (NULL);
 }
 
-static void export_no_args(t_minishell *mini)
+static void	export_process_assignment(t_minishell *mini, char *merged)
 {
-	create_env_array(mini);
-	mini->exit_status = 0;
-}
-
-static void export_process_assignment(t_minishell *mini, char *merged)
-{
-	char *eq;
-	char *key;
-	char *value;
+	char		*eq;
+	char		*key;
+	char		*value;
 
 	eq = ft_strchr(merged, '=');
 	if (!eq)
@@ -108,15 +80,13 @@ static void export_process_assignment(t_minishell *mini, char *merged)
 	}
 }
 
-static void export_with_args(t_minishell *mini, char **argv)
+static void	export_with_args(t_minishell *mini, char **argv)
 {
-	int has_error;
-	int i;
+	int	i;
+	int	has_error;
 
 	has_error = 0;
 	i = 1;
-	
-	// Process each argument: show errors for invalid, export valid ones
 	while (argv[i])
 	{
 		if (argv[i][0] == '\0' || !is_valid_identifier(argv[i]))
@@ -125,25 +95,22 @@ static void export_with_args(t_minishell *mini, char **argv)
 			has_error = 1;
 		}
 		else
-		{
-			// Valid identifier - process the assignment
 			export_process_assignment(mini, argv[i]);
-		}
 		i++;
 	}
-	
-	// Set exit status based on whether there were any errors
 	if (has_error)
 		mini->exit_status = 1;
 	else
 		mini->exit_status = 0;
 }
 
-void call_export(t_minishell *mini, char **argv)
+void	call_export(t_minishell *mini, char **argv)
 {
-	// If no arguments at all, show all exported variables
 	if (!argv[1])
-		export_no_args(mini);
+	{
+		create_env_array(mini);
+		mini->exit_status = 0;
+	}
 	else
 		export_with_args(mini, argv);
 }
