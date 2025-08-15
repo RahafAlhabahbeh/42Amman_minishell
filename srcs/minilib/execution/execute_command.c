@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   execute_command.c                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
+/*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/12 00:00:00 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/14 11:27:45 by dal-mahr         ###   ########.fr       */
+/*   Updated: 2025/08/15 17:53:42 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,6 +57,11 @@ static void	close_pipe_fds(int *pipe_fds)
 int	execute_parent_process(int prev_fd, int *pipe_fds, int is_last)
 {
 	struct sigaction	sa;
+	
+	// Properly initialize the sigaction structure
+	ft_memset(&sa, 0, sizeof(sa));
+	sa.sa_handler = SIG_IGN;
+	sigemptyset(&sa.sa_mask);
 	sa.sa_flags = 0;
 
 	sigaction(SIGINT, &sa, NULL);
@@ -134,9 +139,8 @@ static void	execute_child_command(t_minishell *mini, t_cmd *cmd, int i,
 
 	if (is_builtin(cmd->argv[0]))
 	{
-		child_builtins[0] = "export";
-		child_builtins[1] = "unset";
-		child_builtins[2] = NULL;
+		child_builtins[0] = "unset";
+		child_builtins[1] = NULL;
 		if (is_str_in_set(cmd->argv[0], child_builtins)
 			&& mini->pipex_count > 0)
 		{
@@ -144,6 +148,8 @@ static void	execute_child_command(t_minishell *mini, t_cmd *cmd, int i,
 			exit(0);
 		}
 		execute_builtin(mini, i);
+		cleanup_child_process(mini);
+		exit(mini->exit_status);
 	}
 	else
 	{
@@ -251,9 +257,11 @@ void	execute_loop(t_minishell *mini, char **envp, pid_t *pids)
 				close(prev_fd);
 			perror("pipe");
 			mini->exit_status = 1;
-			exit(EXIT_FAILURE);
+			return; // Return instead of exit to allow cleanup
 		}
 		sa.sa_handler = SIG_IGN;
+		sigemptyset(&sa.sa_mask);
+		sa.sa_flags = 0;
 		sigaction(SIGINT, &sa, NULL);
 		cmd = &mini->cmd[i];
 		if (handle_parent_builtin(mini, cmd, prev_fd, pipefd, i, pids))
@@ -274,7 +282,7 @@ void	execute_loop(t_minishell *mini, char **envp, pid_t *pids)
 			set_child_running(0);
 			perror("fork");
 			mini->exit_status = 1;
-			exit(EXIT_FAILURE);
+			return; // Return instead of exit to allow cleanup
 		}
 		else if (pid == 0)
 			handle_child_process(mini, cmd, prev_fd, pipefd, i, envp);
@@ -289,6 +297,9 @@ void	execute_loop(t_minishell *mini, char **envp, pid_t *pids)
 	// Final cleanup of any remaining prev_fd
 	if (prev_fd != -1)
 		close(prev_fd);
+	
+	// Close all heredoc file descriptors in parent after all children are forked
+	close_all_heredoc_fds(mini);
 }
 
 void	execute_command(t_minishell *mini, char **envp)

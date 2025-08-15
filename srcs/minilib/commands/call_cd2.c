@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/13 15:53:31 by rahaf             #+#    #+#             */
-/*   Updated: 2025/08/13 15:54:32 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/15 17:53:42 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,7 +66,7 @@ static int	validate_and_change_directory(t_minishell *mini, char *path,
 		return (1);
 	if (mini->pipex_count > 0)
 	{
-		mini->exit_status = 0;
+		// Don't change exit status - preserve any error status set by check_path_access
 		if (path != argv[1] && path[0] == '~')
 			free(path);
 		return (1);

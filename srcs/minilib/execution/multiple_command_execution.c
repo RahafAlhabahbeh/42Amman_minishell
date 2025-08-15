@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   multiple_command_execution.c                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
+/*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:55:21 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/12 17:30:00 by dal-mahr         ###   ########.fr       */
+/*   Updated: 2025/08/14 21:17:46 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,23 +82,32 @@ void	multiple_command_execution(t_minishell *mini, char **envp)
 	int		count;
 	pid_t	*pids;
 	int		last_command_was_parent_builtin;
-	// struct sigaction	sa;
 
 	count = mini->pipex_count + 1;
 	pids = malloc(sizeof(pid_t) * count);
 	if (!pids)
+	{
+		mini->exit_status = 1;
 		return ;
+	}
 	last_command_was_parent_builtin = 0;
-	// sa.sa_flags = 0;
-	// sigaction(SIGINT, &sa, NULL);
 	init_pids_array(pids, count);
 	set_child_running(1);
+	
+	// Ensure cleanup even if execute_loop fails
 	execute_loop(mini, envp, pids);
-	if (pids[count - 1] == -2)
+	
+	if (pids && pids[count - 1] == -2)
 		last_command_was_parent_builtin = 1;
-	wait_for_processes(mini, pids, count, last_command_was_parent_builtin);
-	//signal(SIGINT,handle_sigint);
+	if (pids)
+		wait_for_processes(mini, pids, count, last_command_was_parent_builtin);
 	set_child_running(0);
 	cleanup_heredoc_files(mini);
-	free(pids);
+	
+	// Always free pids regardless of what happened
+	if (pids)
+	{
+		free(pids);
+		pids = NULL;
+	}
 }

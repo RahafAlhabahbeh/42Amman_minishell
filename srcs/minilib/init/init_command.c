@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:55:21 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/13 18:19:13 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/15 18:06:52 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,6 +45,8 @@ static void	init_cmd_values(t_minishell *mini, int i)
 	mini->cmd[i].heredoc_temp_file = NULL;
 	mini->cmd[i].heredoc_fd = -1;
 	mini->cmd[i].heredoc_list = NULL;
+	mini->cmd[i].original_stdin = -1;
+	mini->cmd[i].original_stdout = -1;
 }
 
 static void	set_cmd_links(t_minishell *mini, int i)

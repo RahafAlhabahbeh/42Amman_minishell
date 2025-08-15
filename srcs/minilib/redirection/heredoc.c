@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/31 01:11:13 by rahaf             #+#    #+#             */
-/*   Updated: 2025/08/13 18:19:13 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/14 21:27:12 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -424,6 +424,40 @@ void cleanup_heredoc_files(t_minishell *mini)
         {
             free_heredoc_list(cmd[i].heredoc_list);
             cmd[i].heredoc_list = NULL;
+        }
+    }
+}
+
+void close_unused_heredoc_fds(t_minishell *mini, t_cmd *current_cmd)
+{
+    if (!mini || !mini->cmd)
+        return;
+    
+    t_cmd *cmd = mini->cmd;
+    for (int i = 0; i <= mini->pipex_count; i++)
+    {
+        // Only close heredoc fds from other commands, not the current one
+        if (&cmd[i] != current_cmd && cmd[i].heredoc_fd >= 0)
+        {
+            close(cmd[i].heredoc_fd);
+            cmd[i].heredoc_fd = -1;
+        }
+    }
+}
+
+void close_all_heredoc_fds(t_minishell *mini)
+{
+    if (!mini || !mini->cmd)
+        return;
+    
+    t_cmd *cmd = mini->cmd;
+    for (int i = 0; i <= mini->pipex_count; i++)
+    {
+        // Close all heredoc file descriptors since redirections are already done
+        if (cmd[i].heredoc_fd >= 0)
+        {
+            close(cmd[i].heredoc_fd);
+            cmd[i].heredoc_fd = -1;
         }
     }
 }

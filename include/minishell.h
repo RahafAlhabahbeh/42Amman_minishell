@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/14 00:00:00 by rahaf             #+#    #+#             */
-/*   Updated: 2025/08/13 18:19:13 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/14 21:27:12 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -129,6 +129,10 @@ void	cleanup_heredoc_files(t_minishell *mini);
 void	handle_heredoc_sigint(int sig);
 void	add_heredoc_to_list(t_cmd *cmd, const char *delimiter, char quote);
 void	free_heredoc_list(t_heredoc *list);
+void	close_unused_heredoc_fds(t_minishell *mini, t_cmd *current_cmd);
+void	close_all_heredoc_fds(t_minishell *mini);
+void	close_unused_fds(int start_fd, int max_fd);
+void	close_extra_fds(int prev_fd, int *pipe_fds, int is_last);
 int	process_multiple_heredocs(t_minishell *mini, t_cmd *cmd);
 void	execute_command(t_minishell *minishell, char **envp);
 void	call_env(t_minishell *mini, char **argv);

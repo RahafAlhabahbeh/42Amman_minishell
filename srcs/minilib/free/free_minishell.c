@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   free_minishell.c                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
+/*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/12 00:00:00 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/12 17:30:00 by dal-mahr         ###   ########.fr       */
+/*   Updated: 2025/08/15 15:31:43 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,6 +74,17 @@ static void	free_single_cmd(t_cmd *cmd)
 		free_heredoc_list(cmd->heredoc_list);
 		cmd->heredoc_list = NULL;
 	}
+	// Close any saved original file descriptors to prevent FD leaks
+	if (cmd->original_stdin >= 0)
+	{
+		close(cmd->original_stdin);
+		cmd->original_stdin = -1;
+	}
+	if (cmd->original_stdout >= 0)
+	{
+		close(cmd->original_stdout);
+		cmd->original_stdout = -1;
+	}
 }
 
 void	free_cmds_array(t_cmd *cmd_array, int count)
@@ -98,6 +109,8 @@ void	free_commands(t_cmd *cmd, int count)
 
 void	free_minishell(t_minishell *mini)
 {
+	// Clean up heredoc files first before freeing command structures
+	cleanup_heredoc_files(mini);
 	if (mini->promp_input)
 		free(mini->promp_input);
 	if (mini->token)
@@ -124,6 +137,8 @@ void	free_env_list(t_env *env)
 
 void	reset_minishell(t_minishell *mini)
 {
+	// Clean up heredoc files first before freeing command structures
+	cleanup_heredoc_files(mini);
 	if (mini->promp_input)
 	{
 		free(mini->promp_input);
@@ -147,6 +162,8 @@ void	cleanup_child_process(t_minishell *mini)
 {
 	if (mini)
 	{
+		// Clean up heredoc files first before freeing command structures
+		cleanup_heredoc_files(mini);
 		if (mini->promp_input)
 			free(mini->promp_input);
 		if (mini->token)
@@ -155,5 +172,41 @@ void	cleanup_child_process(t_minishell *mini)
 			free_cmds_array(mini->cmd, mini->pipex_count);
 		if (mini->env_list)
 			free_env_list(mini->env_list);
+	}
+}
+
+void	close_unused_fds(int start_fd, int max_fd)
+{
+	int	fd;
+
+	fd = start_fd;
+	while (fd < max_fd)
+	{
+		close(fd);  // Close will fail silently if fd is not open
+		fd++;
+	}
+}
+
+void	close_extra_fds(int prev_fd, int *pipe_fds, int is_last)
+{
+	int	fd;
+
+	// Close all file descriptors from 3 to 255, except the ones we need
+	fd = 3;
+	while (fd < 256)
+	{
+		// Don't close the file descriptors we actually need
+		if (fd == prev_fd)
+		{
+			fd++;
+			continue;
+		}
+		if (pipe_fds && !is_last && (fd == pipe_fds[0] || fd == pipe_fds[1]))
+		{
+			fd++;
+			continue;
+		}
+		close(fd);  // Close will fail silently if fd is not open
+		fd++;
 	}
 }

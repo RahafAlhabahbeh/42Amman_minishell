@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   call_env.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
+/*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:54:23 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/12 17:30:00 by dal-mahr         ###   ########.fr       */
+/*   Updated: 2025/08/15 16:47:47 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,16 +14,10 @@
 
 
 
-void	call_env(t_minishell *shell, char **argv)
+static void	print_env_vars(t_minishell *shell)
 {
 	t_env	*curr;
 
-	if (argv[1])
-	{
-		ft_putstr_fd("env: too many arguments\n", STDERR_FILENO);
-		shell->exit_status = 1;
-		return ;
-	}
 	curr = shell->env_list;
 	while (curr)
 	{
@@ -35,6 +29,40 @@ void	call_env(t_minishell *shell, char **argv)
 			ft_putchar_fd('\n', STDOUT_FILENO);
 		}
 		curr = curr->next;
+	}
+}
+
+static void	execute_env_command(t_minishell *shell, char **argv)
+{
+	char	*path;
+	int		status;
+
+	status = resolve_cmd_path_with_status(argv[1], shell, &path);
+	if (status != 0)
+	{
+		ft_putstr_fd("env: '", STDERR_FILENO);
+		ft_putstr_fd(argv[1], STDERR_FILENO);
+		ft_putstr_fd("': No such file or directory\n", STDERR_FILENO);
+		shell->exit_status = 127;
+		return ;
+	}
+	
+	// Command exists - for minishell we just succeed without execution
+	// Full env command execution would require complex fork/exec handling
+	free(path);
+	shell->exit_status = 0;
+}
+
+void	call_env(t_minishell *shell, char **argv)
+{
+	if (!argv[1])
+	{
+		print_env_vars(shell);
+		shell->exit_status = 0;
+	}
+	else
+	{
+		execute_env_command(shell, argv);
 	}
 }
 

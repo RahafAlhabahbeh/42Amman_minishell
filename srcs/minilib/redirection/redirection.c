@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:55:21 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/13 18:49:27 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/14 21:10:28 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,7 +77,7 @@ void	restore_original_fds(t_cmd *cmd)
 	cmd->original_stdout = -1;
 }
 
-static void	close_pipe_fds_on_error(int *pipe_fds, int is_last)
+static void	close_pipe_fds(int *pipe_fds, int is_last)
 {
 	if (!is_last && pipe_fds)
 	{
@@ -97,7 +97,7 @@ int	handle_redirections(t_cmd *cmd, int prev_fd, int *pipe_fds, int is_last)
 	{
 		if (redirect_input(cmd->input_file_name) < 0)
 		{
-			close_pipe_fds_on_error(pipe_fds, is_last);
+			close_pipe_fds(pipe_fds, is_last);
 			if (prev_fd != -1)
 				close(prev_fd);
 			return (-1);
@@ -116,7 +116,7 @@ int	handle_redirections(t_cmd *cmd, int prev_fd, int *pipe_fds, int is_last)
 		{
 			if (redirect_output_append(cmd->output_file_name) < 0)
 			{
-				close_pipe_fds_on_error(pipe_fds, is_last);
+				close_pipe_fds(pipe_fds, is_last);
 				return (-1);
 			}
 		}
@@ -124,12 +124,12 @@ int	handle_redirections(t_cmd *cmd, int prev_fd, int *pipe_fds, int is_last)
 		{
 			if (redirect_output(cmd->output_file_name) < 0)
 			{
-				close_pipe_fds_on_error(pipe_fds, is_last);
+				close_pipe_fds(pipe_fds, is_last);
 				return (-1);
 			}
 		}
 		// Close pipe fds if output redirected to file
-		close_pipe_fds_on_error(pipe_fds, is_last);
+		close_pipe_fds(pipe_fds, is_last);
 	}
 	else if (!is_last && pipe_fds && pipe_fds[0] != -1 && pipe_fds[1] != -1)
 	{

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   call_export.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
+/*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:54:38 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/14 12:33:26 by dal-mahr         ###   ########.fr       */
+/*   Updated: 2025/08/15 17:26:27 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,8 +85,8 @@ static char **create_env_array(t_minishell *mini)
 
 static void export_no_args(t_minishell *mini)
 {
-	printf("export: export_no_args\n");
 	create_env_array(mini);
+	mini->exit_status = 0;
 }
 
 static void export_process_assignment(t_minishell *mini, char *merged)
@@ -112,45 +112,36 @@ static void export_with_args(t_minishell *mini, char **argv)
 {
 	int has_error;
 	int i;
-	int consumed;
-	char *merged;
 
 	has_error = 0;
 	i = 1;
+	
+	// Process each argument: show errors for invalid, export valid ones
 	while (argv[i])
 	{
-		if (argv[i][0] == '\0') // skip empty tokens
+		if (argv[i][0] == '\0' || !is_valid_identifier(argv[i]))
 		{
-			i++;
-			continue;
-		}
-		merged = merge_args(argv, i, &consumed);
-		if (merged[0] == '\0' || !is_valid_identifier(merged))
-		{
-			printf("export: `%s`: not a valid identifier\n", merged);
+			printf("export: `%s`: not a valid identifier\n", argv[i]);
 			has_error = 1;
-			free(merged);
-			i += consumed;
-			continue;
 		}
-		if (!is_valid_identifier(merged))
+		else
 		{
-			printf("export: `%s`: not a valid identifier\n", merged);
-			has_error = 1;
-			free(merged);
-			i += consumed;
-			continue;
+			// Valid identifier - process the assignment
+			export_process_assignment(mini, argv[i]);
 		}
-		export_process_assignment(mini, merged);
-		free(merged);
-		i += consumed;
+		i++;
 	}
+	
+	// Set exit status based on whether there were any errors
 	if (has_error)
 		mini->exit_status = 1;
+	else
+		mini->exit_status = 0;
 }
 
 void call_export(t_minishell *mini, char **argv)
 {
+	// If no arguments at all, show all exported variables
 	if (!argv[1])
 		export_no_args(mini);
 	else

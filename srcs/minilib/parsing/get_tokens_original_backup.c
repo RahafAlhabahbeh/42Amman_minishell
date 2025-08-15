@@ -34,16 +34,15 @@ static int ft_isspace(unsigned char c)
     return (c == ' ' || c == '\t' || c == '\n' || c == '\v' || c == '\f' || c == '\r');
 }
 
-// Fixed tokenizer that properly handles complex quote scenarios
 t_token *tokenize(t_minishell *minishell)
 {
     size_t i = 0;
     size_t len = ft_strlen(minishell->promp_input);
-    char buf[4096]; // Larger buffer for complex cases
+    char buf[1024];
     int buf_i = 0;
     t_token *head = NULL, *tail = NULL;
     char current_quote = 0;
-    char overall_quote = 0; // Track the first quote type encountered in this token
+    char token_quote = 0;
 
     while (i < len)
     {
@@ -122,62 +121,72 @@ t_token *tokenize(t_minishell *minishell)
             i++;
             continue;
         }
-        // Quote handling - the key fix is here
+        // Quote handling - AFTER backslash escaping
         else if ((c == '\'' || c == '"') && (!current_quote || current_quote == c))
         {
             if (!current_quote)
             {
-                // Starting a quote
+                // Starting quote
                 current_quote = c;
-                // Only set overall_quote if this is the first quote in the token
-                if (overall_quote == 0)
-                    overall_quote = c;
+                if (buf_i == 0)
+                    token_quote = c;
+                else
+                {
+                    // Quote in the middle of a token (like VAR='value')
+                    // We need to handle this specially for assignment patterns
+                    token_quote = c;
+                }
             }
             else
             {
                 // Closing quote
                 current_quote = 0;
-                
-                // If this was an empty quoted string and we don't have other content
-                if (buf_i == 0 && overall_quote != 0)
+
+                // If buf is not empty, finalize this quoted segment as part of token
+                if (buf_i > 0)
                 {
-                    // Create an empty token for empty quoted strings like ""
-                    append_token(&head, &tail, new_token("", WORD, overall_quote));
-                    overall_quote = 0;
+                    buf[buf_i] = '\0';
+                    append_token(&head, &tail, new_token(buf, WORD, token_quote));
+                    buf_i = 0;
+                    token_quote = 0;
+                }
+                else
+                {
+                    // Empty quoted string -> add empty token with quote info
+                    append_token(&head, &tail, new_token("", WORD, c));
                 }
             }
             i++;
-            continue; // Skip quote characters, but continue building the same token
+            continue; // Skip the rest of the loop so quote chars don't get added to buf
         }
-        // Token delimiters - only break tokens when NOT in quotes
-        else if (!current_quote && (c == '>' || c == '<'))
+
+        else if (!current_quote && (minishell->promp_input[i] == '>' || minishell->promp_input[i] == '<'))
         {
-            // Finalize current token if any
             if (buf_i > 0)
             {
                 buf[buf_i] = '\0';
-                append_token(&head, &tail, new_token(buf, WORD, overall_quote));
+                append_token(&head, &tail, new_token(buf, WORD, token_quote));
                 buf_i = 0;
-                overall_quote = 0;
+                token_quote = 0;
             }
 
-            // Handle redirection operators
-            if (c == '>' && i + 1 < len && minishell->promp_input[i + 1] == '>')
+            // Handle << or >>
+            if (minishell->promp_input[i] == '>' && minishell->promp_input[i + 1] == '>')
             {
                 append_token(&head, &tail, new_token(">>", REDIR_APPEND, 0));
                 i += 2;
             }
-            else if (c == '<' && i + 1 < len && minishell->promp_input[i + 1] == '<')
+            else if (minishell->promp_input[i] == '<' && minishell->promp_input[i + 1] == '<')
             {
                 append_token(&head, &tail, new_token("<<", HERE_DOC, 0));
                 i += 2;
             }
-            else if (c == '>')
+            else if (minishell->promp_input[i] == '>')
             {
                 append_token(&head, &tail, new_token(">", REDIR_OUT, 0));
                 i++;
             }
-            else if (c == '<')
+            else if (minishell->promp_input[i] == '<')
             {
                 append_token(&head, &tail, new_token("<", REDIR_IN, 0));
                 i++;
@@ -188,9 +197,9 @@ t_token *tokenize(t_minishell *minishell)
             if (buf_i > 0)
             {
                 buf[buf_i] = '\0';
-                append_token(&head, &tail, new_token(buf, WORD, overall_quote));
+                append_token(&head, &tail, new_token(buf, WORD, token_quote));
                 buf_i = 0;
-                overall_quote = 0;
+                token_quote = 0;
             }
             append_token(&head, &tail, new_token("|", PIPE, 0));
             i++;
@@ -200,34 +209,75 @@ t_token *tokenize(t_minishell *minishell)
             if (buf_i > 0)
             {
                 buf[buf_i] = '\0';
-                append_token(&head, &tail, new_token(buf, WORD, overall_quote));
+                append_token(&head, &tail, new_token(buf, WORD, token_quote));
                 buf_i = 0;
-                overall_quote = 0;
+                token_quote = 0;
             }
             i++;
         }
         else
         {
-            // Regular character - add to current token
             buf[buf_i++] = c;
             i++;
         }
     }
 
-    // Finalize any remaining token
     if (buf_i > 0)
     {
         buf[buf_i] = '\0';
-        append_token(&head, &tail, new_token(buf, WORD, overall_quote));
+        append_token(&head, &tail, new_token(buf, WORD, token_quote));
     }
-    
-    // Check for unmatched quotes
     if (current_quote != 0)
     {
         write(2, "Syntax error: unmatched quote\n", 30);
-        free_tokens(head);
+        free_tokens(head); // this must be implemented
         return NULL;
     }
 
     return head;
 }
+
+/*
+
+user@debian:~/Desktop/42Amman_minishell$ echo ""'$USER'""
+$USER
+user@debian:~/Desktop/42Amman_minishell$ echo ""''$USER''""
+user
+user@debian:~/Desktop/42Amman_minishell$ echo ""''$USER''""
+user
+user@debian:~/Desktop/42Amman_minishell$ echo ""'''$USER'''""
+$USER
+user@debian:~/Desktop/42Amman_minishell$ echo ""''''$USER''''""
+user
+user@debian:~/Desktop/42Amman_minishell$ echo """''''$USER''''"""
+''''user''''
+user@debian:~/Desktop/42Amman_minishell$ echo "''''$USER''''"
+''''user''''
+user@debian:~/Desktop/42Amman_minishell$ echo "'''$USER'''"
+'''user'''
+user@debian:~/Desktop/42Amman_minishell$ echo "''$USER''"
+''user''
+user@debian:~/Desktop/42Amman_minishell$ echo "'$USER'"
+'user'
+user@debian:~/Desktop/42Amman_minishell$ echo "$USER"
+user
+user@debian:~/Desktop/42Amman_minishell$ echo "'"$USER"'"
+'user'
+user@debian:~/Desktop/42Amman_minishell$ echo "'""$USER""'"
+'user'
+user@debian:~/Desktop/42Amman_minishell$ echo "'"'"$USER"'"'"
+'"$USER"'
+user@debian:~/Desktop/42Amman_minishell$ echo '"'"$USER"'"'
+"user"
+user@debian:~/Desktop/42Amman_minishell$ echo '"$USER"'
+"$USER"
+user@debian:~/Desktop/42Amman_minishell$ echo '""$USER""'
+""$USER""
+user@debian:~/Desktop/42Amman_minishell$ echo '"'"$USER"'"'
+"user"
+user@debian:~/Desktop/42Amman_minishell$ echo '"'"'$USER'"'"'
+"'user'"
+user@debian:~/Desktop/42Amman_minishell$
+
+
+*/

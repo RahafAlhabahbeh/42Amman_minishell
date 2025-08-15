@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   execute_one_command.c                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
+/*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:55:21 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/14 11:28:13 by dal-mahr         ###   ########.fr       */
+/*   Updated: 2025/08/15 17:53:42 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,7 +61,7 @@ static void	handle_child_process(t_minishell *mini, t_cmd *cmd, char **envp)
 	{
 		execute_builtin_cmd(mini, cmd);
 		cleanup_child_process(mini);
-		exit(0);
+		exit(mini->exit_status);
 	}
 	status = resolve_cmd_path_with_status(cmd->argv[0], mini, &path);
 	if (status != 0)
