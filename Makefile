@@ -18,6 +18,8 @@ SRC = \
     $(SRC_DIR)/parsing/replace_var.c  \
     $(SRC_DIR)/parsing/token_utilities.c  \
     $(SRC_DIR)/parsing/get_commands.c \
+    $(SRC_DIR)/parsing/get_commands2.c \
+    $(SRC_DIR)/parsing/merge_equal_sign_tokens.c \
     $(MAIN_DIR)/main.c \
     $(MAIN_DIR)/print.c \
     $(MAIN_DIR)/print_debug.c \
@@ -38,7 +40,10 @@ SRC = \
 	$(SRC_DIR)/commands/exit_utils.c \
 	$(SRC_DIR)/utils/resolve_path.c \
 	$(SRC_DIR)/utils/export_utils.c \
-	$(SRC_DIR)/pipe/pipe.c \
+	$(SRC_DIR)/pipe/pipe_exec.c \
+	$(SRC_DIR)/pipe/pipe_utils.c \
+	$(SRC_DIR)/pipe/redirection.c \
+	$(SRC_DIR)/pipe/execute_child.c \
 	$(SRC_DIR)/execution/execute_command.c \
 	$(SRC_DIR)/execution/execute_builtin.c \
 	$(SRC_DIR)/execution/execute_child_process.c \

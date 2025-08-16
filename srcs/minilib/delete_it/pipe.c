@@ -12,6 +12,7 @@
 
 #include "../../../include/minishell.h"
 
+// OK
 void	safe_pipe(int pipe_fds[2])
 {
 	if (pipe(pipe_fds) == -1)
@@ -21,6 +22,7 @@ void	safe_pipe(int pipe_fds[2])
 	}
 }
 
+// OK
 void	count_pipe(t_minishell *minishell)
 {
 	int		count;
@@ -37,6 +39,7 @@ void	count_pipe(t_minishell *minishell)
 	minishell->pipex_count = count;
 }
 
+// OK
 static void	create_pipes(int *pipefds, int n)
 {
 	int	i;
@@ -53,6 +56,7 @@ static void	create_pipes(int *pipefds, int n)
 	}
 }
 
+// OK
 static void	setup_child_pipes(int *pipefds, int i, int n)
 {
 	if (i != 0)
@@ -73,6 +77,7 @@ static void	setup_child_pipes(int *pipefds, int i, int n)
 	}
 }
 
+// OK
 static void	close_all_pipes(int *pipefds, int n)
 {
 	int	j;
@@ -185,6 +190,7 @@ static void	execute_child_command_pipe(t_minishell *minishell, t_pipe_data *data
 	exit(EXIT_FAILURE);
 }
 
+// OK
 static int	*init_pipes(int n)
 {
 	int	*pipefds;
@@ -247,4 +253,3 @@ void	execute_piped_commands(t_minishell *minishell, char **envp)
 	wait_for_children(n);
 	free(pipefds);
 }
-

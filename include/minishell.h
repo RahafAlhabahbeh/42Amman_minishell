@@ -93,6 +93,14 @@ typedef struct s_minishell
 	int	exit_status;
 }	t_minishell;
 
+typedef struct s_pipe_data
+{
+	int		*pipefds;
+	int		i;
+	int		n;
+	char	**envp;
+}	t_pipe_data;
+
 /* tokenizer */
 t_token	*tokenize(t_minishell *minishell);
 void	init_shell(t_minishell *minishell);
@@ -112,6 +120,7 @@ int	extract_var_name(const char *str, int *pos, char *var_name, int *is_braced);
 char	*safe_resize_buffer(char *buffer, size_t *capacity, size_t needed);
 char	*expand_tilde(t_minishell *minishell, const char *str);
 char	*replace_var(t_minishell *minishell, const char *str, char quote);
+void	execute_child_command_pipe(t_minishell *ms, t_pipe_data *data);
 
 void	init_env_list(t_minishell *mini, char **envp);
 void	init_cmd(t_minishell *mini);
@@ -120,10 +129,17 @@ void	print_export_list(t_env *env_list);
 void	print_env_list(t_env *env_list);
 t_env	*set_env_value(t_minishell *mini, char *key, char *value);
 void	unset_env(t_env **env, const char *key);
-
+int	*init_pipes(int n);
+void	close_all_pipes(int *pipefds, int n);
+void	setup_child_pipes(int *pipefds, int i, int n);
 void	count_pipe(t_minishell *minishell);
 void	safe_pipe(int pipe_fds[2]);
 int	count_args_for_command(t_token *start);
+void merge_equal_sign_tokens(t_cmd *cmd);
+int	init_cmd_argv(t_minishell *mini);
+void	set_redirection(t_minishell *mini, int cmd_index, const char *filename, t_token_type type);
+int	handle_redir(t_minishell *mini, t_token *cur, int cmd_index);
+void	handle_file_redirection(t_cmd *cmd);
 int	put_token_to_commands(t_minishell *minishell);
 
 int	is_builtin(char *cmd);

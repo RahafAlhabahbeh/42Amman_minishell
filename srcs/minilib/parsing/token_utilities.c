@@ -6,7 +6,7 @@
 /*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:55:21 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/12 17:30:00 by dal-mahr         ###   ########.fr       */
+/*   Updated: 2025/08/16 12:40:00 by dal-mahr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,12 +39,28 @@ t_token	*create_token(char *val, t_token_type type, char quote)
 	return (tok);
 }
 
+static int	add_word_token(t_token **list, t_token **tail,
+			char *word, t_token_type type)
+{
+	t_token	*tok;
+
+	tok = create_token(ft_strdup(word), type, 0);
+	if (!tok || !tok->value)
+		return (-1);
+	if (!*list)
+		*list = tok;
+	else
+		(*tail)->next = tok;
+	*tail = tok;
+	return (0);
+}
+
 int	add_split_tokens(t_token **list, t_token **tail,
-		char *str, t_token_type type)
+	char *str, t_token_type type)
 {
 	char	**words;
 	int		i;
-	t_token	*tok;
+	int		ret;
 
 	words = ft_split(str, ' ');
 	if (!words)
@@ -52,19 +68,13 @@ int	add_split_tokens(t_token **list, t_token **tail,
 	i = 0;
 	while (words[i])
 	{
-		tok = create_token(ft_strdup(words[i]), type, 0);
-		if (!tok || !tok->value)
+		ret = add_word_token(list, tail, words[i], type);
+		free(words[i]);
+		if (ret == -1)
 		{
-			free(words[i]);
 			free(words);
 			return (-1);
 		}
-		if (!*list)
-			*list = tok;
-		else
-			(*tail)->next = tok;
-		*tail = tok;
-		free(words[i]);
 		i++;
 	}
 	free(words);
