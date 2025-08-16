@@ -14,7 +14,6 @@
 
 static volatile sig_atomic_t	g_child_running = 0;
 static volatile sig_atomic_t	g_in_child_process = 0;
-
 extern volatile sig_atomic_t	g_received_signal;
 
 int	check_sigint_received(void)

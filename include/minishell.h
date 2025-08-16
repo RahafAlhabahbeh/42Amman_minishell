@@ -24,6 +24,7 @@
 # include <readline/readline.h>
 # include <readline/history.h>
 #include <pwd.h>
+#include <stddef.h>
 
 
 # include "../libft/libft.h"
@@ -153,10 +154,19 @@ int	handle_redirections(t_cmd *cmd, int prev_fd, int *pipe_fds, int is_last);
 /* heredoc functions */
 int	handle_heredoc(t_minishell *mini, t_cmd *cmd);
 void	redirect_heredoc_input(t_cmd *cmd);
+int	create_heredoc_temp_file_with_quote(t_minishell *mini,
+	const char *delimiter, char **temp_filename_ptr, char quote_char);
+ssize_t	read_heredoc_line(t_minishell *mini, char **line, size_t *line_size);
+ssize_t	ft_getline(char **lineptr, size_t *n, int fd);
+char *expand_heredoc_line(t_minishell *mini, char *line, int expand_vars);
 void	cleanup_heredoc_files(t_minishell *mini);
 void	handle_heredoc_sigint(int sig);
 void	add_heredoc_to_list(t_cmd *cmd, const char *delimiter, char quote);
 void	free_heredoc_list(t_heredoc *list);
+int	create_heredoc_temp_file(t_minishell *mini, const char *delimiter, char **temp_filename_ptr, char quote_char);
+int	write_heredoc_content(t_minishell *mini, int fd, const char *delimiter, int expand_vars);
+int	open_heredoc_file(const char *filename);
+char	*generate_temp_filename(int counter);
 void	close_unused_heredoc_fds(t_minishell *mini, t_cmd *current_cmd);
 void	close_all_heredoc_fds(t_minishell *mini);
 void	close_unused_fds(int start_fd, int max_fd);

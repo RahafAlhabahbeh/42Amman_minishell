@@ -6,7 +6,7 @@
 /*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:55:21 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/12 17:30:00 by dal-mahr         ###   ########.fr       */
+/*   Updated: 2025/08/16 15:30:00 by dal-mahr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,17 +35,13 @@ void	handle_sigquit(int sig)
 void	setup_signals(void)
 {
 	struct sigaction	sa;
-	//extern int			rl_catch_signals;
 
 	sa.sa_handler = handle_sigint;
 	sigemptyset(&sa.sa_mask);
 	sa.sa_flags = 0;
 	sigaction(SIGINT, &sa, NULL);
-	sa.sa_handler = handle_sigquit;
+	sa.sa_handler = SIG_IGN;
 	sigaction(SIGQUIT, &sa, NULL);
-	sa.sa_handler = SIG_IGN; // ignore SIGQUIT
-	sigaction(SIGQUIT, &sa, NULL);
-	//rl_catch_signals = 0;
 }
 
 void	set_minishell_pointer(t_minishell *mini)
@@ -53,19 +49,17 @@ void	set_minishell_pointer(t_minishell *mini)
 	(void)mini;
 }
 
-void	child_sig()
+void	child_sig(void)
 {
-	struct sigaction sa;
+	struct sigaction	sa;
+	struct sigaction	sas;
 
-    sa.sa_handler = SIG_DFL;
-    sigemptyset(&sa.sa_mask);
-    sa.sa_flags = SA_RESTART;
-    sigaction(SIGINT, &sa, NULL);
-	struct sigaction sas;
-
-    sas.sa_handler = SIG_DFL;
-    sigemptyset(&sas.sa_mask);
-    sas.sa_flags = SA_RESTART;
-    sigaction(SIGQUIT, &sas, NULL);
-	
+	sa.sa_handler = SIG_DFL;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = SA_RESTART;
+	sigaction(SIGINT, &sa, NULL);
+	sas.sa_handler = SIG_DFL;
+	sigemptyset(&sas.sa_mask);
+	sas.sa_flags = SA_RESTART;
+	sigaction(SIGQUIT, &sas, NULL);
 }
