@@ -104,6 +104,13 @@ int	has_command_content(char *line, int len);
 char	*handle_continuation_eof(t_minishell *ms, char *full_input);
 
 t_token	*expand(t_minishell *minishell);
+void	free_token_list(t_token *list);
+t_token	*create_token(char *val, t_token_type type, char quote);
+int	add_split_tokens(t_token **list, t_token **tail, char *str, t_token_type type);
+int	process_token(t_minishell *mini, t_token *cur, t_token **list, t_token **tail);
+int	extract_var_name(const char *str, int *pos, char *var_name, int *is_braced);
+char	*safe_resize_buffer(char *buffer, size_t *capacity, size_t needed);
+char	*expand_tilde(t_minishell *minishell, const char *str);
 char	*replace_var(t_minishell *minishell, const char *str, char quote);
 
 void	init_env_list(t_minishell *mini, char **envp);

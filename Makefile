@@ -13,6 +13,10 @@ LIBFT_DIR  = libft
 SRC = \
     $(SRC_DIR)/parsing/get_tokens.c  \
     $(SRC_DIR)/parsing/expand.c  \
+    $(SRC_DIR)/parsing/expand_tilde.c  \
+    $(SRC_DIR)/parsing/extract_var_name.c  \
+    $(SRC_DIR)/parsing/replace_var.c  \
+    $(SRC_DIR)/parsing/token_utilities.c  \
     $(SRC_DIR)/parsing/get_commands.c \
     $(MAIN_DIR)/main.c \
     $(MAIN_DIR)/print.c \
