@@ -28,40 +28,27 @@ static void append_token(t_token **head, t_token **tail, t_token *tok)
     }
 }
 
-// Custom implementation to replace ctype.h isspace
-static int ft_isspace(unsigned char c)
-{
-    return (c == ' ' || c == '\t' || c == '\n' || c == '\v' || c == '\f' || c == '\r');
-}
-
-// Fixed tokenizer that properly handles complex quote scenarios
 t_token *tokenize(t_minishell *minishell)
 {
     size_t i = 0;
     size_t len = ft_strlen(minishell->promp_input);
-    char buf[4096]; // Larger buffer for complex cases
+    char buf[4096];
     int buf_i = 0;
     t_token *head = NULL, *tail = NULL;
     char current_quote = 0;
-    char overall_quote = 0; // Track the first quote type encountered in this token
-
+    char overall_quote = 0;
     while (i < len)
     {
         char c = minishell->promp_input[i];
-
-        // Handle backslash escaping FIRST - before any other special character checks
         if (c == '\\' && i + 1 < len && !current_quote)
         {
             char next_char = minishell->promp_input[i + 1];
-            
-            // Special case for escaped pipe - most direct approach
             if (next_char == '|')
             {
                 buf[buf_i++] = '|';
                 i += 2;
                 continue;
             }
-            // Other escaped characters
             else if (next_char == '<' || next_char == '>' || 
                      next_char == '"' || next_char == '\'' || next_char == '\\' || 
                      next_char == ' ' || next_char == '\t' || next_char == '\n')
@@ -70,15 +57,13 @@ t_token *tokenize(t_minishell *minishell)
                 i += 2;
                 continue;
             }
-            // Handle escaped $ with special marker
             else if (next_char == '$')
             {
-                buf[buf_i++] = '\x01'; // Special marker for escaped $
+                buf[buf_i++] = '\x01';
                 buf[buf_i++] = '$';
                 i += 2;
                 continue;
             }
-            // For other characters, keep the backslash
             else
             {
                 buf[buf_i++] = c;
@@ -86,28 +71,22 @@ t_token *tokenize(t_minishell *minishell)
                 continue;
             }
         }
-        // Handle backslash in double quotes
         else if (c == '\\' && i + 1 < len && current_quote == '"')
         {
             char next_char = minishell->promp_input[i + 1];
             
-            // In double quotes, only escape: " \ $ `
             if (next_char == '"' || next_char == '\\' || next_char == '$' || next_char == '`')
             {
-                // For escaped $, use special marker
                 if (next_char == '$')
                 {
                     buf[buf_i++] = '\x01';
                     buf[buf_i++] = '$';
                 }
                 else
-                {
                     buf[buf_i++] = next_char;
-                }
                 i += 2;
                 continue;
             }
-            // For other characters in double quotes, keep the backslash
             else
             {
                 buf[buf_i++] = c;
@@ -115,44 +94,34 @@ t_token *tokenize(t_minishell *minishell)
                 continue;
             }
         }
-        // In single quotes, backslash has no special meaning
         else if (c == '\\' && current_quote == '\'')
         {
             buf[buf_i++] = c;
             i++;
             continue;
         }
-        // Quote handling - the key fix is here
         else if ((c == '\'' || c == '"') && (!current_quote || current_quote == c))
         {
             if (!current_quote)
             {
-                // Starting a quote
                 current_quote = c;
-                // Only set overall_quote if this is the first quote in the token
                 if (overall_quote == 0)
                     overall_quote = c;
             }
             else
             {
-                // Closing quote
                 current_quote = 0;
-                
-                // If this was an empty quoted string and we don't have other content
                 if (buf_i == 0 && overall_quote != 0)
                 {
-                    // Create an empty token for empty quoted strings like ""
                     append_token(&head, &tail, new_token("", WORD, overall_quote));
                     overall_quote = 0;
                 }
             }
             i++;
-            continue; // Skip quote characters, but continue building the same token
+            continue;
         }
-        // Token delimiters - only break tokens when NOT in quotes
         else if (!current_quote && (c == '>' || c == '<'))
         {
-            // Finalize current token if any
             if (buf_i > 0)
             {
                 buf[buf_i] = '\0';
@@ -160,8 +129,6 @@ t_token *tokenize(t_minishell *minishell)
                 buf_i = 0;
                 overall_quote = 0;
             }
-
-            // Handle redirection operators
             if (c == '>' && i + 1 < len && minishell->promp_input[i + 1] == '>')
             {
                 append_token(&head, &tail, new_token(">>", REDIR_APPEND, 0));
@@ -208,26 +175,20 @@ t_token *tokenize(t_minishell *minishell)
         }
         else
         {
-            // Regular character - add to current token
             buf[buf_i++] = c;
             i++;
         }
     }
-
-    // Finalize any remaining token
     if (buf_i > 0)
     {
         buf[buf_i] = '\0';
         append_token(&head, &tail, new_token(buf, WORD, overall_quote));
     }
-    
-    // Check for unmatched quotes
     if (current_quote != 0)
     {
         write(2, "Syntax error: unmatched quote\n", 30);
         free_tokens(head);
         return NULL;
     }
-
     return head;
 }

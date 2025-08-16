@@ -97,6 +97,11 @@ typedef struct s_minishell
 t_token	*tokenize(t_minishell *minishell);
 void	init_shell(t_minishell *minishell);
 void	init(t_minishell *mini);
+char	*handle_continuation(t_minishell *minishell, char *full_input);
+char	*handle_readline_input(t_minishell *minishell);
+char	*append_continuation_line(char *full_input, char *line);
+int	has_command_content(char *line, int len);
+char	*handle_continuation_eof(t_minishell *ms, char *full_input);
 
 t_token	*expand(t_minishell *minishell);
 char	*replace_var(t_minishell *minishell, const char *str, char quote);

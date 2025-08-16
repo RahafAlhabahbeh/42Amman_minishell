@@ -20,7 +20,9 @@ SRC = \
 	$(SRC_DIR)/init/init.c \
 	$(SRC_DIR)/init/init_shell.c \
 	$(SRC_DIR)/init/init_env.c \
+	$(SRC_DIR)/init/init_env2.c \
 	$(SRC_DIR)/init/init_command.c \
+	$(SRC_DIR)/init/continuation.c \
 	$(SRC_DIR)/commands/call_env.c \
 	$(SRC_DIR)/commands/call_echo.c \
 	$(SRC_DIR)/commands/call_pwd.c \
@@ -46,6 +48,9 @@ SRC = \
 	$(SRC_DIR)/redirection/redirection.c \
 	$(SRC_DIR)/redirection/heredoc.c \
 	$(SRC_DIR)/free/free_minishell.c	\
+	$(SRC_DIR)/free/free_tokens.c	\
+	$(SRC_DIR)/free/free_cmds.c	\
+	$(SRC_DIR)/free/free_utils.c	\
 	$(SRC_DIR)/check_error/syntax_error.c	\
 	$(SRC_DIR)/signal/signals.c \
 	$(SRC_DIR)/signal/signal_utils.c
