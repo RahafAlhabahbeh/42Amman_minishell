@@ -272,6 +272,8 @@ void	close_pipe_fds(int *pipe_fds);
 void	process_heredocs(t_minishell *mini);
 void	handle_empty_command(t_cmd *cmd);
 int	execute_parent_process(t_exec_vars *vars, int is_last);
+void	parse_env_entry(t_minishell *mini, char *env_str);
+int	check_received_signal(t_minishell *minishell, char *line);
 extern volatile sig_atomic_t	g_received_signal;
 void	call_exit(t_minishell *mini, char **argv);
 void	child_sig();

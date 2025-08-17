@@ -61,33 +61,8 @@ char	*append_continuation_line(char *full_input, char *line)
 	return (new_input);
 }
 
-char	*handle_continuation(t_minishell *minishell, char *full_input)
+int	check_received_signal(t_minishell *minishell, char *line)
 {
-	char	*line;
-
-	line = readline("> ");
-	if (g_received_signal == 131)
-	{
-		minishell->exit_status = 131;
-		g_received_signal = 0;
-	}
-	if (peek_sigint_received())
-	{
-		if (line)
-			free(line);
-		free(full_input);
-		return (NULL);
-	}
-	if (!line)
-		return (handle_continuation_eof(minishell, full_input));
-	return (append_continuation_line(full_input, line));
-}
-
-char	*handle_readline_input(t_minishell *minishell)
-{
-	char	*line;
-
-	line = readline("minishell> ");
 	if (g_received_signal == 130)
 	{
 		minishell->exit_status = 130;
@@ -102,8 +77,18 @@ char	*handle_readline_input(t_minishell *minishell)
 	{
 		if (line)
 			free(line);
-		return (NULL);
+		return (1);
 	}
+	return (0);
+}
+
+char	*handle_readline_input(t_minishell *minishell)
+{
+	char	*line;
+
+	line = readline("minishell> ");
+	if (check_received_signal(minishell, line))
+		return (NULL);
 	if (!line)
 	{
 		if (peek_sigint_received())

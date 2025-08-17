@@ -16,7 +16,8 @@ void	call_dot(t_minishell *mini, char **argv)
 {
 	if (!argv[1])
 	{
-		ft_putstr_fd("minishell: .: filename argument required\n", STDERR_FILENO);
+		ft_putstr_fd("minishell: .: filename argument required\n",
+			STDERR_FILENO);
 		mini->exit_status = 2;
 		return ;
 	}

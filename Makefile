@@ -30,6 +30,7 @@ SRC = \
 	$(SRC_DIR)/init/init_shell.c \
 	$(SRC_DIR)/init/init_env.c \
 	$(SRC_DIR)/init/init_env2.c \
+	$(SRC_DIR)/init/init_env3.c \
 	$(SRC_DIR)/init/init_command.c \
 	$(SRC_DIR)/init/continuation.c \
 	$(SRC_DIR)/commands/call_env.c \

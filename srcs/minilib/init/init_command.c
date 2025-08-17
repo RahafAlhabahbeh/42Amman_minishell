@@ -76,3 +76,18 @@ void	init_cmd(t_minishell *mini)
 		i++;
 	}
 }
+
+char	*handle_continuation(t_minishell *minishell, char *full_input)
+{
+	char	*line;
+
+	line = readline("> ");
+	if (check_received_signal(minishell, line))
+	{
+		free(full_input);
+		return (NULL);
+	}
+	if (!line)
+		return (handle_continuation_eof(minishell, full_input));
+	return (append_continuation_line(full_input, line));
+}
