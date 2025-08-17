@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/14 00:00:00 by rahaf             #+#    #+#             */
-/*   Updated: 2025/08/14 21:27:12 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/17 17:05:08 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -115,8 +115,34 @@ typedef struct s_exec_vars
 	t_cmd	*cmd;
 }	t_exec_vars;
 
+typedef struct s_tokenize_data
+{
+	size_t		i;
+	size_t		len;
+	char		buf[4096];
+	int			buf_i;
+	t_token		*head;
+	t_token		*tail;
+	char		current_quote;
+	char		overall_quote;
+}	t_tokenize_data;
+
 /* tokenizer */
 t_token	*tokenize(t_minishell *minishell);
+int		tokenize_main_loop(t_minishell *mini, t_tokenize_data *data);
+int		handle_escape_char(t_minishell *mini, size_t *i, char *buf,
+			int *buf_i);
+int		handle_escape_in_quotes(t_minishell *mini, size_t *i, char *buf,
+			int *buf_i);
+int		handle_quotes(t_minishell *mini, size_t *i, char *c,
+			char *current_quote);
+t_token	*new_token(const char *value, t_token_type type, char quote);
+void	append_token(t_token **head, t_token **tail, t_token *tok);
+int		handle_redirection(t_minishell *mini, t_tokenize_data *data, char c);
+int		finalize_token(t_tokenize_data *data);
+int		handle_other_escapes(t_minishell *mini, size_t *i,
+			char *buf, int *buf_i, char next_char);
+int		process_char(t_minishell *mini, t_tokenize_data *data);
 void	init_shell(t_minishell *minishell);
 void	init(t_minishell *mini);
 char	*handle_continuation(t_minishell *minishell, char *full_input);
@@ -192,6 +218,7 @@ void	call_unset(t_minishell *mini, char **argv);
 void	call_echo(t_minishell *mini, char **argv);
 void	call_pwd(t_minishell *mini);
 void	call_cd(t_minishell *mini, char **argv);
+void	call_dot(t_minishell *mini, char **argv);
 int	count_env_vars(t_env *env_list);
 char	*get_user_home_dir(void);
 char	*handle_tilde_expansion(t_minishell *mini, char *path);

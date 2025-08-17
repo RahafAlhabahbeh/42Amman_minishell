@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   execute_builtin.c                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
+/*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:55:21 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/12 17:30:00 by dal-mahr         ###   ########.fr       */
+/*   Updated: 2025/08/17 17:05:08 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@ int	is_builtin(char *cmd)
 	if (!ft_strcmp(cmd, "echo") || !ft_strcmp(cmd, "cd")
 		|| !ft_strcmp(cmd, "pwd") || !ft_strcmp(cmd, "export")
 		|| !ft_strcmp(cmd, "unset") || !ft_strcmp(cmd, "exit")
-		|| !ft_strcmp(cmd, "env"))
+		|| !ft_strcmp(cmd, "env") || !ft_strcmp(cmd, "."))
 		return (1);
 	return (0);
 }
@@ -46,6 +46,8 @@ void	execute_builtin(t_minishell *minishell, int i)
 		call_cd(minishell, minishell->cmd[i].argv);
 	else if (!ft_strcmp(name, "env"))
 		call_env(minishell, minishell->cmd[i].argv);
+	else if (!ft_strcmp(name, "."))
+		call_dot(minishell, minishell->cmd[i].argv);
 }
 
 void	execute_builtin_cmd(t_minishell *mini, t_cmd *cmd)
@@ -69,6 +71,8 @@ void	execute_builtin_cmd(t_minishell *mini, t_cmd *cmd)
 		call_cd(mini, cmd->argv);
 	else if (!ft_strcmp(name, "env"))
 		call_env(mini, cmd->argv);
+	else if (!ft_strcmp(name, "."))
+		call_dot(mini, cmd->argv);
 }
 
 int	ft_strcmp(const char *s1, const char *s2)

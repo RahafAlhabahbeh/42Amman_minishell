@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/12 00:00:00 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/13 18:59:49 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/17 17:05:08 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,5 +72,5 @@ int	resolve_cmd_path_with_status(char *cmd, t_minishell *mini, char **path)
 		return (127);
 	status = find_in_paths_with_status(paths, cmd, path);
 	free_paths_array(paths);
-	return (127);
+	return (status);
 }

@@ -12,6 +12,9 @@ LIBFT_DIR  = libft
 # Source files
 SRC = \
     $(SRC_DIR)/parsing/get_tokens.c  \
+    $(SRC_DIR)/parsing/tokenize_loop.c  \
+    $(SRC_DIR)/parsing/token_helpers.c  \
+    $(SRC_DIR)/parsing/process_char.c  \
     $(SRC_DIR)/parsing/expand.c  \
     $(SRC_DIR)/parsing/expand_tilde.c  \
     $(SRC_DIR)/parsing/extract_var_name.c  \
@@ -37,6 +40,7 @@ SRC = \
 	$(SRC_DIR)/commands/call_exit.c \
 	$(SRC_DIR)/commands/call_cd.c \
 	$(SRC_DIR)/commands/call_cd2.c \
+	$(SRC_DIR)/commands/call_dot.c \
 	$(SRC_DIR)/commands/exit_utils.c \
 	$(SRC_DIR)/utils/resolve_path.c \
 	$(SRC_DIR)/utils/resolve_path_utils.c \

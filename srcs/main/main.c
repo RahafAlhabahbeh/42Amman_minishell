@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
+/*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/02 22:14:22 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/12 06:28:39 by dal-mahr         ###   ########.fr       */
+/*   Updated: 2025/08/17 16:38:46 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@ static int	handle_signals_and_input(t_minishell *minishell)
 	}
 	if (check_sigquit_received())
 	{
+		minishell->exit_status = 131;
 		reset_minishell(minishell);
 		return (1);
 	}

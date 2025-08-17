@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   signal_utils.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
+/*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/12 17:30:00 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/12 17:30:00 by dal-mahr         ###   ########.fr       */
+/*   Updated: 2025/08/17 16:38:46 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@ volatile sig_atomic_t	g_in_child_process = 0;
 
 int	check_sigint_received(void)
 {
-	if (g_received_signal == SIGINT)
+	if (g_received_signal == 130)
 	{
 		g_received_signal = 0;
 		return (1);
@@ -27,12 +27,12 @@ int	check_sigint_received(void)
 
 int	peek_sigint_received(void)
 {
-	return (g_received_signal == SIGINT);
+	return (g_received_signal == 130);
 }
 
 int	check_sigquit_received(void)
 {
-	if (g_received_signal == SIGQUIT)
+	if (g_received_signal == 131)
 	{
 		g_received_signal = 0;
 		return (1);

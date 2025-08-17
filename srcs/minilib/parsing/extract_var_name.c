@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   extract_var_name.c                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
+/*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:55:21 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/16 11:40:00 by dal-mahr         ###   ########.fr       */
+/*   Updated: 2025/08/17 17:14:47 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,11 @@ static int	handle_unbraced_var(const char *str, int *i, char *var_name)
 	int	k;
 
 	k = 0;
+	if (str[*i] && ft_isdigit(str[*i]))
+	{
+		var_name[k++] = str[(*i)++];
+		return (k);
+	}
 	while (str[*i] && (ft_isalnum(str[*i]) || str[*i] == '_') && k < 255)
 		var_name[k++] = str[(*i)++];
 	return (k);

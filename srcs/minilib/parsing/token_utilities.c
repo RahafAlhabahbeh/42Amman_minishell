@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   token_utilities.c                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
+/*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:55:21 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/16 12:40:00 by dal-mahr         ###   ########.fr       */
+/*   Updated: 2025/08/17 16:38:46 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,6 +85,8 @@ int	process_token(t_minishell *mini, t_token *cur,
 		t_token **list, t_token **tail)
 {
 	char	*expanded;
+	t_token	*new_token_node;
+	t_token	*prev_tail;
 
 	expanded = replace_var(mini, cur->value, cur->quote);
 	if (!expanded)
@@ -100,13 +102,20 @@ int	process_token(t_minishell *mini, t_token *cur,
 	}
 	else
 	{
-		*tail = create_token(expanded, cur->type, cur->quote);
-		if (!*tail)
+		new_token_node = create_token(expanded, cur->type, cur->quote);
+		if (!new_token_node)
 			return (-1);
 		if (!*list)
-			*list = *tail;
+		{
+			*list = new_token_node;
+			*tail = new_token_node;
+		}
 		else
-			(*tail)->next = *tail;
+		{
+			prev_tail = *tail;
+			prev_tail->next = new_token_node;
+			*tail = new_token_node;
+		}
 	}
 	return (0);
 }

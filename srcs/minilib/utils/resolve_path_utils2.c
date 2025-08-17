@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/12 00:00:00 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/13 18:59:49 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/17 17:14:47 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,7 +75,7 @@ char	*resolve_cmd_path(char *cmd, t_minishell *mini)
 		return (NULL);
 	full = find_in_paths(paths, cmd);
 	free_paths_array(paths);
-	return (NULL);
+	return (full);
 }
 
 int	check_candidate(char *full, char *cmd, char **path, char **paths)
@@ -83,6 +83,7 @@ int	check_candidate(char *full, char *cmd, char **path, char **paths)
 	int	status;
 
 	(void) cmd;
+	(void) paths;
 	if (is_directory(full))
 	{
 		free(full);
@@ -91,13 +92,11 @@ int	check_candidate(char *full, char *cmd, char **path, char **paths)
 	status = is_executable(full);
 	if (status == 0)
 	{
-		free_paths_array(paths);
 		*path = full;
 		return (0);
 	}
 	else if (status == -2)
 	{
-		free_paths_array(paths);
 		free(full);
 		return (126);
 	}

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   signals.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
+/*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:55:21 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/16 15:30:00 by dal-mahr         ###   ########.fr       */
+/*   Updated: 2025/08/17 16:38:46 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,14 @@ void	handle_sigint(int sig)
 void	handle_sigquit(int sig)
 {
 	g_received_signal = sig;
+	if (!is_child_running())
+	{
+		write(1, "^\\\n", 3);
+		rl_replace_line("", 0);
+		rl_on_new_line();
+		rl_redisplay();
+	}
+	g_received_signal = 131;
 }
 
 void	setup_signals(void)
@@ -40,7 +48,7 @@ void	setup_signals(void)
 	sigemptyset(&sa.sa_mask);
 	sa.sa_flags = 0;
 	sigaction(SIGINT, &sa, NULL);
-	sa.sa_handler = SIG_IGN;
+	sa.sa_handler = handle_sigquit;
 	sigaction(SIGQUIT, &sa, NULL);
 }
 

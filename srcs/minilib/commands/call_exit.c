@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   call_exit.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
+/*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:53:38 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/12 17:30:00 by dal-mahr         ###   ########.fr       */
+/*   Updated: 2025/08/17 16:38:46 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,8 @@ static void	exit_with_code(t_minishell *mini, char *arg)
 {
 	long long	code;
 
+	if (!is_in_child_process())
+		ft_putstr_fd("exit\n", STDERR_FILENO);
 	code = ft_atoi(arg);
 	if (!is_in_child_process())
 	{

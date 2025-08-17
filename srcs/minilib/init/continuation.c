@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   continuation.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
+/*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/16 12:15:00 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/16 12:15:00 by dal-mahr         ###   ########.fr       */
+/*   Updated: 2025/08/17 17:29:52 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,6 +66,11 @@ char	*handle_continuation(t_minishell *minishell, char *full_input)
 	char	*line;
 
 	line = readline("> ");
+	if (g_received_signal == 131)
+	{
+		minishell->exit_status = 131;
+		g_received_signal = 0;
+	}
 	if (peek_sigint_received())
 	{
 		if (line)
@@ -86,6 +91,11 @@ char	*handle_readline_input(t_minishell *minishell)
 	if (g_received_signal == 130)
 	{
 		minishell->exit_status = 130;
+		g_received_signal = 0;
+	}
+	if (g_received_signal == 131)
+	{
+		minishell->exit_status = 131;
 		g_received_signal = 0;
 	}
 	if (peek_sigint_received())

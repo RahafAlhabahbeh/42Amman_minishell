@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   replace_var.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
+/*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:55:21 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/12 17:30:00 by dal-mahr         ###   ########.fr       */
+/*   Updated: 2025/08/17 17:14:47 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,6 +50,17 @@ static int	handle_special_var(t_minishell *mini, char **result,
 		ft_strlcpy(*result + *j, pid_str, len + 1);
 		*j += len;
 		free(pid_str);
+		return (1);
+	}
+	else if (str[*i] == '0')
+	{
+		(*i)++;
+		temp = safe_resize_buffer(*result, capacity, *j + 12);
+		if (!temp)
+			return (-1);
+		*result = temp;
+		ft_strlcpy(*result + *j, "./minishell", 12);
+		*j += 11;
 		return (1);
 	}
 	return (0);
@@ -113,6 +124,16 @@ static int	handle_variable_expansion(t_minishell *mini, const char *str,
 		ft_strlcat(*result + *j, pid_str, len + 1);
 		*j += len;
 		free(pid_str);
+		return (0);
+	}
+	if (var_len == 1 && var[0] == '0')
+	{
+		temp = safe_resize_buffer(*result, capacity, *j + 12);
+		if (!temp)
+			return (-1);
+		*result = temp;
+		ft_strlcat(*result + *j, "./minishell", 12);
+		*j += 11;
 		return (0);
 	}
 	val = get_value_env(mini, var);
