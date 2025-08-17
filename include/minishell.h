@@ -29,6 +29,10 @@
 
 # include "../libft/libft.h"
 
+extern volatile sig_atomic_t g_received_signal;
+extern volatile sig_atomic_t g_child_running;
+extern volatile sig_atomic_t g_in_child_process;
+
 typedef struct s_env
 {
 	int		index;
@@ -101,6 +105,15 @@ typedef struct s_pipe_data
 	int		n;
 	char	**envp;
 }	t_pipe_data;
+
+typedef struct s_exec_vars
+{
+	int		i;
+	int		prev_fd;
+	int		pipefd[2];
+	pid_t	pid;
+	t_cmd	*cmd;
+}	t_exec_vars;
 
 /* tokenizer */
 t_token	*tokenize(t_minishell *minishell);
@@ -193,6 +206,14 @@ char	*merge_args(char **argv, int start, int *consumed);
 char	*join_path(const char *dir, const char *cmd);
 char	*resolve_cmd_path(char *cmd, t_minishell *mini);
 int	resolve_cmd_path_with_status(char *cmd, t_minishell *mini, char **path);
+int	check_direct_cmd(char *cmd, char **path);
+int	find_in_paths_with_status(char **paths, char *cmd, char **path);
+int	check_candidate(char *full, char *cmd, char **path, char **paths);
+char	*find_in_paths(char **paths, char *cmd);
+char	*check_path(char *full, char *cmd, char **paths);
+int	is_executable(const char *path);
+char	*check_absolute_path(char *cmd);
+void	free_paths_array(char **paths);
 int	is_directory(const char *path);
 void	free_minishell(t_minishell *mini);
 void	free_tokens(t_token *head);

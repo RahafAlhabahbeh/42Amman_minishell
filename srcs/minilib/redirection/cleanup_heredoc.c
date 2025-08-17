@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/31 01:11:13 by rahaf             #+#    #+#             */
-/*   Updated: 2025/08/16 22:10:00 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/17 00:45:00 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,26 @@ void	free_heredoc_list(t_heredoc *list)
 	}
 }
 
+static void	cleanup_single_heredoc(t_cmd *cmd)
+{
+	if (cmd->heredoc_fd >= 0)
+	{
+		close(cmd->heredoc_fd);
+		cmd->heredoc_fd = -1;
+	}
+	if (cmd->heredoc_temp_file)
+	{
+		unlink(cmd->heredoc_temp_file);
+		free(cmd->heredoc_temp_file);
+		cmd->heredoc_temp_file = NULL;
+	}
+	if (cmd->heredoc_list)
+	{
+		free_heredoc_list(cmd->heredoc_list);
+		cmd->heredoc_list = NULL;
+	}
+}
+
 void	cleanup_heredoc_files(t_minishell *mini)
 {
 	t_cmd	*cmd;
@@ -44,22 +64,7 @@ void	cleanup_heredoc_files(t_minishell *mini)
 	i = 0;
 	while (i <= mini->pipex_count)
 	{
-		if (cmd[i].heredoc_fd >= 0)
-		{
-			close(cmd[i].heredoc_fd);
-			cmd[i].heredoc_fd = -1;
-		}
-		if (cmd[i].heredoc_temp_file)
-		{
-			unlink(cmd[i].heredoc_temp_file);
-			free(cmd[i].heredoc_temp_file);
-			cmd[i].heredoc_temp_file = NULL;
-		}
-		if (cmd[i].heredoc_list)
-		{
-			free_heredoc_list(cmd[i].heredoc_list);
-			cmd[i].heredoc_list = NULL;
-		}
+		cleanup_single_heredoc(&cmd[i]);
 		i++;
 	}
 }

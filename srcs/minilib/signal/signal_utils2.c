@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   signal_utils.c                                     :+:      :+:    :+:   */
+/*   signal_utils2.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -12,35 +12,30 @@
 
 #include "../../../include/minishell.h"
 
-volatile sig_atomic_t	g_child_running = 0;
-volatile sig_atomic_t	g_in_child_process = 0;
-
-int	check_sigint_received(void)
+void	reset_received_signal(void)
 {
-	if (g_received_signal == SIGINT)
-	{
-		g_received_signal = 0;
-		return (1);
-	}
-	return (0);
+	g_received_signal = 0;
 }
 
-int	peek_sigint_received(void)
+void	set_child_running(int running)
 {
-	return (g_received_signal == SIGINT);
+	if (running)
+		g_child_running = 1;
+	else
+		g_child_running = 0;
 }
 
-int	check_sigquit_received(void)
+int	is_child_running(void)
 {
-	if (g_received_signal == SIGQUIT)
-	{
-		g_received_signal = 0;
-		return (1);
-	}
-	return (0);
+	return (g_child_running);
 }
 
-int	get_received_signal(void)
+void	set_in_child_process(int in_child)
 {
-	return (g_received_signal);
+	g_in_child_process = in_child;
+}
+
+int	is_in_child_process(void)
+{
+	return (g_in_child_process);
 }

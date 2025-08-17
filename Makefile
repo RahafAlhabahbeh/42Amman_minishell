@@ -39,6 +39,8 @@ SRC = \
 	$(SRC_DIR)/commands/call_cd2.c \
 	$(SRC_DIR)/commands/exit_utils.c \
 	$(SRC_DIR)/utils/resolve_path.c \
+	$(SRC_DIR)/utils/resolve_path_utils.c \
+	$(SRC_DIR)/utils/resolve_path_utils2.c \
 	$(SRC_DIR)/utils/export_utils.c \
 	$(SRC_DIR)/pipe/pipe_exec.c \
 	$(SRC_DIR)/pipe/pipe_utils.c \
@@ -68,7 +70,8 @@ SRC = \
 	$(SRC_DIR)/free/free_utils.c	\
 	$(SRC_DIR)/check_error/syntax_error.c	\
 	$(SRC_DIR)/signal/signals.c \
-	$(SRC_DIR)/signal/signal_utils.c
+	$(SRC_DIR)/signal/signal_utils.c \
+	$(SRC_DIR)/signal/signal_utils2.c
 
 
 # Object files (mirror the SRC tree under obj/)

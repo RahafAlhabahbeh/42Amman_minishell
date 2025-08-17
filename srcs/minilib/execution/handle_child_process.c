@@ -6,19 +6,14 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/15 23:00:00 by rahaf             #+#    #+#             */
-/*   Updated: 2025/08/15 23:00:00 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/17 00:30:00 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../../include/minishell.h"
 
-void	handle_child_process(t_minishell *mini, t_cmd *cmd, char **envp)
+static void	handle_initial_redirections(t_minishell *mini, t_cmd *cmd)
 {
-	char	*path;
-	int		status;
-
-	signal(SIGINT, SIG_DFL);
-	signal(SIGQUIT, SIG_DFL);
 	if (handle_redirections(cmd, -1, NULL, 1) < 0)
 		exit(1);
 	if (!cmd->argv || !cmd->argv[0])
@@ -32,34 +27,46 @@ void	handle_child_process(t_minishell *mini, t_cmd *cmd, char **envp)
 		cleanup_child_process(mini);
 		exit(mini->exit_status);
 	}
-	status = resolve_cmd_path_with_status(cmd->argv[0], mini, &path);
-	if (status != 0)
+}
+
+static void	handle_command_not_found(t_minishell *mini, t_cmd *cmd, int status)
+{
+	write(2, cmd->argv[0], ft_strlen(cmd->argv[0]));
+	if (cmd->argv[0][0] == '/' ||
+		(cmd->argv[0][0] == '.' && ft_strchr(cmd->argv[0], '/')))
+		write(2, ": No such file or directory\n", 28);
+	else
+		write(2, ": command not found\n", 20);
+	cleanup_child_process(mini);
+	exit(status);
+}
+
+static void	handle_status_errors(t_minishell *mini, t_cmd *cmd, int status)
+{
+	if (status == 126)
 	{
-		if (status == 126)
-		{
-			if (is_directory(cmd->argv[0]))
-			{
-				write(2, cmd->argv[0], ft_strlen(cmd->argv[0]));
-				write(2, ": Is a directory\n", 17);
-			}
-			else
-			{
-				write(2, cmd->argv[0], ft_strlen(cmd->argv[0]));
-				write(2, ": Permission denied\n", 20);
-			}
-		}
+		if (is_directory(cmd->argv[0]))
+			write(2, ": Is a directory\n", 17);
 		else
-		{
-			write(2, cmd->argv[0], ft_strlen(cmd->argv[0]));
-			if (cmd->argv[0][0] == '/' ||
-				(cmd->argv[0][0] == '.' && ft_strchr(cmd->argv[0], '/')))
-				write(2, ": No such file or directory\n", 28);
-			else
-				write(2, ": command not found\n", 20);
-		}
+			write(2, ": Permission denied\n", 20);
 		cleanup_child_process(mini);
 		exit(status);
 	}
+	else
+		handle_command_not_found(mini, cmd, status);
+}
+
+void	handle_child_process(t_minishell *mini, t_cmd *cmd, char **envp)
+{
+	char	*path;
+	int		status;
+
+	signal(SIGINT, SIG_DFL);
+	signal(SIGQUIT, SIG_DFL);
+	handle_initial_redirections(mini, cmd);
+	status = resolve_cmd_path_with_status(cmd->argv[0], mini, &path);
+	if (status != 0)
+		handle_status_errors(mini, cmd, status);
 	execve(path, cmd->argv, envp);
 	perror("execve");
 	free(path);
