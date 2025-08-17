@@ -35,11 +35,10 @@ static int	prepare_pipe_and_sigint(t_minishell *mini, t_exec_vars *vars)
 static int	handle_parent_and_fork(t_minishell *mini, t_exec_vars *vars,
 	pid_t *pids)
 {
-	if (handle_parent_builtin(mini, vars->cmd, vars->prev_fd,
-			vars->pipefd, vars->i, pids))
+	if (handle_parent_builtin(mini, vars, pids))
 	{
-		vars->prev_fd = execute_parent_process(vars->prev_fd,
-				vars->pipefd, vars->i == mini->pipex_count);
+		vars->prev_fd = execute_parent_process(vars,
+				vars->i == mini->pipex_count);
 		return (1);
 	}
 	vars->pid = fork();
@@ -60,13 +59,12 @@ static int	handle_child_or_parent(t_minishell *mini, t_exec_vars *vars,
 	pid_t *pids)
 {
 	if (vars->pid == 0)
-		handle_child_process2(mini, vars->cmd, vars->prev_fd,
-			vars->pipefd, vars->i, mini->envp);
+		handle_child_process2(mini, vars, mini->envp);
 	else
 	{
 		pids[vars->i] = vars->pid;
-		return (execute_parent_process(vars->prev_fd,
-				vars->pipefd, vars->i == mini->pipex_count));
+		return (execute_parent_process(vars,
+				vars->i == mini->pipex_count));
 	}
 	return (vars->prev_fd);
 }

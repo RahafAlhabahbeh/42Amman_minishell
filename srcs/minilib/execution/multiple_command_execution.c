@@ -24,34 +24,42 @@ static void	init_pids_array(pid_t *pids, int count)
 	}
 }
 
+static void	handle_single_process(t_minishell *mini, pid_t pid, int *status,
+	int is_last)
+{
+	struct sigaction	sa;
+	int					wait_result;
+
+	if (pid <= 0)
+		return ;
+	ft_memset(&sa, 0, sizeof(sa));
+	sa.sa_handler = SIG_IGN;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = 0;
+	sigaction(SIGINT, &sa, NULL);
+	wait_result = waitpid(pid, status, 0);
+	if (wait_result > 0 && is_last)
+	{
+		if (WIFEXITED(*status))
+			mini->exit_status = WEXITSTATUS(*status);
+		else if (WIFSIGNALED(*status))
+			mini->exit_status = 128 + WTERMSIG(*status);
+	}
+}
+
 static void	wait_for_processes(t_minishell *mini, pid_t *pids, int count,
 	int last_was_parent_builtin)
 {
-	struct sigaction sa;
-	int	status;
-	int	i;
-	int	wait_result;
+	int					status;
+	int					i;
 
 	i = 0;
 	status = 0;
 	while (i < count)
 	{
 		if (pids[i] > 0)
-		{
-			memset(&sa, 0, sizeof(sa));
-			sa.sa_handler = SIG_IGN;
-			sigemptyset(&sa.sa_mask);
-			sa.sa_flags = 0;
-			sigaction(SIGINT, &sa, NULL);
-			wait_result = waitpid(pids[i], &status, 0);
-			if (wait_result > 0 && (!last_was_parent_builtin || i == count - 1))
-			{
-				if (WIFEXITED(status))
-					mini->exit_status = WEXITSTATUS(status);
-				else if (WIFSIGNALED(status))
-					mini->exit_status = 128 + WTERMSIG(status);
-			}
-		}
+			handle_single_process(mini, pids[i], &status,
+				(!last_was_parent_builtin || i == count - 1));
 		else if (pids[i] == -2 || pids[i] == 0)
 		{
 			i++;
@@ -64,23 +72,35 @@ static void	wait_for_processes(t_minishell *mini, pid_t *pids, int count,
 	setup_signals();
 }
 
+static pid_t	*prepare_execution(t_minishell *mini, char **envp, int *count,
+	int *last_cmd_builtin)
+{
+	pid_t	*pids;
+
+	*count = mini->pipex_count + 1;
+	pids = malloc(sizeof(pid_t) * (*count));
+	if (!pids)
+	{
+		mini->exit_status = 1;
+		return (NULL);
+	}
+	*last_cmd_builtin = 0;
+	init_pids_array(pids, *count);
+	set_child_running(1);
+	execute_loop(mini, envp, pids);
+	return (pids);
+}
+
 void	multiple_command_execution(t_minishell *mini, char **envp)
 {
 	int		count;
 	pid_t	*pids;
 	int		last_command_was_parent_builtin;
 
-	count = mini->pipex_count + 1;
-	pids = malloc(sizeof(pid_t) * count);
+	pids = prepare_execution(mini, envp, &count,
+			&last_command_was_parent_builtin);
 	if (!pids)
-	{
-		mini->exit_status = 1;
 		return ;
-	}
-	last_command_was_parent_builtin = 0;
-	init_pids_array(pids, count);
-	set_child_running(1);
-	execute_loop(mini, envp, pids);
 	if (pids && pids[count - 1] == -2)
 		last_command_was_parent_builtin = 1;
 	if (pids)

@@ -40,6 +40,28 @@ int	should_run_builtin_in_parent(t_cmd *cmd, int index, int total_pipes)
 	return (0);
 }
 
+int	execute_parent_process(t_exec_vars *vars, int is_last)
+{
+	struct sigaction	sa;
+
+	ft_memset(&sa, 0, sizeof(sa));
+	sa.sa_handler = SIG_IGN;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = 0;
+	sigaction(SIGINT, &sa, NULL);
+	if (vars->prev_fd != -1)
+		close(vars->prev_fd);
+	if (!is_last)
+	{
+		close(vars->pipefd[1]);
+		vars->pipefd[1] = -1;
+		return (vars->pipefd[0]);
+	}
+	else
+		close_pipe_fds(vars->pipefd);
+	return (-1);
+}
+/*
 int	execute_parent_process(int prev_fd, int *pipe_fds, int is_last)
 {
 	struct sigaction	sa;
@@ -61,3 +83,4 @@ int	execute_parent_process(int prev_fd, int *pipe_fds, int is_last)
 		close_pipe_fds(pipe_fds);
 	return (-1);
 }
+*/

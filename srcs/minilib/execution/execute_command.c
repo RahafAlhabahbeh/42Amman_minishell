@@ -6,12 +6,56 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/12 00:00:00 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/15 17:53:42 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/17 18:30:00 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../../include/minishell.h"
 
+void	handle_child_process2(t_minishell *mini, t_exec_vars *vars, char **envp)
+{
+	set_in_child_process(1);
+	signal(SIGINT, SIG_DFL);
+	signal(SIGQUIT, SIG_DFL);
+	if (handle_redirections(vars->cmd, vars->prev_fd, vars->pipefd,
+			vars->i == mini->pipex_count) < 0)
+		exit(1);
+	if (!vars->cmd->argv || !vars->cmd->argv[0])
+	{
+		cleanup_child_process(mini);
+		exit(0);
+	}
+	handle_empty_command(vars->cmd);
+	execute_child_command(mini, vars->cmd, vars->i, envp);
+}
+
+int	handle_parent_builtin(t_minishell *mini, t_exec_vars *vars, pid_t *pids)
+{
+	if (vars->cmd->argv && vars->cmd->argv[0] && is_builtin(vars->cmd->argv[0])
+		&& should_run_builtin_in_parent(vars->cmd, vars->i, mini->pipex_count))
+	{
+		save_original_fds(vars->cmd);
+		if (handle_redirections(vars->cmd, vars->prev_fd, vars->pipefd,
+				vars->i == mini->pipex_count) == 0)
+			execute_builtin(mini, vars->i);
+		else if (vars->i < mini->pipex_count)
+			close_pipe_fds(vars->pipefd);
+		restore_original_fds(vars->cmd);
+		pids[vars->i] = -2;
+		return (1);
+	}
+	return (0);
+}
+
+void	execute_command(t_minishell *mini, char **envp)
+{
+	if (mini->pipex_count == 0)
+		execute_one_command(mini, envp);
+	else
+		multiple_command_execution(mini, envp);
+	setup_signals();
+}
+/*
 void	handle_child_process2(t_minishell *mini, t_cmd *cmd, int prev_fd,
 	int *pipefd, int i, char **envp)
 {
@@ -30,7 +74,8 @@ void	handle_child_process2(t_minishell *mini, t_cmd *cmd, int prev_fd,
 	execute_child_command(mini, cmd, i, envp);
 }
 
-int	handle_parent_builtin(t_minishell *mini, t_cmd *cmd, int prev_fd, int *pipefd, int i, pid_t *pids)
+int	handle_parent_builtin(t_minishell *mini, t_cmd *cmd, int prev_fd,
+	int *pipefd, int i, pid_t *pids)
 {
 	if (cmd->argv && cmd->argv[0] && is_builtin(cmd->argv[0])
 		&& should_run_builtin_in_parent(cmd, i, mini->pipex_count))
@@ -59,3 +104,4 @@ void	execute_command(t_minishell *mini, char **envp)
 		multiple_command_execution(mini, envp);
 	setup_signals();
 }
+*/

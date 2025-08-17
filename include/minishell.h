@@ -267,12 +267,11 @@ void	reset_received_signal(void);
 void	set_in_child_process(int in_child);
 int	is_in_child_process(void);
 void	handle_child_process(t_minishell *mini, t_cmd *cmd, char **envp);
-void	execute_child_process(t_minishell *mini, t_cmd *cmd, int prev_fd, int *pipe_fds, int is_last, char **envp);
+// void	execute_child_process(t_minishell *mini, t_cmd *cmd, int prev_fd, int *pipe_fds, int is_last, char **envp);
 void	close_pipe_fds(int *pipe_fds);
 void	process_heredocs(t_minishell *mini);
 void	handle_empty_command(t_cmd *cmd);
-int	execute_parent_process(int prev_fd, int *pipe_fds, int is_last);
-/* Global signal variable for signal handling */
+int	execute_parent_process(t_exec_vars *vars, int is_last);
 extern volatile sig_atomic_t	g_received_signal;
 void	call_exit(t_minishell *mini, char **argv);
 void	child_sig();
@@ -295,10 +294,10 @@ void	execute_loop(t_minishell *mini, char **envp, pid_t *pids);
 pid_t	handle_command_iteration(t_minishell *mini, char **envp, t_cmd *cmd, int i);
 int	should_run_builtin_in_parent(t_cmd *cmd, int index, int total_pipes);
 int	is_redirection_present(t_cmd *cmd);
-void	handle_child_process2(t_minishell *mini, t_cmd *cmd, int prev_fd, int *pipefd, int i, char **envp);
+void	handle_child_process2(t_minishell *mini, t_exec_vars *vars, char **envp);
 int	handle_empty_command2(t_minishell *mini, t_cmd *cmd);
 int	handle_parent_builtin_child(t_minishell *mini, t_cmd *cmd);
-int	handle_parent_builtin(t_minishell *mini, t_cmd *cmd, int prev_fd, int *pipefd, int i, pid_t *pids);
+int	handle_parent_builtin(t_minishell *mini, t_exec_vars *vars, pid_t *pids);
 void	handle_parent_process(t_minishell *mini, pid_t pid);
 void	execute_child_command(t_minishell *mini, t_cmd *cmd, int i, char **envp);
 

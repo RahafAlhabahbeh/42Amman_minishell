@@ -52,7 +52,6 @@ SRC = \
 	$(SRC_DIR)/pipe/execute_child.c \
 	$(SRC_DIR)/execution/execute_command.c \
 	$(SRC_DIR)/execution/execute_builtin.c \
-	$(SRC_DIR)/execution/execute_child_process.c \
 	$(SRC_DIR)/execution/execute_one_command.c \
 	$(SRC_DIR)/execution/multiple_command_execution.c \
 	$(SRC_DIR)/execution/handle_child_process.c \
