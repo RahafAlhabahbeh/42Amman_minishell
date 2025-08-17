@@ -1,35 +1,33 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   get_tokens.c                                       :+:      :+:    :+:   */
+/*   fd_utils.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/15 00:00:00 by rahaf             #+#    #+#             */
-/*   Updated: 2025/08/17 17:22:58 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/17 21:50:55 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../../include/minishell.h"
 
-t_token	*tokenize(t_minishell *minishell)
+void	save_original_fds(t_cmd *cmd)
 {
-	t_tokenize_data	data;
+	cmd->original_stdin = dup(STDIN_FILENO);
+	cmd->original_stdout = dup(STDOUT_FILENO);
+}
 
-	data.i = 0;
-	data.len = ft_strlen(minishell->promp_input);
-	data.buf_i = 0;
-	data.head = NULL;
-	data.tail = NULL;
-	data.current_quote = 0;
-	data.overall_quote = 0;
-	if (!tokenize_main_loop(minishell, &data))
-		return (NULL);
-	if (data.current_quote != 0)
-	{
-		write(2, "Syntax error: unmatched quote\n", 30);
-		free_tokens(data.head);
-		return (NULL);
-	}
-	return (data.head);
+void	restore_original_fds(t_cmd *cmd)
+{
+	if (cmd->original_stdin != -1)
+		dup2(cmd->original_stdin, STDIN_FILENO);
+	if (cmd->original_stdout != -1)
+		dup2(cmd->original_stdout, STDOUT_FILENO);
+	if (cmd->original_stdin != -1)
+		close(cmd->original_stdin);
+	if (cmd->original_stdout != -1)
+		close(cmd->original_stdout);
+	cmd->original_stdin = -1;
+	cmd->original_stdout = -1;
 }

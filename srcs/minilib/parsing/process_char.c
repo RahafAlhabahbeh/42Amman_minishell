@@ -6,13 +6,11 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/15 00:00:00 by rahaf             #+#    #+#             */
-/*   Updated: 2025/08/17 16:06:43 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/17 21:06:47 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../../include/minishell.h"
-
-
 
 static int	handle_char_escape(t_minishell *mini, t_tokenize_data *data)
 {

@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:55:21 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/14 21:10:28 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/17 21:38:44 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,47 +57,18 @@ int	redirect_output_append(const char *file)
 	return (0);
 }
 
-void	save_original_fds(t_cmd *cmd)
+static int	handle_input_redirect(t_cmd *cmd, int prev_fd, int *pipe_fds)
 {
-	cmd->original_stdin = dup(STDIN_FILENO);
-	cmd->original_stdout = dup(STDOUT_FILENO);
-}
-
-void	restore_original_fds(t_cmd *cmd)
-{
-	if (cmd->original_stdin != -1)
-		dup2(cmd->original_stdin, STDIN_FILENO);
-	if (cmd->original_stdout != -1)
-		dup2(cmd->original_stdout, STDOUT_FILENO);
-	if (cmd->original_stdin != -1)
-		close(cmd->original_stdin);
-	if (cmd->original_stdout != -1)
-		close(cmd->original_stdout);
-	cmd->original_stdin = -1;
-	cmd->original_stdout = -1;
-}
-
-static void	close_pipe_fds2(int *pipe_fds, int is_last)
-{
-	if (!is_last && pipe_fds)
-	{
-		if (pipe_fds[0] != -1)
-			close(pipe_fds[0]);
-		if (pipe_fds[1] != -1)
-			close(pipe_fds[1]);
-	}
-}
-
-int	handle_redirections(t_cmd *cmd, int prev_fd, int *pipe_fds, int is_last)
-{
-	// Handle input redirection
 	if (cmd->heredoc_fd >= 0)
 		redirect_heredoc_input(cmd);
 	else if (cmd->input_file_name)
 	{
 		if (redirect_input(cmd->input_file_name) < 0)
 		{
-			close_pipe_fds2(pipe_fds, is_last);
+			if (pipe_fds && pipe_fds[0] != -1)
+				close(pipe_fds[0]);
+			if (pipe_fds && pipe_fds[1] != -1)
+				close(pipe_fds[1]);
 			if (prev_fd != -1)
 				close(prev_fd);
 			return (-1);
@@ -108,25 +79,22 @@ int	handle_redirections(t_cmd *cmd, int prev_fd, int *pipe_fds, int is_last)
 		dup2(prev_fd, STDIN_FILENO);
 		close(prev_fd);
 	}
+	return (0);
+}
+
+int	handle_redirections(t_cmd *cmd, int prev_fd, int *pipe_fds, int is_last)
+{
+	if (handle_input_redirect(cmd, prev_fd, pipe_fds) == -1)
+		return (-1);
 	if (cmd->output_file_name)
 	{
 		if (cmd->out_type == REDIR_APPEND)
 		{
 			if (redirect_output_append(cmd->output_file_name) < 0)
-			{
-				close_pipe_fds2(pipe_fds, is_last);
 				return (-1);
-			}
 		}
-		else
-		{
-			if (redirect_output(cmd->output_file_name) < 0)
-			{
-				close_pipe_fds2(pipe_fds, is_last);
-				return (-1);
-			}
-		}
-		close_pipe_fds2(pipe_fds, is_last);
+		else if (redirect_output(cmd->output_file_name) < 0)
+			return (-1);
 	}
 	else if (!is_last && pipe_fds && pipe_fds[0] != -1 && pipe_fds[1] != -1)
 	{

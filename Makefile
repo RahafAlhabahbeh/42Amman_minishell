@@ -18,8 +18,9 @@ SRC = \
     $(SRC_DIR)/parsing/expand.c  \
     $(SRC_DIR)/parsing/expand_tilde.c  \
     $(SRC_DIR)/parsing/extract_var_name.c  \
-    $(SRC_DIR)/parsing/replace_var.c  \
-    $(SRC_DIR)/parsing/token_utilities.c  \
+    	$(SRC_DIR)/parsing/replace_var.c  \
+	$(SRC_DIR)/parsing/expand_helpers.c  \
+	$(SRC_DIR)/parsing/token_utilities.c  \
     $(SRC_DIR)/parsing/get_commands.c \
     $(SRC_DIR)/parsing/get_commands2.c \
     $(SRC_DIR)/parsing/merge_equal_sign_tokens.c \
@@ -47,6 +48,7 @@ SRC = \
 	$(SRC_DIR)/utils/resolve_path_utils.c \
 	$(SRC_DIR)/utils/resolve_path_utils2.c \
 	$(SRC_DIR)/utils/export_utils.c \
+	$(SRC_DIR)/utils/fd_utils.c \
 	$(SRC_DIR)/pipe/pipe_exec.c \
 	$(SRC_DIR)/pipe/pipe_utils.c \
 	$(SRC_DIR)/pipe/redirection.c \

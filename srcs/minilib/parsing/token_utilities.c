@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:55:21 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/17 16:38:46 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/17 21:38:44 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,7 +86,6 @@ int	process_token(t_minishell *mini, t_token *cur,
 {
 	char	*expanded;
 	t_token	*new_token_node;
-	t_token	*prev_tail;
 
 	expanded = replace_var(mini, cur->value, cur->quote);
 	if (!expanded)
@@ -94,28 +93,17 @@ int	process_token(t_minishell *mini, t_token *cur,
 	if (!cur->quote && ft_strchr(expanded, ' '))
 	{
 		if (add_split_tokens(list, tail, expanded, cur->type) == -1)
-		{
-			free(expanded);
-			return (-1);
-		}
-		free(expanded);
+			return (free(expanded), -1);
+		return (free(expanded), 0);
 	}
+	new_token_node = create_token(expanded, cur->type, cur->quote);
+	free(expanded);
+	if (!new_token_node)
+		return (-1);
+	if (!*list)
+		*list = new_token_node;
 	else
-	{
-		new_token_node = create_token(expanded, cur->type, cur->quote);
-		if (!new_token_node)
-			return (-1);
-		if (!*list)
-		{
-			*list = new_token_node;
-			*tail = new_token_node;
-		}
-		else
-		{
-			prev_tail = *tail;
-			prev_tail->next = new_token_node;
-			*tail = new_token_node;
-		}
-	}
+		(*tail)->next = new_token_node;
+	*tail = new_token_node;
 	return (0);
 }
