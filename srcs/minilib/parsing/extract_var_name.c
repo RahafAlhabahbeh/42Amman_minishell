@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:55:21 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/17 17:14:47 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/18 01:03:20 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,58 +88,4 @@ char	*safe_resize_buffer(char *buffer, size_t *capacity, size_t needed)
 	*capacity = new_capacity;
 	return (new_buffer);
 }
-/*
-int	extract_var_name(const char *str, int *pos,
-		char *var_name, int *is_braced)
-{
-	int	i;
-	int	k;
 
-	i = *pos;
-	k = 0;
-	*is_braced = 0;
-	if (str[i] == '{')
-	{
-		*is_braced = 1;
-		i++;
-		while (str[i] && str[i] != '}' && k < 255)
-		{
-			if (ft_isalnum(str[i]) || str[i] == '_' ||
-				str[i] == '?' || str[i] == '$')
-				var_name[k++] = str[i];
-			else
-				break ;
-			i++;
-		}
-		if (str[i] == '}')
-			i++;
-		else
-			return (-1);
-	}
-	else
-	{
-		while (str[i] && (ft_isalnum(str[i]) || str[i] == '_') && k < 255)
-			var_name[k++] = str[i++];
-	}
-	var_name[k] = '\0';
-	*pos = i;
-	return (k);
-}
-
-char	*safe_resize_buffer(char *buffer, size_t *capacity, size_t needed)
-{
-	size_t	new_capacity;
-	char	*new_buffer;
-
-	if (needed < *capacity)
-		return (buffer);
-	new_capacity = *capacity;
-	while (new_capacity <= needed)
-		new_capacity *= 2;
-	new_buffer = realloc(buffer, new_capacity);
-	if (!new_buffer)
-		return (NULL);
-	*capacity = new_capacity;
-	return (new_buffer);
-}
-*/

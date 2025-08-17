@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:55:21 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/17 22:13:04 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/18 01:03:20 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,13 +46,16 @@ static char	*init_and_process(t_minishell *minishell, char *tilde_expanded)
 	capacity = 1024;
 	result = (char *)malloc(capacity);
 	if (!result)
-		return (free(tilde_expanded), NULL);
+		return (NULL);
 	result[0] = '\0';
 	i = 0;
 	j = 0;
 	ctx = (t_expand_context){&result, &capacity, &i, &j, tilde_expanded};
 	if (process_string_expansion(minishell, &ctx) == -1)
-		return (free(result), free(tilde_expanded), NULL);
+	{
+		free(result);
+		return (NULL);
+	}
 	result[j] = '\0';
 	return (result);
 }

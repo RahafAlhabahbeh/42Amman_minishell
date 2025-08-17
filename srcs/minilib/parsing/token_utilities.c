@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:55:21 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/17 21:38:44 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/18 01:03:20 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,12 @@ t_token	*create_token(char *val, t_token_type type, char quote)
 	tok = malloc(sizeof(t_token));
 	if (!tok)
 		return (NULL);
-	tok->value = val;
+	tok->value = ft_strdup(val);
+	if (!tok->value)
+	{
+		free(tok);
+		return (NULL);
+	}
 	tok->type = type;
 	tok->quote = quote;
 	tok->next = NULL;
@@ -44,8 +49,8 @@ static int	add_word_token(t_token **list, t_token **tail,
 {
 	t_token	*tok;
 
-	tok = create_token(ft_strdup(word), type, 0);
-	if (!tok || !tok->value)
+	tok = create_token(word, type, 0);
+	if (!tok)
 		return (-1);
 	if (!*list)
 		*list = tok;

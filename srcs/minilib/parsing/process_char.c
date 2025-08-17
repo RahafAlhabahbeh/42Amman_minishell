@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/15 00:00:00 by rahaf             #+#    #+#             */
-/*   Updated: 2025/08/17 21:06:47 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/18 01:18:56 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,9 @@ static int	handle_special_chars(t_minishell *mini, t_tokenize_data *data,
 {
 	if (handle_quotes(mini, &data->i, &c, &data->current_quote))
 	{
-		if (data->buf_i == 0 && data->overall_quote != 0)
+		if (data->current_quote != 0 && data->overall_quote == 0)
+			data->overall_quote = data->current_quote;
+		if (data->buf_i == 0 && data->overall_quote != 0 && data->current_quote == 0)
 		{
 			append_token(&data->head, &data->tail,
 				new_token("", WORD, data->overall_quote));

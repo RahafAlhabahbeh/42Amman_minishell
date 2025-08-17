@@ -20,6 +20,7 @@ SRC = \
     $(SRC_DIR)/parsing/extract_var_name.c  \
     	$(SRC_DIR)/parsing/replace_var.c  \
 	$(SRC_DIR)/parsing/expand_helpers.c  \
+	$(SRC_DIR)/parsing/expand_helpers2.c  \
 	$(SRC_DIR)/parsing/token_utilities.c  \
     $(SRC_DIR)/parsing/get_commands.c \
     $(SRC_DIR)/parsing/get_commands2.c \
