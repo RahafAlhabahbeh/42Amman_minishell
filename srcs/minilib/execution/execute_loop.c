@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/12 00:00:00 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/17 00:00:00 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/19 00:57:40 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,7 +59,11 @@ static int	handle_child_or_parent(t_minishell *mini, t_exec_vars *vars,
 	pid_t *pids)
 {
 	if (vars->pid == 0)
+	{
+		if (pids)
+			free(pids);
 		handle_child_process2(mini, vars, mini->envp);
+	}
 	else
 	{
 		pids[vars->i] = vars->pid;
