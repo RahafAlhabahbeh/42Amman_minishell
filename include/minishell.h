@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/14 00:00:00 by rahaf             #+#    #+#             */
-/*   Updated: 2025/08/18 12:10:06 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/18 21:56:27 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -237,6 +237,7 @@ void	add_heredoc_to_list(t_cmd *cmd, const char *delimiter, char quote);
 void	free_heredoc_list(t_heredoc *list);
 
 char	*generate_temp_filename(int counter);
+char	*generate_heredoc_filename(int counter);
 void	close_unused_heredoc_fds(t_minishell *mini, t_cmd *current_cmd);
 void	close_all_heredoc_fds(t_minishell *mini);
 void	close_unused_fds(int start_fd, int max_fd);
@@ -342,7 +343,6 @@ void	execute_child_command(t_minishell *mini, t_cmd *cmd, int i,
 void	append_to_result(char *result, char *value, int *j);
 
 // heredoc_quote_utils.c
-char	*generate_heredoc_filename(int counter);
 void	setup_heredoc_signal(struct sigaction *sa, struct sigaction *old_sa);
 int	write_heredoc_lines(t_minishell *mini, int fd,
 		const char *delimiter, int expand_vars);

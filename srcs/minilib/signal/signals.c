@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:55:21 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/18 12:10:06 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/18 21:56:27 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,11 @@ void	handle_sigint(int sig)
 		rl_replace_line("", 0);
 		rl_on_new_line();
 		rl_redisplay();
+	}
+	else if (is_in_heredoc())
+	{
+		g_received_signal = 130;
+		write(1, "\n", 1);
 	}
 	else
 	{

@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:55:21 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/14 21:17:46 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/18 21:56:27 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,7 +68,7 @@ static void	wait_for_processes(t_minishell *mini, pid_t *pids, int count,
 		i++;
 	}
 	if (WTERMSIG(status) == SIGINT)
-		printf("\n");
+		write(1, "\n", 1);
 	setup_signals();
 }
 

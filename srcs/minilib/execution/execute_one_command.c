@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:55:21 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/15 17:53:42 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/18 22:40:08 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,9 +44,15 @@ int	handle_parent_builtin_child(t_minishell *mini, t_cmd *cmd)
 
 void	handle_parent_process(t_minishell *mini, pid_t pid)
 {
-	int	status;
-	int	wait_result;
+	int				status;
+	int				wait_result;
+	struct sigaction	sa;
 
+	ft_memset(&sa, 0, sizeof(sa));
+	sa.sa_handler = SIG_IGN;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = 0;
+	sigaction(SIGINT, &sa, NULL);
 	status = 0;
 	wait_result = waitpid(pid, &status, 0);
 	set_child_running(0);
@@ -57,7 +63,8 @@ void	handle_parent_process(t_minishell *mini, pid_t pid)
 		else if (WIFSIGNALED(status))
 		{
 			mini->exit_status = 128 + WTERMSIG(status);
-			printf("\n");
+			if (WTERMSIG(status) == SIGINT)
+				write(1, "\n", 1);
 			g_received_signal = 0;
 		}
 	}

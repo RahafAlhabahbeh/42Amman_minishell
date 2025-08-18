@@ -1,5 +1,5 @@
 CC         = cc
-CFLAGS     = -Wall -Werror -Wextra -g # -fsanitize=address -g
+CFLAGS     = -Wall -Werror -Wextra -g -fno-pie # -fsanitize=address -g
 
 # Directories
 OBJ_DIR    = obj
@@ -94,7 +94,7 @@ NAME  = minishell
 all: $(LIBFT) $(NAME)
 
 $(NAME): $(OBJ)
-	$(CC) $(CFLAGS) $(OBJ) $(LIBFT) -o $(NAME) -lreadline -lncurses
+	$(CC) $(CFLAGS) $(OBJ) $(LIBFT) -o $(NAME) -lreadline -lncurses -no-pie
 
 # Compile each .c → .o, creating subdirs as needed
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)

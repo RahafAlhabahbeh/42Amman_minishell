@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/31 01:11:13 by rahaf             #+#    #+#             */
-/*   Updated: 2025/08/18 14:30:00 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/18 21:03:32 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,24 +30,6 @@ void	close_all_heredoc_fds(t_minishell *mini)
 		}
 		i++;
 	}
-}
-
-char	*generate_heredoc_filename(int counter)
-{
-	char	*filename;
-	char	pid_str[12];
-	char	counter_str[12];
-
-	ft_strlcpy(pid_str, ft_itoa(getpid()), sizeof(pid_str));
-	ft_strlcpy(counter_str, ft_itoa(counter), sizeof(counter_str));
-	filename = malloc(256);
-	if (!filename)
-		return (NULL);
-	ft_strlcpy(filename, "/tmp/heredoc_", 256);
-	ft_strlcat(filename, pid_str, 256);
-	ft_strlcat(filename, "_", 256);
-	ft_strlcat(filename, counter_str, 256);
-	return (filename);
 }
 
 void	setup_heredoc_signal(struct sigaction *sa, struct sigaction *old_sa)
@@ -74,7 +56,7 @@ static int	process_line(t_minishell *mini, int fd,
 	return (1);
 }
 
-int	write_heredoc_lines(t_minishell *mini, int fd,
+static int	handle_heredoc_input(t_minishell *mini, int fd,
 		const char *delimiter, int expand_vars)
 {
 	char	*line;
@@ -101,4 +83,10 @@ int	write_heredoc_lines(t_minishell *mini, int fd,
 		line = NULL;
 	}
 	return (0);
+}
+
+int	write_heredoc_lines(t_minishell *mini, int fd,
+		const char *delimiter, int expand_vars)
+{
+	return (handle_heredoc_input(mini, fd, delimiter, expand_vars));
 }

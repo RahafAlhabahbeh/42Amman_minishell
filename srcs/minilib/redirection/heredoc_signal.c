@@ -14,7 +14,8 @@
 
 void	handle_heredoc_sigint(int sig)
 {
-	g_received_signal = sig;
+	(void)sig;
+	g_received_signal = 130;
 	write(1, "\n", 1);
 }
 

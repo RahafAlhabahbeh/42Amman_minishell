@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   init_env2.c                                         :+:      :+:    :+:  */
+/*   init_env2.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
+/*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:55:21 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/12 17:30:00 by dal-mahr         ###   ########.fr       */
+/*   Updated: 2025/08/18 21:43:30 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ static int	check_shlvl_limit(int shlvl)
 	if (shlvl > 999)
 	{
 		shlvl_str_warning = ft_itoa(shlvl);
-		ft_putstr_fd("minishell: warning: shell level (", STDERR_FILENO);
+		ft_putstr_fd("./minishell: warning: shell level (", STDERR_FILENO);
 		ft_putstr_fd(shlvl_str_warning, STDERR_FILENO);
 		ft_putstr_fd(") too high, resetting to 1\n", STDERR_FILENO);
 		free(shlvl_str_warning);
