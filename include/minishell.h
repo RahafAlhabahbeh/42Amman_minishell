@@ -127,6 +127,14 @@ typedef struct s_tokenize_data
 	char			overall_quote;
 }	t_tokenize_data;
 
+typedef struct s_heredoc_context
+{
+	int		fd;
+	int		expand_vars;
+	char	*clean_delim;
+	int		counter;
+}	t_heredoc_context;
+
 /* tokenizer */
 t_token	*tokenize(t_minishell *minishell);
 int		tokenize_main_loop(t_minishell *mini, t_tokenize_data *data);
@@ -227,11 +235,7 @@ void	cleanup_heredoc_files(t_minishell *mini);
 void	handle_heredoc_sigint(int sig);
 void	add_heredoc_to_list(t_cmd *cmd, const char *delimiter, char quote);
 void	free_heredoc_list(t_heredoc *list);
-int		create_heredoc_temp_file(t_minishell *mini, const char *delimiter,
-			char **temp_filename_ptr, char quote_char);
-int		write_heredoc_content(t_minishell *mini, int fd,
-			const char *delimiter, int expand_vars);
-int		open_heredoc_file(const char *filename);
+
 char	*generate_temp_filename(int counter);
 void	close_unused_heredoc_fds(t_minishell *mini, t_cmd *current_cmd);
 void	close_all_heredoc_fds(t_minishell *mini);
@@ -335,6 +339,14 @@ int		handle_parent_builtin(t_minishell *mini, t_exec_vars *vars,
 void	handle_parent_process(t_minishell *mini, pid_t pid);
 void	execute_child_command(t_minishell *mini, t_cmd *cmd, int i,
 			char **envp);
+void	append_to_result(char *result, char *value, int *j);
+
+// heredoc_quote_utils.c
+char	*generate_heredoc_filename(int counter);
+void	setup_heredoc_signal(struct sigaction *sa, struct sigaction *old_sa);
+int	write_heredoc_lines(t_minishell *mini, int fd,
+		const char *delimiter, int expand_vars);
+
 
 void	save_original_fds(t_cmd *cmd);
 void	restore_original_fds(t_cmd *cmd);

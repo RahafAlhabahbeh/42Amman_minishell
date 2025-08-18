@@ -5,72 +5,70 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/08/16 20:40:00 by rahaf             #+#    #+#             */
-/*   Updated: 2025/08/16 20:40:00 by rahaf            ###   ########.fr       */
+/*   Created: 2025/07/31 01:11:13 by rahaf             #+#    #+#             */
+/*   Updated: 2025/08/18 14:30:00 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../../include/minishell.h"
 
-static int	ft_getline_resize(char **lineptr, size_t *n, size_t pos)
+static int	ft_realloc_line(char **lineptr, size_t *n, size_t pos)
 {
-	size_t	new_size;
-	char	*new_buf;
+	char	*new_ptr;
+	size_t	i;
+	size_t	size;
 
-	new_size = *n * 2;
-	new_buf = malloc(new_size);
-	if (!new_buf)
+	size = *n * 2;
+	new_ptr = malloc(size);
+	if (!new_ptr)
 		return (-1);
-	ft_memcpy(new_buf, *lineptr, pos);
+	i = 0;
+	while (i < pos)
+	{
+		new_ptr[i] = (*lineptr)[i];
+		i++;
+	}
 	free(*lineptr);
-	*lineptr = new_buf;
-	*n = new_size;
+	*lineptr = new_ptr;
+	*n = size;
 	return (0);
 }
 
-static int	ft_getline_init(char **lineptr, size_t *n)
+static int	init_lineptr(char **lineptr, size_t *n)
 {
 	if (!lineptr || !n)
 		return (-1);
 	if (!*lineptr || *n == 0)
 	{
-		*lineptr = malloc(128);
+		*n = 128;
+		*lineptr = malloc(*n);
 		if (!*lineptr)
 			return (-1);
-		*n = 128;
 	}
 	return (0);
 }
 
-static ssize_t	ft_getline_loop(char **lineptr, size_t *n, int fd)
+ssize_t	ft_getline(char **lineptr, size_t *n, int fd)
 {
 	char	c;
 	ssize_t	bytes_read;
 	size_t	pos;
 
 	pos = 0;
-	bytes_read = 1;
+	if (init_lineptr(lineptr, n) == -1)
+		return (-1);
+	bytes_read = read(fd, &c, 1);
 	while (bytes_read > 0)
 	{
-		bytes_read = read(fd, &c, 1);
-		if (bytes_read <= 0)
-			break ;
-		if (pos >= *n - 1)
-			if (ft_getline_resize(lineptr, n, pos) < 0)
-				return (-1);
+		if (pos >= *n - 1 && ft_realloc_line(lineptr, n, pos) == -1)
+			return (-1);
 		(*lineptr)[pos++] = c;
 		if (c == '\n')
 			break ;
+		bytes_read = read(fd, &c, 1);
 	}
-	if (pos == 0 && bytes_read == 0)
+	if (bytes_read < 0 || (pos == 0 && bytes_read == 0))
 		return (-1);
 	(*lineptr)[pos] = '\0';
-	return ((ssize_t)pos);
-}
-
-ssize_t	ft_getline(char **lineptr, size_t *n, int fd)
-{
-	if (ft_getline_init(lineptr, n) < 0)
-		return (-1);
-	return (ft_getline_loop(lineptr, n, fd));
+	return (pos);
 }

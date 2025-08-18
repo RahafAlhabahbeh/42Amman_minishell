@@ -65,12 +65,12 @@ SRC = \
 	$(SRC_DIR)/execution//handle_empty_command.c \
 	$(SRC_DIR)/redirection/redirection.c \
 	$(SRC_DIR)/redirection/heredoc.c \
-	$(SRC_DIR)/redirection/close_heredoc.c \
-	$(SRC_DIR)/redirection/cleanup_heredoc.c \
-	$(SRC_DIR)/redirection/heredoc_utilities.c \
 	$(SRC_DIR)/redirection/ft_getline.c \
-	$(SRC_DIR)/redirection/heredoc_temp_file.c \
-	$(SRC_DIR)/redirection/expand_heredoc_line.c \
+	$(SRC_DIR)/redirection/create_heredoc_temp_file_with_quote.c \
+	$(SRC_DIR)/redirection/heredoc_quote_utils.c \
+	$(SRC_DIR)/redirection/heredoc_signal.c \
+	$(SRC_DIR)/redirection/handle_heredoc.c  \
+	$(SRC_DIR)/redirection/expand_heredoc.c \
 	$(SRC_DIR)/free/free_minishell.c	\
 	$(SRC_DIR)/free/free_tokens.c	\
 	$(SRC_DIR)/free/free_cmds.c	\

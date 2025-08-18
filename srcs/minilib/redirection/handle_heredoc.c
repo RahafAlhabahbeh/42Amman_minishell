@@ -1,37 +1,37 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   cleanup_heredoc.c                                  :+:      :+:    :+:   */
+/*   handle_heredoc.c                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
+/*   By: rahaf <rahaf@student.42.fr>               +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/31 01:11:13 by rahaf             #+#    #+#             */
-/*   Updated: 2025/08/18 12:10:06 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/18 15:20:00 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../../include/minishell.h"
 
-void	handle_heredoc_sigint(int sig)
+int	handle_heredoc(t_minishell *mini, t_cmd *cmd)
 {
-	(void)sig;
-	g_received_signal = 130;
-	write(1, "\n", 1);
-}
+	int	heredoc_fd;
 
-void	free_heredoc_list(t_heredoc *list)
-{
-	t_heredoc	*current;
-	t_heredoc	*next;
-
-	current = list;
-	while (current)
+	if (cmd->in_type != HERE_DOC)
+		return (0);
+	if (cmd->heredoc_list)
+		return (process_multiple_heredocs(mini, cmd));
+	if (!cmd->input_file_name)
+		return (0);
+	heredoc_fd = create_heredoc_temp_file_with_quote(mini,
+			cmd->input_file_name, &cmd->heredoc_temp_file, cmd->input_quote);
+	if (heredoc_fd < 0)
 	{
-		next = current->next;
-		free(current->delimiter);
-		free(current);
-		current = next;
+		mini->exit_status = 1;
+		return (-1);
 	}
+	cmd->heredoc_fd = heredoc_fd;
+	cmd->in_type = REDIR_IN;
+	return (0);
 }
 
 static void	cleanup_single_heredoc(t_cmd *cmd)
