@@ -87,7 +87,6 @@ void	init_env_list(t_minishell *mini, char **envp)
 {
 	int	i;
 
-	mini->env_list = NULL;
 	i = 0;
 	while (envp[i])
 	{

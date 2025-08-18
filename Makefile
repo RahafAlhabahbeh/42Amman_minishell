@@ -78,7 +78,8 @@ SRC = \
 	$(SRC_DIR)/check_error/syntax_error.c	\
 	$(SRC_DIR)/signal/signals.c \
 	$(SRC_DIR)/signal/signal_utils.c \
-	$(SRC_DIR)/signal/signal_utils2.c
+	$(SRC_DIR)/signal/signal_utils2.c \
+	$(SRC_DIR)/signal/signal_utils3.c
 
 
 # Object files (mirror the SRC tree under obj/)

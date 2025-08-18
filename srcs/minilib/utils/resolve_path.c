@@ -33,37 +33,43 @@ int	find_in_paths_with_status(char **paths, char *cmd, char **path)
 	return (127);
 }
 
+static int	check_trailing_slash(char *cmd)
+{
+	int			len;
+	char		*without_slash;
+	struct stat	st;
+
+	len = ft_strlen(cmd);
+	if (len > 1 && cmd[len - 1] == '/')
+	{
+		without_slash = ft_substr(cmd, 0, len - 1);
+		if (!without_slash)
+			return (127);
+		if ((access(without_slash, F_OK) == 0)
+			|| (stat(without_slash, &st) == 0 && !S_ISDIR(st.st_mode)))
+		{
+			free(without_slash);
+			return (128);
+		}
+		free(without_slash);
+	}
+	return (0);
+}
+
 int	check_direct_cmd(char *cmd, char **path)
 {
 	int			status;
-	struct stat	st;
-	char		*without_slash;
-	int			len;
+	int			slash_status;
 
 	if (!cmd)
 		return (127);
 	if (cmd[0] == '/' || ft_strchr(cmd, '/'))
 	{
-		len = ft_strlen(cmd);
-		// Check if it ends with slash and if so, check if base path exists as file
-		if (len > 1 && cmd[len - 1] == '/')
-		{
-			without_slash = ft_substr(cmd, 0, len - 1);
-			if (without_slash && access(without_slash, F_OK) == 0)
-			{
-				if (stat(without_slash, &st) == 0 && !S_ISDIR(st.st_mode))
-				{
-					free(without_slash);
-					return (128); // Not a directory
-				}
-			}
-			free(without_slash);
-		}
-		
-		// Check if path exists first
+		slash_status = check_trailing_slash(cmd);
+		if (slash_status != 0)
+			return (slash_status);
 		if (access(cmd, F_OK) != 0)
-			return (127); // No such file or directory
-		
+			return (127);
 		status = is_executable(cmd);
 		if (status == 0)
 		{

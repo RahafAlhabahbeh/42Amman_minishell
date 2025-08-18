@@ -34,8 +34,7 @@ void	handle_sigquit(int sig)
 {
 	if (!is_child_running())
 	{
-		// Ignore SIGQUIT in interactive mode like bash
-		return;
+		return ;
 	}
 	else
 	{

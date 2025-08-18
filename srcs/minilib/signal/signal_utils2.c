@@ -34,18 +34,3 @@ void	set_in_child_process(int in_child)
 {
 	g_in_child_process = in_child;
 }
-
-int	is_in_child_process(void)
-{
-	return (g_in_child_process);
-}
-
-void	set_in_heredoc(int in_heredoc)
-{
-	g_in_heredoc = in_heredoc;
-}
-
-int	is_in_heredoc(void)
-{
-	return (g_in_heredoc);
-}

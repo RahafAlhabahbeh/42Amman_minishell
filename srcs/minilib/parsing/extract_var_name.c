@@ -88,4 +88,3 @@ char	*safe_resize_buffer(char *buffer, size_t *capacity, size_t needed)
 	*capacity = new_capacity;
 	return (new_buffer);
 }
-

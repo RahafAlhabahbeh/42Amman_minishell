@@ -62,6 +62,27 @@ char	*expand_tilde(t_minishell *mini, const char *str)
 				str + 1, home_to_free));
 	return (ft_strdup(str));
 }
+
+int	handle_exit_status(t_minishell *mini, t_expand_context *ctx)
+{
+	char	*status_str;
+	char	*temp;
+	size_t	len;
+
+	status_str = ft_itoa(mini->exit_status);
+	if (!status_str)
+		return (-1);
+	len = ft_strlen(status_str);
+	temp = safe_resize_buffer(*(ctx->result), ctx->capacity,
+			*(ctx->j) + len + 1);
+	if (!temp)
+		return (free(status_str), -1);
+	*(ctx->result) = temp;
+	ft_strlcat(*(ctx->result) + *(ctx->j), status_str, len + 1);
+	*(ctx->j) += len;
+	free(status_str);
+	return (0);
+}
 /*
 char	*expand_tilde(t_minishell *minishell, const char *str)
 {
