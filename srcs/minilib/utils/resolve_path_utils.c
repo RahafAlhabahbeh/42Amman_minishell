@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/12 00:00:00 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/13 18:59:49 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/18 11:55:43 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,7 @@ char	*check_absolute_path(char *cmd)
 {
 	int	status;
 
-	if (!(cmd[0] == '/' || (cmd[0] == '.' && ft_strchr(cmd, '/'))))
+	if (!(cmd[0] == '/' || ft_strchr(cmd, '/')))
 		return (NULL);
 	if (is_directory(cmd))
 	{

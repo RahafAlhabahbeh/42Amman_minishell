@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   execute_child.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
+/*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:52:38 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/12 17:30:00 by dal-mahr         ###   ########.fr       */
+/*   Updated: 2025/08/18 11:55:43 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,11 @@ static void	print_command_error(t_minishell *ms, int i, int status)
 	{
 		write(2, ms->cmd[i].argv[0], ft_strlen(ms->cmd[i].argv[0]));
 		write(2, ": command not found\n", 20);
+	}
+	else if (status == 128)
+	{
+		write(2, ms->cmd[i].argv[0], ft_strlen(ms->cmd[i].argv[0]));
+		write(2, ": Not a directory\n", 18);
 	}
 	else
 	{

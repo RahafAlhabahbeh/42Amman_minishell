@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/12 17:30:00 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/17 16:38:46 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/18 12:10:06 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 
 volatile sig_atomic_t	g_child_running = 0;
 volatile sig_atomic_t	g_in_child_process = 0;
+volatile sig_atomic_t	g_in_heredoc = 0;
 
 int	check_sigint_received(void)
 {

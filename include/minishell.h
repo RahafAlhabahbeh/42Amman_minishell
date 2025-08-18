@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/14 00:00:00 by rahaf             #+#    #+#             */
-/*   Updated: 2025/08/17 22:13:04 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/18 12:10:06 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,7 @@
 extern volatile sig_atomic_t	g_received_signal;
 extern volatile sig_atomic_t	g_child_running;
 extern volatile sig_atomic_t	g_in_child_process;
+extern volatile sig_atomic_t	g_in_heredoc;
 
 typedef struct s_env
 {
@@ -293,6 +294,8 @@ void	reset_received_signal(void);
 /* Process context functions */
 void	set_in_child_process(int in_child);
 int		is_in_child_process(void);
+void	set_in_heredoc(int in_heredoc);
+int		is_in_heredoc(void);
 void	handle_child_process(t_minishell *mini, t_cmd *cmd, char **envp);
 void	close_pipe_fds(int *pipe_fds);
 void	process_heredocs(t_minishell *mini);

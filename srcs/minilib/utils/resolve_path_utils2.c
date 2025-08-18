@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/12 00:00:00 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/17 17:14:47 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/18 11:55:43 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,7 +65,7 @@ char	*resolve_cmd_path(char *cmd, t_minishell *mini)
 	if (!cmd)
 		return (NULL);
 	full = check_absolute_path(cmd);
-	if (full || cmd[0] == '/' || (cmd[0] == '.' && cmd[1]))
+	if (full || cmd[0] == '/' || ft_strchr(cmd, '/'))
 		return (full);
 	path_env = get_value_env(mini, "PATH");
 	if (!path_env)

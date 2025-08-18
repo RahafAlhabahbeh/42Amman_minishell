@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/16 12:15:00 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/17 17:29:52 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/18 12:10:06 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,6 +86,11 @@ char	*handle_readline_input(t_minishell *minishell)
 {
 	char	*line;
 
+	if (check_sigint_received())
+	{
+		minishell->exit_status = 130;
+		return (NULL);
+	}
 	line = readline("minishell> ");
 	if (check_received_signal(minishell, line))
 		return (NULL);

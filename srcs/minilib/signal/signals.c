@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:55:21 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/18 01:58:01 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/18 12:10:06 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,28 +16,31 @@ volatile sig_atomic_t	g_received_signal = 0;
 
 void	handle_sigint(int sig)
 {
-	g_received_signal = sig;
-	if (!is_child_running())
+	if (!is_child_running() && !is_in_heredoc())
 	{
-		write(1, "^C\n", 3);
+		g_received_signal = 130;
+		write(1, "\n", 1);
 		rl_replace_line("", 0);
 		rl_on_new_line();
 		rl_redisplay();
 	}
-	g_received_signal = 130;
+	else
+	{
+		g_received_signal = sig;
+	}
 }
 
 void	handle_sigquit(int sig)
 {
-	g_received_signal = sig;
 	if (!is_child_running())
 	{
-		write(1, "^\\\n", 3);
-		rl_replace_line("", 0);
-		rl_on_new_line();
-		rl_redisplay();
+		// Ignore SIGQUIT in interactive mode like bash
+		return;
 	}
-	g_received_signal = 131;
+	else
+	{
+		g_received_signal = sig;
+	}
 }
 
 void	setup_signals(void)
@@ -48,7 +51,7 @@ void	setup_signals(void)
 	sigemptyset(&sa.sa_mask);
 	sa.sa_flags = 0;
 	sigaction(SIGINT, &sa, NULL);
-	sa.sa_handler = handle_sigquit;
+	sa.sa_handler = SIG_IGN;
 	sigaction(SIGQUIT, &sa, NULL);
 }
 

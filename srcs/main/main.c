@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/02 22:14:22 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/18 01:58:01 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/18 12:10:06 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,8 @@ static int	handle_signals_and_input(t_minishell *minishell)
 {
 	if (check_sigint_received())
 	{
-		minishell->exit_status = 130;
+		if (!is_in_heredoc())
+			minishell->exit_status = 130;
 		reset_minishell(minishell);
 		return (1);
 	}

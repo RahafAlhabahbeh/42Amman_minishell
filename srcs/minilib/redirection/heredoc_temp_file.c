@@ -82,6 +82,7 @@ int	create_heredoc_temp_file_with_quote(t_minishell *mini,
 	char				*clean;
 	struct sigaction	sa;
 	struct sigaction	old_sa;
+	int					result;
 
 	if (setup_temp_file(filename_ptr, &fd, counter++) < 0)
 		return (-1);
@@ -92,13 +93,16 @@ int	create_heredoc_temp_file_with_quote(t_minishell *mini,
 		unlink(*filename_ptr);
 		return (-1);
 	}
+	set_in_heredoc(1);
 	setup_signal(&sa, &old_sa);
 	write_heredoc_lines(mini, fd, clean,
 		(quote_char != '\'' && quote_char != '"'));
 	close(fd);
 	free(clean);
 	sigaction(SIGINT, &old_sa, NULL);
+	set_in_heredoc(0);
 	if (check_sigint_received())
 		return (-1);
-	return (open(*filename_ptr, O_RDONLY));
+	result = open(*filename_ptr, O_RDONLY);
+	return (result);
 }

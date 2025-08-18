@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/12 00:00:00 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/15 17:53:42 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/18 11:55:43 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,11 +81,16 @@ static void	handle_command_errors(t_minishell *mini, t_cmd *cmd, int status)
 			write(2, ": Permission denied\n", 20);
 		}
 	}
+	else if (status == 128)
+	{
+		write(2, cmd->argv[0], ft_strlen(cmd->argv[0]));
+		write(2, ": Not a directory\n", 18);
+		status = 126;
+	}
 	else
 	{
 		write(2, cmd->argv[0], ft_strlen(cmd->argv[0]));
-		if (cmd->argv[0][0] == '/' || (cmd->argv[0][0] == '.' &&
-			ft_strchr(cmd->argv[0], '/')))
+		if (cmd->argv[0][0] == '/' || ft_strchr(cmd->argv[0], '/'))
 			write(2, ": No such file or directory\n", 28);
 		else
 			write(2, ": command not found\n", 20);

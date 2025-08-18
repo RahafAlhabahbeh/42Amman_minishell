@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/12 00:00:00 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/17 17:05:08 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/18 11:55:43 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,12 +35,35 @@ int	find_in_paths_with_status(char **paths, char *cmd, char **path)
 
 int	check_direct_cmd(char *cmd, char **path)
 {
-	int	status;
+	int			status;
+	struct stat	st;
+	char		*without_slash;
+	int			len;
 
 	if (!cmd)
 		return (127);
-	if (cmd[0] == '/' || (cmd[0] == '.' && ft_strchr(cmd, '/')))
+	if (cmd[0] == '/' || ft_strchr(cmd, '/'))
 	{
+		len = ft_strlen(cmd);
+		// Check if it ends with slash and if so, check if base path exists as file
+		if (len > 1 && cmd[len - 1] == '/')
+		{
+			without_slash = ft_substr(cmd, 0, len - 1);
+			if (without_slash && access(without_slash, F_OK) == 0)
+			{
+				if (stat(without_slash, &st) == 0 && !S_ISDIR(st.st_mode))
+				{
+					free(without_slash);
+					return (128); // Not a directory
+				}
+			}
+			free(without_slash);
+		}
+		
+		// Check if path exists first
+		if (access(cmd, F_OK) != 0)
+			return (127); // No such file or directory
+		
 		status = is_executable(cmd);
 		if (status == 0)
 		{
