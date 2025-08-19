@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
+/*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/14 00:00:00 by rahaf             #+#    #+#             */
-/*   Updated: 2025/08/19 00:57:40 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/19 04:48:20 by dal-mahr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -354,5 +354,9 @@ int		is_numeric(const char *str);
 int		is_valid_exit_arg(const char *str);
 void	handle_invalid_exit_arg(char *arg, t_minishell *mini);
 void	handle_too_many_args(t_minishell *mini);
+
+char **convert_env_to_array(t_env *env); // New Dana execution directory
+void free_env_array_2(char **arr); // New Dana execution directory
+
 
 #endif

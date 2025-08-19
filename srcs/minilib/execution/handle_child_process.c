@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   handle_child_process.c                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
+/*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/15 23:00:00 by rahaf             #+#    #+#             */
-/*   Updated: 2025/08/18 11:55:43 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/19 04:50:42 by dal-mahr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,5 +78,6 @@ void	handle_child_process(t_minishell *mini, t_cmd *cmd, char **envp)
 	perror("execve");
 	free(path);
 	cleanup_child_process(mini);
+	free_env_array_2(envp); // New Dana for Shell Level
 	exit(126);
 }

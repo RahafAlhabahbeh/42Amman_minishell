@@ -3,16 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   execute_one_command.c                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
+/*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:55:21 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/18 22:40:08 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/19 04:54:07 by dal-mahr         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../../include/minishell.h"
 
-int	handle_empty_command2(t_minishell *mini, t_cmd *cmd)
+int handle_empty_command2(t_minishell *mini, t_cmd *cmd)
 {
 	if (!cmd->argv || !cmd->argv[0] || cmd->argv[0][0] == '\0')
 	{
@@ -24,7 +24,7 @@ int	handle_empty_command2(t_minishell *mini, t_cmd *cmd)
 	return (0);
 }
 
-int	handle_parent_builtin_child(t_minishell *mini, t_cmd *cmd)
+int handle_parent_builtin_child(t_minishell *mini, t_cmd *cmd)
 {
 	if (is_builtin(cmd->argv[0]))
 	{
@@ -42,11 +42,11 @@ int	handle_parent_builtin_child(t_minishell *mini, t_cmd *cmd)
 	return (0);
 }
 
-void	handle_parent_process(t_minishell *mini, pid_t pid)
+void handle_parent_process(t_minishell *mini, pid_t pid)
 {
-	int				status;
-	int				wait_result;
-	struct sigaction	sa;
+	int status;
+	int wait_result;
+	struct sigaction sa;
 
 	ft_memset(&sa, 0, sizeof(sa));
 	sa.sa_handler = SIG_IGN;
@@ -70,19 +70,18 @@ void	handle_parent_process(t_minishell *mini, pid_t pid)
 	}
 }
 
-void	execute_one_command(t_minishell *mini, char **envp)
+void execute_one_command(t_minishell *mini, char **envp)
 {
-	t_cmd	*cmd;
-	pid_t	pid;
+	t_cmd *cmd;
+	pid_t pid;
 
+	(void) envp;
 	cmd = mini->cmd;
-	if (!cmd || (cmd->in_type == HERE_DOC && handle_heredoc(mini, cmd) < 0)
-		|| (!cmd->argv || !cmd->argv[0]) || handle_empty_command2(mini, cmd)
-		|| handle_parent_builtin_child(mini, cmd))
+	if (!cmd || (cmd->in_type == HERE_DOC && handle_heredoc(mini, cmd) < 0) || (!cmd->argv || !cmd->argv[0]) || handle_empty_command2(mini, cmd) || handle_parent_builtin_child(mini, cmd))
 	{
 		if (!cmd->argv || !cmd->argv[0])
 			mini->exit_status = 0;
-		return ;
+		return;
 	}
 	set_child_running(1);
 	pid = fork();
@@ -90,10 +89,18 @@ void	execute_one_command(t_minishell *mini, char **envp)
 	{
 		perror("fork");
 		mini->exit_status = 1;
-		return ;
+		return;
 	}
-	else if (pid == 0)
-		handle_child_process(mini, cmd, envp);
+	// else if (pid == 0)
+	// 	handle_child_process(mini, cmd, envp);
+	else if (pid == 0) // New 
+	{
+		char **child_env;
+
+		child_env = convert_env_to_array(mini->env_list); // new helper
+		handle_child_process(mini, cmd, child_env);
+		free_env_array_2(child_env); // free after use if execve fails
+	}
 	else
 		handle_parent_process(mini, pid);
 	cleanup_heredoc_files(mini);
