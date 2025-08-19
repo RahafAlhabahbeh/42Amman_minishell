@@ -26,8 +26,6 @@ SRC = \
     $(SRC_DIR)/parsing/get_commands2.c \
     $(SRC_DIR)/parsing/merge_equal_sign_tokens.c \
     $(MAIN_DIR)/main.c \
-    $(MAIN_DIR)/print.c \
-    $(MAIN_DIR)/print_debug.c \
 	$(SRC_DIR)/init/init.c \
 	$(SRC_DIR)/init/init_shell.c \
 	$(SRC_DIR)/init/init_env.c \

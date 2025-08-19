@@ -1,18 +1,18 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   execute_command2.c                                 :+:      :+:    :+:   */
+/*   handle_empty_command.c                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/12 00:00:00 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/15 17:53:42 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/19 15:32:46 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../../include/minishell.h"
 
-void	handle_empty_command(t_cmd *cmd)
+void	handle_empty_command(t_cmd *cmd, char **envp)
 {
 	char	buffer[1024];
 	ssize_t	bytes_read;
@@ -28,12 +28,14 @@ void	handle_empty_command(t_cmd *cmd)
 					break ;
 				write(STDOUT_FILENO, buffer, bytes_read);
 			}
+			free_env_array_2(envp);
 			exit(0);
 		}
 		else
 		{
 			write(2, cmd->argv[0], ft_strlen(cmd->argv[0]));
 			write(2, ": command not found\n", 20);
+			free_env_array_2(envp);
 			exit(127);
 		}
 	}

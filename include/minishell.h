@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
+/*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/14 00:00:00 by rahaf             #+#    #+#             */
-/*   Updated: 2025/08/19 04:48:20 by dal-mahr         ###   ########.fr       */
+/*   Updated: 2025/08/19 15:32:46 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -304,7 +304,7 @@ int		is_in_heredoc(void);
 void	handle_child_process(t_minishell *mini, t_cmd *cmd, char **envp);
 void	close_pipe_fds(int *pipe_fds);
 void	process_heredocs(t_minishell *mini);
-void	handle_empty_command(t_cmd *cmd);
+void	handle_empty_command(t_cmd *cmd, char **envp);
 int		execute_parent_process(t_exec_vars *vars, int is_last);
 void	parse_env_entry(t_minishell *mini, char *env_str);
 int		check_received_signal(t_minishell *minishell, char *line);

@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/12 00:00:00 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/19 00:57:40 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/19 16:05:40 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,9 +60,13 @@ static int	handle_child_or_parent(t_minishell *mini, t_exec_vars *vars,
 {
 	if (vars->pid == 0)
 	{
+		char	**child_env;
+
 		if (pids)
 			free(pids);
-		handle_child_process2(mini, vars, mini->envp);
+		child_env = convert_env_to_array(mini->env_list);
+		handle_child_process2(mini, vars, child_env);
+		free_env_array_2(child_env);
 	}
 	else
 	{
@@ -79,14 +83,26 @@ void	execute_loop(t_minishell *mini, char **envp, pid_t *pids)
 
 	(void) envp;
 	vars.prev_fd = -1;
+	vars.pipefd[0] = -1;
+	vars.pipefd[1] = -1;
 	vars.i = 0;
 	process_heredocs(mini);
 	while (vars.i <= mini->pipex_count)
 	{
 		if (prepare_pipe_and_sigint(mini, &vars))
+		{
+			if (vars.prev_fd != -1)
+				close(vars.prev_fd);
+			if (vars.pipefd[0] != -1)
+				close(vars.pipefd[0]);
+			if (vars.pipefd[1] != -1)
+				close(vars.pipefd[1]);
 			return ;
+		}
 		if (handle_parent_and_fork(mini, &vars, pids))
 		{
+			if (vars.prev_fd != -1)
+				close(vars.prev_fd);
 			vars.i++;
 			continue ;
 		}
@@ -95,5 +111,9 @@ void	execute_loop(t_minishell *mini, char **envp, pid_t *pids)
 	}
 	if (vars.prev_fd != -1)
 		close(vars.prev_fd);
+	if (vars.pipefd[0] != -1)
+		close(vars.pipefd[0]);
+	if (vars.pipefd[1] != -1)
+		close(vars.pipefd[1]);
 	close_all_heredoc_fds(mini);
 }

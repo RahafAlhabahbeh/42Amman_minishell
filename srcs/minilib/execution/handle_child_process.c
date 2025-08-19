@@ -3,27 +3,32 @@
 /*                                                        :::      ::::::::   */
 /*   handle_child_process.c                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
+/*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/15 23:00:00 by rahaf             #+#    #+#             */
-/*   Updated: 2025/08/19 04:50:42 by dal-mahr         ###   ########.fr       */
+/*   Updated: 2025/08/19 15:19:34 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../../include/minishell.h"
 
-static void	handle_initial_redirections(t_minishell *mini, t_cmd *cmd)
+static void	handle_initial_redirections(t_minishell *mini, t_cmd *cmd, char **envp)
 {
 	if (handle_redirections(cmd, -1, NULL, 1) < 0)
+	{
+		free_env_array_2(envp);
 		exit(1);
+	}
 	if (!cmd->argv || !cmd->argv[0])
 	{
+		free_env_array_2(envp);
 		cleanup_child_process(mini);
 		exit(0);
 	}
 	if (is_builtin(cmd->argv[0]))
 	{
 		execute_builtin_cmd(mini, cmd);
+		free_env_array_2(envp);
 		cleanup_child_process(mini);
 		exit(mini->exit_status);
 	}
@@ -70,14 +75,17 @@ void	handle_child_process(t_minishell *mini, t_cmd *cmd, char **envp)
 
 	signal(SIGINT, SIG_DFL);
 	signal(SIGQUIT, SIG_DFL);
-	handle_initial_redirections(mini, cmd);
+	handle_initial_redirections(mini, cmd, envp);
 	status = resolve_cmd_path_with_status(cmd->argv[0], mini, &path);
 	if (status != 0)
+	{
+		free_env_array_2(envp);
 		handle_status_errors(mini, cmd, status);
+	}
 	execve(path, cmd->argv, envp);
 	perror("execve");
 	free(path);
 	cleanup_child_process(mini);
-	free_env_array_2(envp); // New Dana for Shell Level
+	free_env_array_2(envp);
 	exit(126);
 }

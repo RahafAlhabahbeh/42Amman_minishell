@@ -1,9 +1,0 @@
-include
-libft
-ls.txt
-Makefile
-minishell
-Notes
-obj
-readline.supp
-srcs
