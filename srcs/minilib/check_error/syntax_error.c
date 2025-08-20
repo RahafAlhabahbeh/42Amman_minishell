@@ -95,16 +95,10 @@ static int	validate_redirection_sequence(t_token *tokens)
 				ft_putstr_fd("'\n", 2);
 				return (0);
 			}
-			// Check for consecutive redirections (like < 2 > 3)
-			// This should only trigger if we have REDIR_IN WORD REDIR_IN (no space between redirections)
-			if (curr->next && curr->next->next && 
-				curr->next->next->type == curr->type)
-			{
-				ft_putstr_fd("minishell: syntax error near unexpected token `", 2);
-				ft_putstr_fd(curr->next->value, 2);
-				ft_putstr_fd("'\n", 2);
-				return (0);
-			}
+			// For now, keep basic syntax validation only
+			// TODO: Implement specific malformed redirection detection
+			// Removed overly strict validation that was treating cat<k<ls as syntax error
+			// This pattern is valid in bash - the first redirection just fails
 		}
 		curr = curr->next;
 	}

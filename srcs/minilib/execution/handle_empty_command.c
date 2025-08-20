@@ -6,13 +6,13 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/12 00:00:00 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/20 04:07:46 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/20 12:34:29 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../../include/minishell.h"
 
-void	handle_empty_command(t_cmd *cmd, char **envp)
+void	handle_empty_command(t_minishell *mini, t_cmd *cmd, char **envp)
 {
 	if (!cmd->argv || !cmd->argv[0] || cmd->argv[0][0] == '\0')
 	{
@@ -20,6 +20,7 @@ void	handle_empty_command(t_cmd *cmd, char **envp)
 			cmd->out_type == REDIR_APPEND || cmd->in_type == HERE_DOC)
 		{
 			free_env_array_2(envp);
+			cleanup_child_process(mini);
 			exit(0);
 		}
 		else
@@ -31,6 +32,7 @@ void	handle_empty_command(t_cmd *cmd, char **envp)
 				ft_putstr_fd("command", 2);
 			ft_putstr_fd(": command not found\n", 2);
 			free_env_array_2(envp);
+			cleanup_child_process(mini);
 			exit(127);
 		}
 	}

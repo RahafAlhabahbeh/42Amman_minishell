@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/12 00:00:00 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/18 11:55:43 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/20 11:46:56 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,7 +61,7 @@ int	check_direct_cmd(char *cmd, char **path)
 	int			status;
 	int			slash_status;
 
-	if (!cmd)
+	if (!cmd || cmd[0] == '\0')
 		return (127);
 	if (cmd[0] == '/' || ft_strchr(cmd, '/'))
 	{

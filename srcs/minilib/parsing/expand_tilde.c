@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   expand_tilde.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
+/*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:55:21 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/16 11:00:00 by dal-mahr         ###   ########.fr       */
+/*   Updated: 2025/08/20 11:30:20 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,10 @@ static const char	*get_home_path(t_minishell *mini, char **to_free)
 		*to_free = get_user_home_dir();
 		home = *to_free;
 		if (!home)
+		{
+			*to_free = NULL;
 			home = "";
+		}
 	}
 	return (home);
 }
@@ -58,8 +61,12 @@ char	*expand_tilde(t_minishell *mini, const char *str)
 
 	home_to_free = NULL;
 	if (str[0] == '~' && (str[1] == '/' || str[1] == '\0'))
-		return (join_home_and_rest(get_home_path(mini, &home_to_free),
-				str + 1, home_to_free));
+	{
+		const char	*home;
+
+		home = get_home_path(mini, &home_to_free);
+		return (join_home_and_rest(home, str + 1, home_to_free));
+	}
 	return (ft_strdup(str));
 }
 

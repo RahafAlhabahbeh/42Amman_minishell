@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/15 00:00:00 by rahaf             #+#    #+#             */
-/*   Updated: 2025/08/20 10:14:07 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/20 13:03:14 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,7 @@ int	handle_redirection(t_minishell *mini, t_tokenize_data *data, char c)
 
 int	finalize_token(t_tokenize_data *data)
 {
-	if (data->buf_i > 0)
+	if (data->buf_i > 0 || (data->overall_quote != 0 && data->current_quote == 0))
 	{
 		data->buf[data->buf_i] = '\0';
 		append_token(&data->head, &data->tail,

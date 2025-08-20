@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:55:21 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/20 04:16:09 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/20 12:42:50 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,9 +40,13 @@ void	set_redirection(t_minishell *mini, int cmd_index,
 {
 	if (type == REDIR_IN)
 	{
-		free(mini->cmd[cmd_index].input_file_name);
-		mini->cmd[cmd_index].input_file_name = ft_strdup(filename);
-		mini->cmd[cmd_index].in_type = REDIR_IN;
+		// For input redirections, only set if not already set
+		// This ensures we process redirections from left to right
+		if (!mini->cmd[cmd_index].input_file_name)
+		{
+			mini->cmd[cmd_index].input_file_name = ft_strdup(filename);
+			mini->cmd[cmd_index].in_type = REDIR_IN;
+		}
 	}
 	if (type == REDIR_OUT)
 	{
