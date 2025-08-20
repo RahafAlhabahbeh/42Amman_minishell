@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/12 00:00:00 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/20 03:30:32 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/20 14:10:43 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,13 +41,13 @@ void	process_heredocs(t_minishell *mini)
 	}
 }
 
-static void	handle_child_builtins(t_minishell *mini, t_cmd *cmd, int i, char **envp)
+static void	handle_child_builtins(t_minishell *mini, t_cmd *cmd, int i, char **child_env)
 {
 	char	*child_builtins[2];
 
 	if (!cmd->argv || !cmd->argv[0])
 	{
-		free_env_array_2(envp);
+		free_env_array_2(child_env);
 		cleanup_child_process(mini);
 		exit(0);
 	}
@@ -58,12 +58,12 @@ static void	handle_child_builtins(t_minishell *mini, t_cmd *cmd, int i, char **e
 		if (is_str_in_set(cmd->argv[0], child_builtins)
 			&& mini->pipex_count > 0)
 		{
-			free_env_array_2(envp);
+			free_env_array_2(child_env);
 			cleanup_child_process(mini);
 			exit(0);
 		}
 		execute_builtin(mini, i);
-		free_env_array_2(envp);
+		free_env_array_2(child_env);
 		cleanup_child_process(mini);
 		exit(mini->exit_status);
 	}
@@ -92,12 +92,12 @@ static void	handle_command_errors(t_cmd *cmd, int status)
 	}
 }
 
-void	execute_child_command(t_minishell *mini, t_cmd *cmd, int i, char **envp)
+void	execute_child_command(t_minishell *mini, t_cmd *cmd, int i, char **child_env)
 {
 	char	*path;
 	int		status;
 
-	handle_child_builtins(mini, cmd, i, envp);
+	handle_child_builtins(mini, cmd, i, child_env);
 	status = resolve_cmd_path_with_status(cmd->argv[0], mini, &path);
 	if (status != 0)
 	{
@@ -111,14 +111,14 @@ void	execute_child_command(t_minishell *mini, t_cmd *cmd, int i, char **envp)
 			else
 				write(2, ": command not found\n", 20);
 		}
-		free_env_array_2(envp);
+		free_env_array_2(child_env);
 		cleanup_child_process(mini);
 		exit(status);
 	}
-	execve(path, cmd->argv, envp);
+	execve(path, cmd->argv, child_env);
 	perror("execve");
 	free(path);
-	free_env_array_2(envp);
+	free_env_array_2(child_env);
 	cleanup_child_process(mini);
 	exit(126);
 }

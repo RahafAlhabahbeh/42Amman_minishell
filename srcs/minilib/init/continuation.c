@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/16 12:15:00 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/18 12:10:06 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/20 14:03:10 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,24 +91,6 @@ char	*handle_readline_input(t_minishell *minishell)
 		minishell->exit_status = 130;
 		return (NULL);
 	}
-	// Check if stdin is a pipe (non-interactive)
-	if (!isatty(STDIN_FILENO))
-	{
-		// Read from pipe instead of using readline
-		line = NULL;
-		size_t line_size = 0;
-		ssize_t read_size = ft_getline(&line, &line_size, STDIN_FILENO);
-		if (read_size < 0)
-		{
-			free(line);
-			return (NULL);
-		}
-		// Remove trailing newline if present
-		if (line && read_size > 0 && line[read_size - 1] == '\n')
-			line[read_size - 1] = '\0';
-		return (line);
-	}
-	// Interactive mode - use readline
 	line = readline("minishell> ");
 	if (check_received_signal(minishell, line))
 		return (NULL);

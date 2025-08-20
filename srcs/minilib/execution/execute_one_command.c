@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:55:21 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/20 11:45:54 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/20 14:10:43 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -119,6 +119,7 @@ void execute_one_command(t_minishell *mini, char **envp)
 		char **child_env;
 
 		child_env = convert_env_to_array(mini->env_list); // new helper
+		mini->child_env = child_env;
 		handle_child_process(mini, cmd, child_env);
 		free_env_array_2(child_env); // free after use if execve fails
 	}

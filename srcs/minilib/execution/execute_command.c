@@ -6,35 +6,36 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/12 00:00:00 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/20 12:34:29 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/20 14:10:43 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../../include/minishell.h"
 
-void	handle_child_process2(t_minishell *mini, t_exec_vars *vars, char **envp)
+void	handle_child_process2(t_minishell *mini, t_exec_vars *vars, char **child_env)
 {
 	set_in_child_process(1);
+	mini->child_env = child_env;
 	signal(SIGINT, SIG_DFL);
 	signal(SIGQUIT, SIG_DFL);
 	if (handle_redirections(vars->cmd, vars->prev_fd, vars->pipefd,
 			vars->i == mini->pipex_count) < 0)
 	{
-		free_env_array_2(envp);
+		free_env_array_2(child_env);
 		cleanup_child_process(mini);
 		exit(1);
 	}
 	if (!vars->cmd->argv || !vars->cmd->argv[0])
 	{
-		free_env_array_2(envp);
+		free_env_array_2(child_env);
 		cleanup_child_process(mini);
 		exit(0);
 	}
 	if (!vars->cmd->argv[0][0] || (vars->cmd->in_type == REDIR_IN && !vars->cmd->argv[0][0]))
 	{
-		handle_empty_command(mini, vars->cmd, envp);
+		handle_empty_command(mini, vars->cmd, child_env);
 	}
-	execute_child_command(mini, vars->cmd, vars->i, envp);
+	execute_child_command(mini, vars->cmd, vars->i, child_env);
 }
 
 int	handle_parent_builtin(t_minishell *mini, t_exec_vars *vars, pid_t *pids)

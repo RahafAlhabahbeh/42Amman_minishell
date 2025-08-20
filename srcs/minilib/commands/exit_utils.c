@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/15 21:00:00 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/17 16:38:46 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/20 14:10:43 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,7 +73,11 @@ void	handle_invalid_exit_arg(char *arg, t_minishell *mini)
 		free_minishell(mini);
 	}
 	else
+	{
+		if (mini->child_env)
+			free_env_array_2(mini->child_env);
 		cleanup_child_process(mini);
+	}
 	exit(2);
 }
 
@@ -82,6 +86,11 @@ void	handle_too_many_args(t_minishell *mini)
 	if (!is_in_child_process())
 		ft_putstr_fd("minishell: exit: too many arguments\n", STDERR_FILENO);
 	if (is_in_child_process())
+	{
+		if (mini->child_env)
+			free_env_array_2(mini->child_env);
+		cleanup_child_process(mini);
 		exit(1);
+	}
 	mini->exit_status = 1;
 }

@@ -95,8 +95,8 @@ static int	validate_redirection_sequence(t_token *tokens)
 				ft_putstr_fd("'\n", 2);
 				return (0);
 			}
-			// For now, keep basic syntax validation only
-			// TODO: Implement specific malformed redirection detection
+			// TODO: Implement proper malformed redirection detection
+			// Need to distinguish between 1>2>3 (malformed) and 1 > 2 > 3 (valid)
 			// Removed overly strict validation that was treating cat<k<ls as syntax error
 			// This pattern is valid in bash - the first redirection just fails
 		}

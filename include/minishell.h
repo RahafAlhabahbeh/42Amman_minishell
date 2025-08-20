@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/14 00:00:00 by rahaf             #+#    #+#             */
-/*   Updated: 2025/08/20 12:34:29 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/20 14:10:43 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,6 +96,7 @@ typedef struct s_minishell
 	t_env		*env_list;
 	int			fd_out;
 	int			exit_status;
+	char		**child_env;
 }	t_minishell;
 
 typedef struct s_pipe_data
@@ -304,7 +305,7 @@ int		is_in_heredoc(void);
 void	handle_child_process(t_minishell *mini, t_cmd *cmd, char **envp);
 void	close_pipe_fds(int *pipe_fds);
 void	process_heredocs(t_minishell *mini);
-void	handle_empty_command(t_minishell *mini, t_cmd *cmd, char **envp);
+void	handle_empty_command(t_minishell *mini, t_cmd *cmd, char **child_env);
 int		execute_parent_process(t_exec_vars *vars, int is_last);
 void	parse_env_entry(t_minishell *mini, char *env_str);
 int		check_received_signal(t_minishell *minishell, char *line);
@@ -332,14 +333,14 @@ pid_t	handle_command_iteration(t_minishell *mini, char **envp,
 int		should_run_builtin_in_parent(t_cmd *cmd, int index, int total_pipes);
 int		is_redirection_present(t_cmd *cmd);
 void	handle_child_process2(t_minishell *mini, t_exec_vars *vars,
-			char **envp);
+		char **child_env);
 int		handle_empty_command2(t_minishell *mini, t_cmd *cmd);
 int		handle_parent_builtin_child(t_minishell *mini, t_cmd *cmd);
 int		handle_parent_builtin(t_minishell *mini, t_exec_vars *vars,
 			pid_t *pids);
 void	handle_parent_process(t_minishell *mini, pid_t pid);
 void	execute_child_command(t_minishell *mini, t_cmd *cmd, int i,
-			char **envp);
+		char **child_env);
 void	append_to_result(char *result, char *value, int *j);
 
 // heredoc_quote_utils.c

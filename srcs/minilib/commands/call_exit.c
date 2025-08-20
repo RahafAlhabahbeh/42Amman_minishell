@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:53:38 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/17 16:38:46 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/20 14:10:43 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,11 @@ static void	exit_no_args(t_minishell *mini)
 		free_minishell(mini);
 	}
 	else
+	{
+		if (mini->child_env)
+			free_env_array_2(mini->child_env);
 		cleanup_child_process(mini);
+	}
 	exit(mini->exit_status);
 }
 
@@ -42,7 +46,11 @@ static void	exit_with_code(t_minishell *mini, char *arg)
 		free_minishell(mini);
 	}
 	else
+	{
+		if (mini->child_env)
+			free_env_array_2(mini->child_env);
 		cleanup_child_process(mini);
+	}
 	exit((unsigned char)code);
 }
 
