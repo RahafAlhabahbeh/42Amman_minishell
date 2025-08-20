@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   execute_one_command.c                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
+/*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:55:21 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/19 04:54:07 by dal-mahr         ###   ########.fr       */
+/*   Updated: 2025/08/20 09:30:31 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,8 +16,25 @@ int handle_empty_command2(t_minishell *mini, t_cmd *cmd)
 {
 	if (!cmd->argv || !cmd->argv[0] || cmd->argv[0][0] == '\0')
 	{
-		write(2, cmd->argv[0], ft_strlen(cmd->argv[0]));
-		write(2, ": command not found\n", 20);
+		if (cmd->input_file_name || cmd->output_file_name)
+		{
+			// Process redirections to check for errors
+			if (handle_redirections(cmd, -1, NULL, 1) < 0)
+			{
+				mini->exit_status = 1;
+			}
+			else
+			{
+				mini->exit_status = 0;
+			}
+			return (1);
+		}
+		ft_putstr_fd("minishell: ", 2);
+		if (cmd->argv && cmd->argv[0])
+			ft_putstr_fd(cmd->argv[0], 2);
+		else
+			ft_putstr_fd("command", 2);
+		ft_putstr_fd(": command not found\n", 2);
 		mini->exit_status = 127;
 		return (1);
 	}
@@ -77,12 +94,16 @@ void execute_one_command(t_minishell *mini, char **envp)
 
 	(void) envp;
 	cmd = mini->cmd;
-	if (!cmd || (cmd->in_type == HERE_DOC && handle_heredoc(mini, cmd) < 0) || (!cmd->argv || !cmd->argv[0]) || handle_empty_command2(mini, cmd) || handle_parent_builtin_child(mini, cmd))
-	{
-		if (!cmd->argv || !cmd->argv[0])
-			mini->exit_status = 0;
+	
+	
+	if (!cmd)
 		return;
-	}
+	if (cmd->in_type == HERE_DOC && handle_heredoc(mini, cmd) < 0)
+		return;
+	if (handle_empty_command2(mini, cmd))
+		return;
+	if (handle_parent_builtin_child(mini, cmd))
+		return;
 	set_child_running(1);
 	pid = fork();
 	if (pid < 0)

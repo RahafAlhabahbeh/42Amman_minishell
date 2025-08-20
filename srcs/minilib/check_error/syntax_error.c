@@ -1,8 +1,8 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   syntax_error.c                                     :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
+/*   syntax_error.c                                     :+:      ::+:    :+:   */
+/*                                                                            */
 /*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:55:21 by dal-mahr          #+#    #+#             */
@@ -65,6 +65,53 @@ static int	validate_pipe(t_token *curr)
 	return (1);
 }
 
+static int	validate_redirection_sequence(t_token *tokens)
+{
+	t_token	*curr;
+	int		redir_count;
+
+	curr = tokens;
+	redir_count = 0;
+	while (curr)
+	{
+		if (curr->type == WORD)
+		{
+			redir_count = 0;
+		}
+		else if (curr->type == PIPE)
+		{
+			redir_count = 0;
+		}
+		else if (is_invalid_token(curr->type) && curr->type != PIPE)
+		{
+			redir_count++;
+			if (!curr->next || curr->next->type != WORD)
+			{
+				ft_putstr_fd("minishell: syntax error near unexpected token `", 2);
+				if (!curr->next)
+					ft_putstr_fd("newline", 2);
+				else
+					print_token_error(curr->next);
+				ft_putstr_fd("'\n", 2);
+				return (0);
+			}
+			// Check for consecutive redirections (like < 2 > 3)
+			// This should only trigger if we have REDIR_IN WORD REDIR_IN (no space between redirections)
+			if (curr->next && curr->next->next && 
+				curr->next->next->type == curr->type)
+			{
+				ft_putstr_fd("minishell: syntax error near unexpected token `", 2);
+				ft_putstr_fd(curr->next->value, 2);
+				ft_putstr_fd("'\n", 2);
+				return (0);
+			}
+		}
+		curr = curr->next;
+	}
+	// Allow standalone redirections (no command required)
+	return (1);
+}
+
 int	is_valid_syntax(t_token *tokens)
 {
 	t_token	*curr;
@@ -91,5 +138,5 @@ int	is_valid_syntax(t_token *tokens)
 		}
 		curr = curr->next;
 	}
-	return (1);
+	return (validate_redirection_sequence(tokens));
 }

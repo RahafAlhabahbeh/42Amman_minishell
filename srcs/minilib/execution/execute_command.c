@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/12 00:00:00 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/19 15:32:46 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/20 10:59:05 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@ void	handle_child_process2(t_minishell *mini, t_exec_vars *vars, char **envp)
 			vars->i == mini->pipex_count) < 0)
 	{
 		free_env_array_2(envp);
+		cleanup_child_process(mini);
 		exit(1);
 	}
 	if (!vars->cmd->argv || !vars->cmd->argv[0])
@@ -31,7 +32,6 @@ void	handle_child_process2(t_minishell *mini, t_exec_vars *vars, char **envp)
 	}
 	if (!vars->cmd->argv[0][0] || (vars->cmd->in_type == REDIR_IN && !vars->cmd->argv[0][0]))
 	{
-		free_env_array_2(envp);
 		handle_empty_command(vars->cmd, envp);
 	}
 	execute_child_command(mini, vars->cmd, vars->i, envp);

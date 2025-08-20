@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:55:21 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/17 21:38:44 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/20 04:07:46 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,11 @@ int	redirect_input(const char *file)
 	fd = open(file, O_RDONLY);
 	if (fd < 0)
 	{
-		perror(file);
+		ft_putstr_fd("minishell: ", 2);
+		ft_putstr_fd((char *)file, 2);
+		ft_putstr_fd(": No such file or directory\n", 2);
+		// Force flush stderr
+		write(2, "", 0);
 		return (-1);
 	}
 	dup2(fd, STDIN_FILENO);
@@ -34,7 +38,11 @@ int	redirect_output(const char *file)
 	fd = open(file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 	if (fd < 0)
 	{
-		perror(file);
+		ft_putstr_fd("minishell: ", 2);
+		ft_putstr_fd((char *)file, 2);
+		ft_putstr_fd(": No such file or directory\n", 2);
+		// Force flush stderr
+		write(2, "", 0);
 		return (-1);
 	}
 	dup2(fd, STDOUT_FILENO);
@@ -49,7 +57,11 @@ int	redirect_output_append(const char *file)
 	fd = open(file, O_WRONLY | O_CREAT | O_APPEND, 0644);
 	if (fd < 0)
 	{
-		perror(file);
+		ft_putstr_fd("minishell: ", 2);
+		ft_putstr_fd((char *)file, 2);
+		ft_putstr_fd(": No such file or directory\n", 2);
+		// Force flush stderr
+		write(2, "", 0);
 		return (-1);
 	}
 	dup2(fd, STDOUT_FILENO);

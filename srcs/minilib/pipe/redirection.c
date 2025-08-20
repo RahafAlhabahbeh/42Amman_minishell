@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   redirection.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
+/*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:52:38 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/12 17:30:00 by dal-mahr         ###   ########.fr       */
+/*   Updated: 2025/08/20 09:30:28 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,13 +21,23 @@ static void	redirect_input_pipe(t_cmd *cmd)
 	fd_in = open(cmd->input_file_name, O_RDONLY);
 	if (fd_in == -1)
 	{
-		perror("open input file");
-		exit(EXIT_FAILURE);
+		ft_putstr_fd("minishell: ", 2);
+		ft_putstr_fd(cmd->input_file_name, 2);
+		ft_putstr_fd(": No such file or directory\n", 2);
+		// In pipe context, redirect to /dev/null instead of exiting
+		int null_fd = open("/dev/null", O_RDONLY);
+		if (null_fd >= 0)
+		{
+			dup2(null_fd, STDIN_FILENO);
+			close(null_fd);
+		}
+		return ;
 	}
 	if (dup2(fd_in, STDIN_FILENO) == -1)
 	{
-		perror("dup2 input");
-		exit(EXIT_FAILURE);
+		ft_putstr_fd("minishell: dup2 error\n", 2);
+		close(fd_in);
+		return ;
 	}
 	close(fd_in);
 }
@@ -42,13 +52,23 @@ static void	redirect_output_pipe(t_cmd *cmd)
 			O_WRONLY | O_CREAT | O_TRUNC, 0644);
 	if (fd_out == -1)
 	{
-		perror("open output file");
-		exit(EXIT_FAILURE);
+		ft_putstr_fd("minishell: ", 2);
+		ft_putstr_fd(cmd->output_file_name, 2);
+		ft_putstr_fd(": No such file or directory\n", 2);
+		// In pipe context, redirect to /dev/null instead of exiting
+		int null_fd = open("/dev/null", O_WRONLY);
+		if (null_fd >= 0)
+		{
+			dup2(null_fd, STDOUT_FILENO);
+			close(null_fd);
+		}
+		return ;
 	}
 	if (dup2(fd_out, STDOUT_FILENO) == -1)
 	{
-		perror("dup2 output");
-		exit(EXIT_FAILURE);
+		ft_putstr_fd("minishell: dup2 error\n", 2);
+		close(fd_out);
+		return ;
 	}
 	close(fd_out);
 }

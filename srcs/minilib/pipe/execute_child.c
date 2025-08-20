@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:52:38 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/18 11:55:43 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/20 04:07:46 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,29 +18,29 @@ static void	print_command_error(t_minishell *ms, int i, int status)
 	{
 		if (is_directory(ms->cmd[i].argv[0]))
 		{
-			write(2, ms->cmd[i].argv[0], ft_strlen(ms->cmd[i].argv[0]));
-			write(2, ": Is a directory\n", 17);
+			ft_putstr_fd(ms->cmd[i].argv[0], 2);
+			ft_putstr_fd(": Is a directory\n", 2);
 		}
 		else
 		{
-			write(2, ms->cmd[i].argv[0], ft_strlen(ms->cmd[i].argv[0]));
-			write(2, ": Permission denied\n", 20);
+			ft_putstr_fd(ms->cmd[i].argv[0], 2);
+			ft_putstr_fd(": Permission denied\n", 2);
 		}
 	}
 	else if (status == 127)
 	{
-		write(2, ms->cmd[i].argv[0], ft_strlen(ms->cmd[i].argv[0]));
-		write(2, ": command not found\n", 20);
+		ft_putstr_fd(ms->cmd[i].argv[0], 2);
+		ft_putstr_fd(": command not found\n", 2);
 	}
 	else if (status == 128)
 	{
-		write(2, ms->cmd[i].argv[0], ft_strlen(ms->cmd[i].argv[0]));
-		write(2, ": Not a directory\n", 18);
+		ft_putstr_fd(ms->cmd[i].argv[0], 2);
+		ft_putstr_fd(": Not a directory\n", 2);
 	}
 	else
 	{
-		write(2, ms->cmd[i].argv[0], ft_strlen(ms->cmd[i].argv[0]));
-		write(2, ": No such file or directory\n", 28);
+		ft_putstr_fd(ms->cmd[i].argv[0], 2);
+		ft_putstr_fd(": No such file or directory\n", 2);
 	}
 }
 
@@ -67,8 +67,8 @@ void	execute_child_command_pipe(t_minishell *ms, t_pipe_data *data)
 		exit(status);
 	}
 	execve(path, ms->cmd[data->i].argv, data->envp);
-	perror("execve");
+	ft_putstr_fd("minishell: execve error\n", 2);
 	free(path);
 	cleanup_child_process(ms);
-	exit(EXIT_FAILURE);
+	exit(1);
 }

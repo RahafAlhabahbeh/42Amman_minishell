@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   get_commands2.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
+/*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:55:21 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/16 12:15:00 by dal-mahr         ###   ########.fr       */
+/*   Updated: 2025/08/20 04:16:09 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,21 +61,11 @@ void	set_redirection(t_minishell *mini, int cmd_index,
 int	handle_redir(t_minishell *mini, t_token *cur, int cmd_index)
 {
 	const char	*filename;
-	int			fd;
 
 	if (!cur->next || cur->next->type != WORD)
 		return (-1);
 	filename = cur->next->value;
-	fd = -1;
-	if (cur->type == REDIR_OUT)
-		fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-	else if (cur->type == REDIR_APPEND)
-		fd = open(filename, O_WRONLY | O_CREAT | O_APPEND, 0644);
-	else if (cur->type == REDIR_IN)
-		fd = open(filename, O_RDONLY);
-	if (fd < 0)
-		return (-1);
-	close(fd);
+	// Don't check file existence at parsing time, let execution handle it
 	set_redirection(mini, cmd_index, filename, cur->type);
 	return (0);
 }
