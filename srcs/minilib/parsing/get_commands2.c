@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:55:21 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/20 12:42:50 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/20 14:30:57 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,12 +50,22 @@ void	set_redirection(t_minishell *mini, int cmd_index,
 	}
 	if (type == REDIR_OUT)
 	{
+		// Create the file even if it will be overwritten
+		int fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+		if (fd >= 0)
+			close(fd);
+		
 		free(mini->cmd[cmd_index].output_file_name);
 		mini->cmd[cmd_index].output_file_name = ft_strdup(filename);
 		mini->cmd[cmd_index].out_type = REDIR_OUT;
 	}
 	if (type == REDIR_APPEND)
 	{
+		// Create the file even if it will be overwritten
+		int fd = open(filename, O_WRONLY | O_CREAT | O_APPEND, 0644);
+		if (fd >= 0)
+			close(fd);
+		
 		free(mini->cmd[cmd_index].output_file_name);
 		mini->cmd[cmd_index].output_file_name = ft_strdup(filename);
 		mini->cmd[cmd_index].out_type = REDIR_APPEND;

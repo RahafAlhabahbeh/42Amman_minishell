@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:55:21 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/20 04:07:46 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/20 14:30:57 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,6 +69,8 @@ int	redirect_output_append(const char *file)
 	return (0);
 }
 
+
+
 static int	handle_input_redirect(t_cmd *cmd, int prev_fd, int *pipe_fds)
 {
 	if (cmd->heredoc_fd >= 0)
@@ -116,3 +118,5 @@ int	handle_redirections(t_cmd *cmd, int prev_fd, int *pipe_fds, int is_last)
 	}
 	return (0);
 }
+
+
