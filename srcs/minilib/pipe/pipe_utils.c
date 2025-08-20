@@ -3,39 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   pipe_utils.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
+/*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:52:38 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/12 17:30:00 by dal-mahr         ###   ########.fr       */
+/*   Updated: 2025/08/20 16:07:32 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../../include/minishell.h"
-
-void	safe_pipe(int pipe_fds[2])
-{
-	if (pipe(pipe_fds) == -1)
-	{
-		perror("pipe");
-		exit(EXIT_FAILURE);
-	}
-}
-
-void	count_pipe(t_minishell *minishell)
-{
-	int		count;
-	t_token	*cur;
-
-	count = 0;
-	cur = minishell->token;
-	while (cur)
-	{
-		if (cur->type == PIPE)
-			count++;
-		cur = cur->next;
-	}
-	minishell->pipex_count = count;
-}
 
 int	*init_pipes(int n)
 {
@@ -88,4 +63,29 @@ void	setup_child_pipes(int *pipefds, int i, int n)
 			exit(EXIT_FAILURE);
 		}
 	}
+}
+
+void	close_pipe_fds(int *pipe_fds)
+{
+	if (pipe_fds[0] != -1)
+	{
+		close(pipe_fds[0]);
+		pipe_fds[0] = -1;
+	}
+	if (pipe_fds[1] != -1)
+	{
+		close(pipe_fds[1]);
+		pipe_fds[1] = -1;
+	}
+}
+
+int	create_pipe_if_needed(t_minishell *mini, t_exec_vars *vars)
+{
+	if (vars->i < mini->pipex_count && pipe(vars->pipefd) == -1)
+	{
+		perror("pipe");
+		mini->exit_status = 1;
+		return (1);
+	}
+	return (0);
 }

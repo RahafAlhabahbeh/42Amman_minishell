@@ -75,6 +75,7 @@ SRC = \
 	$(SRC_DIR)/free/free_cmds.c	\
 	$(SRC_DIR)/free/free_utils.c	\
 	$(SRC_DIR)/check_error/syntax_error.c	\
+	$(SRC_DIR)/check_error/syntax_error2.c	\
 	$(SRC_DIR)/signal/signals.c \
 	$(SRC_DIR)/signal/signal_utils.c \
 	$(SRC_DIR)/signal/signal_utils2.c \

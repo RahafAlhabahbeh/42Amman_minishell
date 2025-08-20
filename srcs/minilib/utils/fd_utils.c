@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/15 00:00:00 by rahaf             #+#    #+#             */
-/*   Updated: 2025/08/17 21:50:55 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/20 16:07:32 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,4 +30,23 @@ void	restore_original_fds(t_cmd *cmd)
 		close(cmd->original_stdout);
 	cmd->original_stdin = -1;
 	cmd->original_stdout = -1;
+}
+
+void	cleanup_pipe_fds(t_exec_vars *vars)
+{
+	if (vars->prev_fd != -1)
+		close(vars->prev_fd);
+	if (vars->pipefd[0] != -1)
+		close(vars->pipefd[0]);
+	if (vars->pipefd[1] != -1)
+		close(vars->pipefd[1]);
+}
+
+void	safe_pipe(int pipe_fds[2])
+{
+	if (pipe(pipe_fds) == -1)
+	{
+		perror("pipe");
+		exit(EXIT_FAILURE);
+	}
 }

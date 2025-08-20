@@ -6,24 +6,11 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:55:21 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/18 01:03:20 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/20 16:07:32 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../../include/minishell.h"
-
-void	free_token_list(t_token *list)
-{
-	t_token	*tmp;
-
-	while (list)
-	{
-		tmp = list;
-		list = list->next;
-		free(tmp->value);
-		free(tmp);
-	}
-}
 
 t_token	*create_token(char *val, t_token_type type, char quote)
 {
@@ -111,4 +98,20 @@ int	process_token(t_minishell *mini, t_token *cur,
 		(*tail)->next = new_token_node;
 	*tail = new_token_node;
 	return (0);
+}
+
+void	count_pipe(t_minishell *minishell)
+{
+	int		count;
+	t_token	*cur;
+
+	count = 0;
+	cur = minishell->token;
+	while (cur)
+	{
+		if (cur->type == PIPE)
+			count++;
+		cur = cur->next;
+	}
+	minishell->pipex_count = count;
 }

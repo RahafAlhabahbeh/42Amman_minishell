@@ -6,25 +6,11 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/12 00:00:00 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/20 14:10:43 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/20 15:44:37 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../../include/minishell.h"
-
-void	close_pipe_fds(int *pipe_fds)
-{
-	if (pipe_fds[0] != -1)
-	{
-		close(pipe_fds[0]);
-		pipe_fds[0] = -1;
-	}
-	if (pipe_fds[1] != -1)
-	{
-		close(pipe_fds[1]);
-		pipe_fds[1] = -1;
-	}
-}
 
 void	process_heredocs(t_minishell *mini)
 {
@@ -42,7 +28,7 @@ void	process_heredocs(t_minishell *mini)
 }
 
 static void	handle_child_builtins(t_minishell *mini,
-	t_cmd *cmd, int i, char **envp)
+	t_cmd *cmd, int i, char **child_env)
 {
 	char	*child_builtins[2];
 

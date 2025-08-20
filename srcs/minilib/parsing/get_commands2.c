@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:55:21 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/20 14:30:57 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/20 15:44:37 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,8 +63,6 @@ static void	set_output_redirection(t_minishell *mini, int cmd_index,
 void	set_redirection(t_minishell *mini, int cmd_index,
 	const char *filename, t_token_type type)
 {
-	int	fd;
-
 	if (type == REDIR_IN)
 	{
 		if (!mini->cmd[cmd_index].input_file_name)

@@ -6,39 +6,15 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/12 00:00:00 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/20 14:23:49 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/20 16:07:32 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../../include/minishell.h"
 
-static int	handle_edge_cases(t_minishell *mini, t_exec_vars *vars)
-{
-	int	redir_result;
-
-	if (!vars->cmd->argv || !vars->cmd->argv[0]
-		|| vars->cmd->argv[0][0] == '\0')
-	{
-		if (vars->cmd->input_file_name
-			|| vars->cmd->output_file_name)
-		{
-			redir_result = handle_redirections(vars->cmd,
-					vars->prev_fd, vars->pipefd,
-					vars->i == mini->pipex_count);
-			if (redir_result < 0)
-				mini->exit_status = 1;
-			else
-				mini->exit_status = 0;
-			return (1);
-		}
-	}
-	return (0);
-}
-
 static int	prepare_pipe_and_sigint(t_minishell *mini, t_exec_vars *vars)
 {
-	struct sigaction	sa;
-	int					redir_result;
+	int	redir_result;
 
 	if (check_sigint_received())
 	{
@@ -46,33 +22,21 @@ static int	prepare_pipe_and_sigint(t_minishell *mini, t_exec_vars *vars)
 		return (1);
 	}
 	vars->cmd = &mini->cmd[vars->i];
-	if ((!vars->cmd->argv || !vars->cmd->argv[0] || vars->cmd->argv[0][0] == '\0') &&
-		(vars->cmd->input_file_name || vars->cmd->output_file_name))
+	if ((!vars->cmd->argv || !vars->cmd->argv[0]
+			|| vars->cmd->argv[0][0] == '\0')
+		&& (vars->cmd->input_file_name || vars->cmd->output_file_name))
 	{
-		redir_result = handle_redirections(vars->cmd,
-				vars->prev_fd, vars->pipefd,
-				vars->i == mini->pipex_count);
+		redir_result = handle_redirections(vars->cmd, vars->prev_fd,
+				vars->pipefd, vars->i == mini->pipex_count);
 		if (redir_result < 0)
 			mini->exit_status = 1;
 		else
 			mini->exit_status = 0;
 		return (1);
 	}
-	if (handle_edge_cases(mini, vars))
+	if (create_pipe_if_needed(mini, vars))
 		return (1);
-	if (vars->i < mini->pipex_count)
-	{
-		if (pipe(vars->pipefd) == -1)
-		{
-			perror("pipe");
-			mini->exit_status = 1;
-			return (1);
-		}
-	}
-	sa.sa_handler = SIG_IGN;
-	sigemptyset(&sa.sa_mask);
-	sa.sa_flags = 0;
-	sigaction(SIGINT, &sa, NULL);
+	setup_signal_handling();
 	return (0);
 }
 
@@ -102,10 +66,10 @@ static int	handle_parent_and_fork(t_minishell *mini, t_exec_vars *vars,
 static int	handle_child_or_parent(t_minishell *mini, t_exec_vars *vars,
 	pid_t *pids)
 {
+	char	**child_env;
+
 	if (vars->pid == 0)
 	{
-		char	**child_env;
-
 		if (pids)
 			free(pids);
 		child_env = convert_env_to_array(mini->env_list);
@@ -121,6 +85,28 @@ static int	handle_child_or_parent(t_minishell *mini, t_exec_vars *vars,
 	return (vars->prev_fd);
 }
 
+static void	execute_commands_loop(t_minishell *mini, t_exec_vars *vars,
+	pid_t *pids)
+{
+	while (vars->i <= mini->pipex_count)
+	{
+		if (prepare_pipe_and_sigint(mini, vars))
+		{
+			cleanup_pipe_fds(vars);
+			return ;
+		}
+		if (handle_parent_and_fork(mini, vars, pids))
+		{
+			if (vars->prev_fd != -1)
+				close(vars->prev_fd);
+			vars->i++;
+			continue ;
+		}
+		vars->prev_fd = handle_child_or_parent(mini, vars, pids);
+		vars->i++;
+	}
+}
+
 void	execute_loop(t_minishell *mini, char **envp, pid_t *pids)
 {
 	t_exec_vars	vars;
@@ -131,33 +117,7 @@ void	execute_loop(t_minishell *mini, char **envp, pid_t *pids)
 	vars.pipefd[1] = -1;
 	vars.i = 0;
 	process_heredocs(mini);
-	while (vars.i <= mini->pipex_count)
-	{
-		if (prepare_pipe_and_sigint(mini, &vars))
-		{
-			if (vars.prev_fd != -1)
-				close(vars.prev_fd);
-			if (vars.pipefd[0] != -1)
-				close(vars.pipefd[0]);
-			if (vars.pipefd[1] != -1)
-				close(vars.pipefd[1]);
-			return ;
-		}
-		if (handle_parent_and_fork(mini, &vars, pids))
-		{
-			if (vars.prev_fd != -1)
-				close(vars.prev_fd);
-			vars.i++;
-			continue ;
-		}
-		vars.prev_fd = handle_child_or_parent(mini, &vars, pids);
-		vars.i++;
-	}
-	if (vars.prev_fd != -1)
-		close(vars.prev_fd);
-	if (vars.pipefd[0] != -1)
-		close(vars.pipefd[0]);
-	if (vars.pipefd[1] != -1)
-		close(vars.pipefd[1]);
+	execute_commands_loop(mini, &vars, pids);
+	cleanup_pipe_fds(&vars);
 	close_all_heredoc_fds(mini);
 }

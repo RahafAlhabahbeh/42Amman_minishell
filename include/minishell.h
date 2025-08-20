@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/14 00:00:00 by rahaf             #+#    #+#             */
-/*   Updated: 2025/08/20 14:28:51 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/20 16:07:32 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -302,8 +302,10 @@ void	set_in_child_process(int in_child);
 int		is_in_child_process(void);
 void	set_in_heredoc(int in_heredoc);
 int		is_in_heredoc(void);
+void	setup_signal_handling(void);
 void	handle_child_process(t_minishell *mini, t_cmd *cmd, char **envp);
 void	close_pipe_fds(int *pipe_fds);
+int		create_pipe_if_needed(t_minishell *mini, t_exec_vars *vars);
 void	process_heredocs(t_minishell *mini);
 void	handle_empty_command(t_minishell *mini, t_cmd *cmd, char **child_env);
 int		execute_parent_process(t_exec_vars *vars, int is_last);
@@ -323,6 +325,9 @@ void	print_commands(t_cmd *cmd);
 
 int		is_invalid_token(t_token_type type);
 int		is_valid_syntax(t_token *tokens);
+void	print_token_error(t_token *token);
+int		validate_pipe(t_token *curr);
+int		validate_redirection(t_token *curr);
 
 int		is_one_command(t_minishell *mini);
 void	execute_one_command(t_minishell *mini, char **envp);
@@ -333,31 +338,31 @@ pid_t	handle_command_iteration(t_minishell *mini, char **envp,
 int		should_run_builtin_in_parent(t_cmd *cmd, int index, int total_pipes);
 int		is_redirection_present(t_cmd *cmd);
 void	handle_child_process2(t_minishell *mini, t_exec_vars *vars,
-		char **child_env);
+			char **child_env);
 int		handle_empty_command2(t_minishell *mini, t_cmd *cmd);
 int		handle_parent_builtin_child(t_minishell *mini, t_cmd *cmd);
 int		handle_parent_builtin(t_minishell *mini, t_exec_vars *vars,
 			pid_t *pids);
 void	handle_parent_process(t_minishell *mini, pid_t pid);
 void	execute_child_command(t_minishell *mini, t_cmd *cmd, int i,
-		char **child_env);
+			char **child_env);
 void	append_to_result(char *result, char *value, int *j);
 
-// heredoc_quote_utils.c
+/* heredoc_quote_utils.c */
 void	setup_heredoc_signal(struct sigaction *sa, struct sigaction *old_sa);
-int	write_heredoc_lines(t_minishell *mini, int fd,
-		const char *delimiter, int expand_vars);
-
+int		write_heredoc_lines(t_minishell *mini, int fd,
+			const char *delimiter, int expand_vars);
 
 void	save_original_fds(t_cmd *cmd);
 void	restore_original_fds(t_cmd *cmd);
+void	cleanup_pipe_fds(t_exec_vars *vars);
+void	safe_pipe(int pipe_fds[2]);
 int		is_numeric(const char *str);
 int		is_valid_exit_arg(const char *str);
 void	handle_invalid_exit_arg(char *arg, t_minishell *mini);
 void	handle_too_many_args(t_minishell *mini);
 
-char **convert_env_to_array(t_env *env); // New Dana execution directory
-void free_env_array_2(char **arr); // New Dana execution directory
-
+char	**convert_env_to_array(t_env *env);
+void	free_env_array_2(char **arr);
 
 #endif

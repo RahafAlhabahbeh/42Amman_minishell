@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:52:38 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/20 09:30:28 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/20 15:44:37 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,7 +45,6 @@ static void	handle_output_fd_error(t_cmd *cmd)
 static void	redirect_input_pipe(t_cmd *cmd)
 {
 	int	fd_in;
-	int	null_fd;
 
 	if (!cmd->input_file_name)
 		return ;
@@ -67,7 +66,6 @@ static void	redirect_input_pipe(t_cmd *cmd)
 static void	redirect_output_pipe(t_cmd *cmd)
 {
 	int	fd_out;
-	int	null_fd;
 
 	if (!cmd->output_file_name)
 		return ;
