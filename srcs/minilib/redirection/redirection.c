@@ -22,7 +22,6 @@ int	redirect_input(const char *file)
 		ft_putstr_fd("minishell: ", 2);
 		ft_putstr_fd((char *)file, 2);
 		ft_putstr_fd(": No such file or directory\n", 2);
-		// Force flush stderr
 		write(2, "", 0);
 		return (-1);
 	}
@@ -41,7 +40,6 @@ int	redirect_output(const char *file)
 		ft_putstr_fd("minishell: ", 2);
 		ft_putstr_fd((char *)file, 2);
 		ft_putstr_fd(": No such file or directory\n", 2);
-		// Force flush stderr
 		write(2, "", 0);
 		return (-1);
 	}
@@ -60,7 +58,6 @@ int	redirect_output_append(const char *file)
 		ft_putstr_fd("minishell: ", 2);
 		ft_putstr_fd((char *)file, 2);
 		ft_putstr_fd(": No such file or directory\n", 2);
-		// Force flush stderr
 		write(2, "", 0);
 		return (-1);
 	}
@@ -68,8 +65,6 @@ int	redirect_output_append(const char *file)
 	close(fd);
 	return (0);
 }
-
-
 
 static int	handle_input_redirect(t_cmd *cmd, int prev_fd, int *pipe_fds)
 {
@@ -118,5 +113,3 @@ int	handle_redirections(t_cmd *cmd, int prev_fd, int *pipe_fds, int is_last)
 	}
 	return (0);
 }
-
-

@@ -16,8 +16,9 @@ void	handle_empty_command(t_minishell *mini, t_cmd *cmd, char **child_env)
 {
 	if (!cmd->argv || !cmd->argv[0] || cmd->argv[0][0] == '\0')
 	{
-		if (cmd->in_type == REDIR_IN || cmd->out_type == REDIR_OUT || 
-			cmd->out_type == REDIR_APPEND || cmd->in_type == HERE_DOC)
+		if (cmd->in_type == REDIR_IN || cmd->out_type == REDIR_OUT
+			|| cmd->out_type == REDIR_APPEND
+			|| cmd->in_type == HERE_DOC)
 		{
 			free_env_array_2(child_env);
 			cleanup_child_process(mini);

@@ -42,7 +42,8 @@ int	handle_redirection(t_minishell *mini, t_tokenize_data *data, char c)
 
 int	finalize_token(t_tokenize_data *data)
 {
-	if (data->buf_i > 0 || (data->overall_quote != 0 && data->current_quote == 0))
+	if (data->buf_i > 0 || (data->overall_quote != 0
+			&& data->current_quote == 0))
 	{
 		data->buf[data->buf_i] = '\0';
 		append_token(&data->head, &data->tail,

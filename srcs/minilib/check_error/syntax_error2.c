@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   syntax_error.c                                     :+:      ::+:    :+:  */
+/*   syntax_error2.c                                    :+:      ::+:    :+:  */
 /*                                                    +:+ +:+         +:+     */
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -12,9 +12,30 @@
 
 #include "../../../include/minishell.h"
 
-static int	handle_redirection_error(t_token *curr, int *redir_count)
+int	is_invalid_token(t_token_type type)
 {
-	(*redir_count)++;
+	return (type == PIPE || type == REDIR_IN || type == REDIR_OUT
+		|| type == REDIR_APPEND || type == HERE_DOC);
+}
+
+void	print_token_error(t_token *token)
+{
+	if (token->type == PIPE)
+		ft_putstr_fd("|", 2);
+	else if (token->type == REDIR_IN)
+		ft_putstr_fd("<", 2);
+	else if (token->type == REDIR_OUT)
+		ft_putstr_fd(">", 2);
+	else if (token->type == REDIR_APPEND)
+		ft_putstr_fd(">>", 2);
+	else if (token->type == HERE_DOC)
+		ft_putstr_fd("<<", 2);
+	else
+		ft_putstr_fd(token->value, 2);
+}
+
+int	validate_redirection(t_token *curr)
+{
 	if (!curr->next || curr->next->type != WORD)
 	{
 		ft_putstr_fd("minishell: syntax error near unexpected token `", 2);
@@ -28,54 +49,18 @@ static int	handle_redirection_error(t_token *curr, int *redir_count)
 	return (1);
 }
 
-static int	validate_redirection_sequence(t_token *tokens)
+int	validate_pipe(t_token *curr)
 {
-	t_token	*curr;
-	int		redir_count;
-
-	curr = tokens;
-	redir_count = 0;
-	while (curr)
+	if (!curr->next)
 	{
-		if (curr->type == WORD)
-			redir_count = 0;
-		else if (curr->type == PIPE)
-			redir_count = 0;
-		else if (is_invalid_token(curr->type) && curr->type != PIPE)
-		{
-			if (!handle_redirection_error(curr, &redir_count))
-				return (0);
-		}
-		curr = curr->next;
+		ft_putstr_fd("minishell: syntax error near unexpected token ", 2);
+		ft_putstr_fd("`newline'\n", 2);
+		return (0);
 	}
-	return (1);
-}
-
-int	is_valid_syntax(t_token *tokens)
-{
-	t_token	*curr;
-
-	curr = tokens;
-	if (!curr)
-		return (1);
-	if (curr->type == PIPE)
+	if (curr->next->type == PIPE)
 	{
 		ft_putstr_fd("minishell: syntax error near unexpected token `|'\n", 2);
 		return (0);
 	}
-	while (curr)
-	{
-		if (curr->type == PIPE)
-		{
-			if (!validate_pipe(curr))
-				return (0);
-		}
-		else if (is_invalid_token(curr->type) && curr->type != PIPE)
-		{
-			if (!validate_redirection(curr))
-				return (0);
-		}
-		curr = curr->next;
-	}
-	return (validate_redirection_sequence(tokens));
+	return (1);
 }

@@ -12,7 +12,8 @@
 
 #include "../../../include/minishell.h"
 
-static void	handle_initial_redirections(t_minishell *mini, t_cmd *cmd, char **envp)
+static void	handle_initial_redirections(t_minishell *mini,
+	t_cmd *cmd, char **envp)
 {
 	if (handle_redirections(cmd, -1, NULL, 1) < 0)
 	{

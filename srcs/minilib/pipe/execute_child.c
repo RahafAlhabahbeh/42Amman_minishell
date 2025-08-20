@@ -12,21 +12,24 @@
 
 #include "../../../include/minishell.h"
 
+static void	print_status_126_error(t_minishell *ms, int i)
+{
+	if (is_directory(ms->cmd[i].argv[0]))
+	{
+		ft_putstr_fd(ms->cmd[i].argv[0], 2);
+		ft_putstr_fd(": Is a directory\n", 2);
+	}
+	else
+	{
+		ft_putstr_fd(ms->cmd[i].argv[0], 2);
+		ft_putstr_fd(": Permission denied\n", 2);
+	}
+}
+
 static void	print_command_error(t_minishell *ms, int i, int status)
 {
 	if (status == 126)
-	{
-		if (is_directory(ms->cmd[i].argv[0]))
-		{
-			ft_putstr_fd(ms->cmd[i].argv[0], 2);
-			ft_putstr_fd(": Is a directory\n", 2);
-		}
-		else
-		{
-			ft_putstr_fd(ms->cmd[i].argv[0], 2);
-			ft_putstr_fd(": Permission denied\n", 2);
-		}
-	}
+		print_status_126_error(ms, i);
 	else if (status == 127)
 	{
 		ft_putstr_fd(ms->cmd[i].argv[0], 2);

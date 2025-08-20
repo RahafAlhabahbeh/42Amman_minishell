@@ -14,23 +14,22 @@
 
 static int	handle_edge_cases(t_minishell *mini, t_exec_vars *vars)
 {
-	// Handle cases where we have redirections but no actual command
-	if (!vars->cmd->argv || !vars->cmd->argv[0] || vars->cmd->argv[0][0] == '\0')
+	int	redir_result;
+
+	if (!vars->cmd->argv || !vars->cmd->argv[0]
+		|| vars->cmd->argv[0][0] == '\0')
 	{
-		if (vars->cmd->input_file_name || vars->cmd->output_file_name)
+		if (vars->cmd->input_file_name
+			|| vars->cmd->output_file_name)
 		{
-			// Always process redirections to check for errors
-			int redir_result = handle_redirections(vars->cmd, vars->prev_fd, vars->pipefd,
+			redir_result = handle_redirections(vars->cmd,
+					vars->prev_fd, vars->pipefd,
 					vars->i == mini->pipex_count);
 			if (redir_result < 0)
-			{
 				mini->exit_status = 1;
-			}
 			else
-			{
 				mini->exit_status = 0;
-			}
-			return (1); // Successfully handled, skip to next command
+			return (1);
 		}
 	}
 	return (0);
@@ -39,6 +38,7 @@ static int	handle_edge_cases(t_minishell *mini, t_exec_vars *vars)
 static int	prepare_pipe_and_sigint(t_minishell *mini, t_exec_vars *vars)
 {
 	struct sigaction	sa;
+	int					redir_result;
 
 	if (check_sigint_received())
 	{
@@ -46,25 +46,18 @@ static int	prepare_pipe_and_sigint(t_minishell *mini, t_exec_vars *vars)
 		return (1);
 	}
 	vars->cmd = &mini->cmd[vars->i];
-	
-	// Always process redirections if there are any, even without commands
 	if ((!vars->cmd->argv || !vars->cmd->argv[0] || vars->cmd->argv[0][0] == '\0') &&
 		(vars->cmd->input_file_name || vars->cmd->output_file_name))
 	{
-		// Process redirections to check for errors
-		int redir_result = handle_redirections(vars->cmd, vars->prev_fd, vars->pipefd,
+		redir_result = handle_redirections(vars->cmd,
+				vars->prev_fd, vars->pipefd,
 				vars->i == mini->pipex_count);
 		if (redir_result < 0)
-		{
 			mini->exit_status = 1;
-		}
 		else
-		{
 			mini->exit_status = 0;
-		}
-		return (1); // Skip to next command
+		return (1);
 	}
-	
 	if (handle_edge_cases(mini, vars))
 		return (1);
 	if (vars->i < mini->pipex_count)

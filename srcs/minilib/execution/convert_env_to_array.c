@@ -40,19 +40,13 @@ static int	env_list_size(t_env *env)
 	return (count);
 }
 
-char **convert_env_to_array(t_env *env)
+static int	fill_env_array(t_env *env, char **array)
 {
-	int		count;
-	t_env	*tmp;
-	char	**array;
 	int		i;
+	t_env	*tmp;
 
-	count = env_list_size(env);
-	array = malloc(sizeof(char *) * (count + 1));
-	if (!array)
-		return (NULL);
-	tmp = env;
 	i = 0;
+	tmp = env;
 	while (tmp)
 	{
 		if (tmp->value)
@@ -62,12 +56,26 @@ char **convert_env_to_array(t_env *env)
 		if (!array[i])
 		{
 			free_env_array_2(array);
-			return (NULL);
+			return (-1);
 		}
 		i++;
 		tmp = tmp->next;
 	}
 	array[i] = NULL;
+	return (0);
+}
+
+char	**convert_env_to_array(t_env *env)
+{
+	int		count;
+	char	**array;
+
+	count = env_list_size(env);
+	array = malloc(sizeof(char *) * (count + 1));
+	if (!array)
+		return (NULL);
+	if (fill_env_array(env, array) < 0)
+		return (NULL);
 	return (array);
 }
 

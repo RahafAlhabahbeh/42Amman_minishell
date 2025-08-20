@@ -41,7 +41,8 @@ void	process_heredocs(t_minishell *mini)
 	}
 }
 
-static void	handle_child_builtins(t_minishell *mini, t_cmd *cmd, int i, char **child_env)
+static void	handle_child_builtins(t_minishell *mini,
+	t_cmd *cmd, int i, char **envp)
 {
 	char	*child_builtins[2];
 
@@ -92,7 +93,26 @@ static void	handle_command_errors(t_cmd *cmd, int status)
 	}
 }
 
-void	execute_child_command(t_minishell *mini, t_cmd *cmd, int i, char **child_env)
+static void	handle_child_command_error(t_minishell *mini, t_cmd *cmd,
+		char **child_env, int status)
+{
+	if (status == 126 || status == 128)
+		handle_command_errors(cmd, status);
+	else
+	{
+		write(2, cmd->argv[0], ft_strlen(cmd->argv[0]));
+		if (cmd->argv[0][0] == '/' || ft_strchr(cmd->argv[0], '/'))
+			write(2, ": No such file or directory\n", 28);
+		else
+			write(2, ": command not found\n", 20);
+	}
+	free_env_array_2(child_env);
+	cleanup_child_process(mini);
+	exit(status);
+}
+
+void	execute_child_command(t_minishell *mini, t_cmd *cmd,
+	int i, char **child_env)
 {
 	char	*path;
 	int		status;
@@ -100,21 +120,7 @@ void	execute_child_command(t_minishell *mini, t_cmd *cmd, int i, char **child_en
 	handle_child_builtins(mini, cmd, i, child_env);
 	status = resolve_cmd_path_with_status(cmd->argv[0], mini, &path);
 	if (status != 0)
-	{
-		if (status == 126 || status == 128)
-			handle_command_errors(cmd, status);
-		else
-		{
-			write(2, cmd->argv[0], ft_strlen(cmd->argv[0]));
-			if (cmd->argv[0][0] == '/' || ft_strchr(cmd->argv[0], '/'))
-				write(2, ": No such file or directory\n", 28);
-			else
-				write(2, ": command not found\n", 20);
-		}
-		free_env_array_2(child_env);
-		cleanup_child_process(mini);
-		exit(status);
-	}
+		handle_child_command_error(mini, cmd, child_env, status);
 	execve(path, cmd->argv, child_env);
 	perror("execve");
 	free(path);

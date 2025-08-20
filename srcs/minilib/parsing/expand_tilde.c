@@ -57,7 +57,7 @@ static char	*join_home_and_rest(const char *home,
 
 char	*expand_tilde(t_minishell *mini, const char *str)
 {
-	char	*home_to_free;
+	char		*home_to_free;
 	const char	*home;
 
 	home_to_free = NULL;

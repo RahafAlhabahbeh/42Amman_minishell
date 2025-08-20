@@ -12,7 +12,8 @@
 
 #include "../../../include/minishell.h"
 
-void	handle_child_process2(t_minishell *mini, t_exec_vars *vars, char **child_env)
+void	handle_child_process2(t_minishell *mini,
+	t_exec_vars *vars, char **child_env)
 {
 	set_in_child_process(1);
 	mini->child_env = child_env;
@@ -31,7 +32,8 @@ void	handle_child_process2(t_minishell *mini, t_exec_vars *vars, char **child_en
 		cleanup_child_process(mini);
 		exit(0);
 	}
-	if (!vars->cmd->argv[0][0] || (vars->cmd->in_type == REDIR_IN && !vars->cmd->argv[0][0]))
+	if (!vars->cmd->argv[0][0] || (vars->cmd->in_type == REDIR_IN
+		&& !vars->cmd->argv[0][0]))
 	{
 		handle_empty_command(mini, vars->cmd, child_env);
 	}
