@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/14 00:00:00 by rahaf             #+#    #+#             */
-/*   Updated: 2025/08/21 02:44:27 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/21 05:50:20 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -231,6 +231,14 @@ int		redirect_output(const char *file);
 int		redirect_output_append(const char *file);
 int		handle_redirections(t_cmd *cmd, int prev_fd, int *pipe_fds,
 			int is_last);
+int		handle_empty_redirections(t_cmd *cmd);
+int		handle_empty_redirections_list(t_redirection *current);
+int		handle_empty_output_files(t_cmd *cmd);
+int		handle_empty_input_files(t_cmd *cmd);
+
+int		process_single_redirection(t_redirection *redir);
+void	handle_pipe_input(int prev_fd, int has_input_redir);
+void	handle_pipe_output(int *pipe_fds, int is_last, int has_output_redir);
 
 /* heredoc functions */
 int		handle_heredoc(t_minishell *mini, t_cmd *cmd);
@@ -252,6 +260,7 @@ void	close_all_heredoc_fds(t_minishell *mini);
 void	close_unused_fds(int start_fd, int max_fd);
 void	close_extra_fds(int prev_fd, int *pipe_fds, int is_last);
 int		process_multiple_heredocs(t_minishell *mini, t_cmd *cmd);
+void	flush_stdin_after_heredocs(void);
 void	execute_command(t_minishell *minishell, char **envp);
 void	call_env(t_minishell *mini, char **argv);
 void	call_export(t_minishell *mini, char **argv);
@@ -287,6 +296,7 @@ int		is_directory(const char *path);
 void	free_minishell(t_minishell *mini);
 void	free_tokens(t_token *head);
 void	free_cmds_array(t_cmd *cmd_array, int count);
+void	free_redirections(t_redirection *redirections);
 void	free_env_list(t_env *env);
 void	free_commands(t_cmd *cmds, int count);
 void	free_env_array(char **arr, int count);

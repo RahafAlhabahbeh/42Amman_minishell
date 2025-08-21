@@ -15,11 +15,17 @@
 int	handle_heredoc(t_minishell *mini, t_cmd *cmd)
 {
 	int	heredoc_fd;
+	int	result;
 
 	if (cmd->in_type != HERE_DOC)
 		return (0);
 	if (cmd->heredoc_list)
-		return (process_multiple_heredocs(mini, cmd));
+	{
+		result = process_multiple_heredocs(mini, cmd);
+		if (result >= 0)
+			flush_stdin_after_heredocs();
+		return (result);
+	}
 	if (!cmd->input_file_name)
 		return (0);
 	heredoc_fd = create_heredoc_temp_file_with_quote(mini,
@@ -31,6 +37,7 @@ int	handle_heredoc(t_minishell *mini, t_cmd *cmd)
 	}
 	cmd->heredoc_fd = heredoc_fd;
 	cmd->in_type = REDIR_IN;
+	flush_stdin_after_heredocs();
 	return (0);
 }
 

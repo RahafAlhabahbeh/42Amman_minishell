@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/02 22:14:22 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/21 02:55:46 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/21 05:50:20 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,6 @@ static int	handle_signals_and_input(t_minishell *minishell)
 		reset_minishell(minishell);
 		return (1);
 	}
-
 	if (!minishell->promp_input || minishell->promp_input[0] == '\0')
 	{
 		free(minishell->promp_input);

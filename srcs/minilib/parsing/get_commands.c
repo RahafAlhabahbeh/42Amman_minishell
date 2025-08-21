@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   get_commands.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
+/*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:55:21 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/16 12:15:00 by dal-mahr         ###   ########.fr       */
+/*   Updated: 2025/08/21 05:24:25 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,16 +15,28 @@
 static int	handle_heredoc_get_cmd(t_minishell *mini, t_token *cur,
 	int cmd_index)
 {
-	const char	*filename;
+	const char	*delimiter;
+	char		*temp_filename;
+	int			heredoc_fd;
 
 	if (!cur->next || cur->next->type != WORD)
 		return (-1);
-	filename = cur->next->value;
-	add_heredoc_to_list(&mini->cmd[cmd_index], filename, cur->next->quote);
+	delimiter = cur->next->value;
+	add_heredoc_to_list(&mini->cmd[cmd_index], delimiter, cur->next->quote);
+	if (create_heredoc_temp_file_with_quote(mini, delimiter, &temp_filename,
+			cur->next->quote) < 0)
+		return (-1);
+	heredoc_fd = open(temp_filename, O_RDONLY);
+	if (heredoc_fd < 0)
+	{
+		free(temp_filename);
+		return (-1);
+	}
 	free(mini->cmd[cmd_index].input_file_name);
-	mini->cmd[cmd_index].input_file_name = ft_strdup(filename);
+	mini->cmd[cmd_index].input_file_name = temp_filename;
 	mini->cmd[cmd_index].in_type = HERE_DOC;
 	mini->cmd[cmd_index].input_quote = cur->next->quote;
+	mini->cmd[cmd_index].heredoc_fd = heredoc_fd;
 	return (0);
 }
 

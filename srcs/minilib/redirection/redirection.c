@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:55:21 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/21 02:44:27 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/21 05:50:20 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,16 +66,14 @@ int	redirect_output_append(const char *file)
 	return (0);
 }
 
-
-
-static int	process_single_redirection(t_redirection *redir)
+int	handle_empty_redirections(t_cmd *cmd)
 {
-	if (redir->type == REDIR_IN)
-		return (redirect_input(redir->filename));
-	else if (redir->type == REDIR_OUT)
-		return (redirect_output(redir->filename));
-	else if (redir->type == REDIR_APPEND)
-		return (redirect_output_append(redir->filename));
+	if (handle_empty_output_files(cmd) < 0)
+		return (-1);
+	if (handle_empty_input_files(cmd) < 0)
+		return (-1);
+	if (handle_empty_redirections_list(cmd->redirections) < 0)
+		return (-1);
 	return (0);
 }
 
@@ -100,17 +98,8 @@ int	handle_redirections(t_cmd *cmd, int prev_fd, int *pipe_fds, int is_last)
 	}
 	if (!has_input_redir && cmd->heredoc_fd >= 0)
 		redirect_heredoc_input(cmd);
-	else if (!has_input_redir && prev_fd != -1)
-	{
-		dup2(prev_fd, STDIN_FILENO);
-		close(prev_fd);
-	}
-	if (!has_output_redir && !is_last && pipe_fds && pipe_fds[0] != -1
-		&& pipe_fds[1] != -1)
-	{
-		close(pipe_fds[0]);
-		dup2(pipe_fds[1], STDOUT_FILENO);
-		close(pipe_fds[1]);
-	}
+	else
+		handle_pipe_input(prev_fd, has_input_redir);
+	handle_pipe_output(pipe_fds, is_last, has_output_redir);
 	return (0);
 }

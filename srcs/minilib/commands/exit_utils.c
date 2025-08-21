@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/15 21:00:00 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/21 02:35:57 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/21 05:50:20 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,7 +68,6 @@ void	handle_invalid_exit_arg(char *arg, t_minishell *mini)
 		ft_putstr_fd(arg, STDERR_FILENO);
 		ft_putstr_fd(": numeric argument required\n", STDERR_FILENO);
 		rl_clear_history();
-
 		free_minishell(mini);
 	}
 	else

@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/12 00:00:00 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/20 14:10:43 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/21 03:59:30 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@ void	handle_empty_command(t_minishell *mini, t_cmd *cmd, char **child_env)
 	{
 		if (cmd->in_type == REDIR_IN || cmd->out_type == REDIR_OUT
 			|| cmd->out_type == REDIR_APPEND
-			|| cmd->in_type == HERE_DOC)
+			|| cmd->in_type == HERE_DOC || cmd->redirections)
 		{
 			free_env_array_2(child_env);
 			cleanup_child_process(mini);

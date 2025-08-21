@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/16 11:10:00 by rahaf             #+#    #+#             */
-/*   Updated: 2025/08/21 02:44:27 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/21 05:50:20 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,22 +63,6 @@ static void	free_cmd_fds(t_cmd *cmd)
 	{
 		close(cmd->original_stdout);
 		cmd->original_stdout = -1;
-	}
-}
-
-static void	free_redirections(t_redirection *redirections)
-{
-	t_redirection	*current;
-	t_redirection	*next;
-
-	current = redirections;
-	while (current)
-	{
-		next = current->next;
-		if (current->filename)
-			free(current->filename);
-		free(current);
-		current = next;
 	}
 }
 

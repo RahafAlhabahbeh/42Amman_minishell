@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/12 00:00:00 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/21 02:35:57 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/21 05:04:15 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,10 +24,10 @@ static int	prepare_pipe_and_sigint(t_minishell *mini, t_exec_vars *vars)
 	vars->cmd = &mini->cmd[vars->i];
 	if ((!vars->cmd->argv || !vars->cmd->argv[0]
 			|| vars->cmd->argv[0][0] == '\0')
-		&& (vars->cmd->input_file_name || vars->cmd->output_file_name))
+		&& (vars->cmd->input_file_name || vars->cmd->output_file_name
+			|| vars->cmd->redirections))
 	{
-		redir_result = handle_redirections(vars->cmd, vars->prev_fd,
-				vars->pipefd, vars->i == mini->pipex_count);
+		redir_result = handle_empty_redirections(vars->cmd);
 		if (redir_result < 0)
 			mini->exit_status = 1;
 		else

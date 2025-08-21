@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/16 12:15:00 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/21 02:55:46 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/21 05:50:20 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,7 +68,6 @@ int	check_received_signal(t_minishell *minishell, char *line)
 		minishell->exit_status = 130;
 		g_received_signal = 0;
 	}
-
 	if (peek_sigint_received())
 	{
 		if (line)

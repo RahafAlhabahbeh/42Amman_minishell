@@ -63,7 +63,10 @@ SRC = \
 	$(SRC_DIR)/execution//handle_empty_command.c \
 	$(SRC_DIR)/execution/convert_env_to_array.c \
 	$(SRC_DIR)/redirection/redirection.c \
+	$(SRC_DIR)/redirection/redirection_utils.c \
+	$(SRC_DIR)/redirection/redirection_pipes.c \
 	$(SRC_DIR)/redirection/heredoc.c \
+	$(SRC_DIR)/redirection/heredoc_filename.c \
 	$(SRC_DIR)/redirection/ft_getline.c \
 	$(SRC_DIR)/redirection/create_heredoc_temp_file_with_quote.c \
 	$(SRC_DIR)/redirection/heredoc_quote_utils.c \
@@ -73,6 +76,7 @@ SRC = \
 	$(SRC_DIR)/free/free_minishell.c	\
 	$(SRC_DIR)/free/free_tokens.c	\
 	$(SRC_DIR)/free/free_cmds.c	\
+	$(SRC_DIR)/free/free_redirections.c	\
 	$(SRC_DIR)/free/free_utils.c	\
 	$(SRC_DIR)/check_error/syntax_error.c	\
 	$(SRC_DIR)/check_error/syntax_error2.c	\

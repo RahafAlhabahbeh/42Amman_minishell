@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:53:38 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/21 02:35:57 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/21 05:50:20 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,6 @@ static void	exit_with_code(t_minishell *mini, char *arg)
 	if (!is_in_child_process(mini))
 	{
 		rl_clear_history();
-
 		free_minishell(mini);
 	}
 	else

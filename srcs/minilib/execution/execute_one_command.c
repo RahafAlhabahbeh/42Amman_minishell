@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:55:21 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/21 02:35:57 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/21 05:50:20 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,9 +16,9 @@ int	handle_empty_command2(t_minishell *mini, t_cmd *cmd)
 {
 	if (!cmd->argv || !cmd->argv[0] || cmd->argv[0][0] == '\0')
 	{
-		if (cmd->input_file_name || cmd->output_file_name)
+		if (cmd->input_file_name || cmd->output_file_name || cmd->redirections)
 		{
-			if (handle_redirections(cmd, -1, NULL, 1) < 0)
+			if (handle_empty_redirections(cmd) < 0)
 				mini->exit_status = 1;
 			else
 				mini->exit_status = 0;
