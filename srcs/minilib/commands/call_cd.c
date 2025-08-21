@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:53:57 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/21 02:30:07 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/21 21:32:39 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,6 +63,7 @@ char	*handle_cd_home(t_minishell *mini)
 char	*handle_cd_oldpwd(t_minishell *mini)
 {
 	char	*path;
+	char	*path_copy;
 
 	path = get_value_env(mini, "OLDPWD");
 	if (!path)
@@ -71,7 +72,10 @@ char	*handle_cd_oldpwd(t_minishell *mini)
 		mini->exit_status = 1;
 		return (NULL);
 	}
-	return (path);
+	ft_putstr_fd(path, STDOUT_FILENO);
+	ft_putchar_fd('\n', STDOUT_FILENO);
+	path_copy = ft_strdup(path);
+	return (path_copy);
 }
 
 char	*resolve_cd_path(t_minishell *mini, char **argv)

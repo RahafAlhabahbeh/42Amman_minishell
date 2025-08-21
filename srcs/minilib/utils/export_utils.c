@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/12 17:30:00 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/21 02:30:07 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/21 20:24:00 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,6 +91,20 @@ void	export_print_sorted_env(char **arr, int count)
 		i++;
 	}
 	free(arr);
+}
+
+t_env	*find_env_node(t_env *env_list, const char *key)
+{
+	t_env	*cur;
+
+	cur = env_list;
+	while (cur)
+	{
+		if (ft_strcmp(cur->key, key) == 0)
+			return (cur);
+		cur = cur->next;
+	}
+	return (NULL);
 }
 
 char	*merge_args(char **argv, int start, int *consumed)

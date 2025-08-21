@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/14 00:00:00 by rahaf             #+#    #+#             */
-/*   Updated: 2025/08/21 16:05:44 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/21 20:24:00 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -282,6 +282,7 @@ char	*resolve_cd_path(t_minishell *mini, char **argv);
 int		is_valid_identifier(const char *s);
 void	export_print_sorted_env(char **arr, int count);
 char	*merge_args(char **argv, int start, int *consumed);
+t_env	*find_env_node(t_env *env_list, const char *key);
 
 char	*join_path(const char *dir, const char *cmd);
 char	*resolve_cmd_path(char *cmd, t_minishell *mini);

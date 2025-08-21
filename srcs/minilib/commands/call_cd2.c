@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/13 15:53:31 by rahaf             #+#    #+#             */
-/*   Updated: 2025/08/15 17:53:42 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/21 21:32:39 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,6 +91,7 @@ void	call_cd(t_minishell *mini, char **argv)
 	if (!path)
 		return ;
 	validate_and_change_directory(mini, path, argv);
-	if (path != argv[1] && path[0] == '~')
+	if (path != argv[1] && (path[0] == '~' || (argv[1]
+			&& ft_strcmp(argv[1], "-") == 0)))
 		free(path);
 }
