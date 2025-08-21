@@ -66,7 +66,8 @@ int	create_heredoc_temp_file_with_quote(t_minishell *mini,
 	setup_heredoc_signal(&sa, &old_sa);
 	if (handle_heredoc_input(mini, ctx.fd,
 			ctx.clean_delim, ctx.expand_vars) < 0)
-				return (cleanup_heredoc_error(&ctx, temp_filename_ptr, &old_sa));
+		return (cleanup_heredoc_error(&ctx,
+				temp_filename_ptr, &old_sa));
 	close(ctx.fd);
 	free(ctx.clean_delim);
 	sigaction(SIGINT, &old_sa, NULL);

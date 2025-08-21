@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/31 01:11:13 by rahaf             #+#    #+#             */
-/*   Updated: 2025/08/21 16:05:06 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/21 16:34:12 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,23 +41,6 @@ void	setup_heredoc_signal(struct sigaction *sa, struct sigaction *old_sa)
 	sigaction(SIGINT, sa, old_sa);
 }
 
-static int	handle_input_error(t_minishell *mini, char *line,
-		ssize_t read_size, const char *delimiter)
-{
-	if (read_size < 0 && !check_sigint_received())
-	{
-		if (!isatty(0))
-		{
-			free(line);
-			return (0);
-		}
-		return (handle_eof_warning(delimiter, line));
-	}
-	free(line);
-	mini->exit_status = 130;
-	return (-1);
-}
-
 static int	read_and_check_line(char **line, size_t *line_size,
 	const char *delimiter)
 {
@@ -76,12 +59,27 @@ static int	read_and_check_line(char **line, size_t *line_size,
 	return (read_size);
 }
 
+static int	handle_heredoc_errors(char **line, ssize_t result,
+	const char *delimiter)
+{
+	if (check_sigint_received())
+		return (free(*line), -1);
+	if (result < 0)
+	{
+		if (!isatty(0))
+			return (free(*line), 0);
+		return (handle_eof_warning(delimiter, *line));
+	}
+	return (1);
+}
+
 int	handle_heredoc_input(t_minishell *mini, int fd,
 		const char *delimiter, int expand_vars)
 {
 	char	*line;
 	size_t	line_size;
 	ssize_t	result;
+	int		error_result;
 
 	line = NULL;
 	line_size = 0;
@@ -90,19 +88,14 @@ int	handle_heredoc_input(t_minishell *mini, int fd,
 		if (isatty(0))
 			write(1, "> ", 2);
 		result = read_and_check_line(&line, &line_size, delimiter);
-		if (result < 0 || check_sigint_received())
-		{
-			if (result < 0 && !isatty(0) && !check_sigint_received())
-				return (free(line), 0);
-			return (handle_input_error(mini, line, result, delimiter));
-		}
-		if (result == 0)
-			return (0);
+		error_result = handle_heredoc_errors(&line, result, delimiter);
+		if (error_result == -1)
+			return (mini->exit_status = 130, -1);
+		if (error_result <= 0 || result == 0)
+			return (error_result);
 		process_line(mini, fd, line, expand_vars);
 		free(line);
 		line = NULL;
 	}
-	if (line)
-		free(line);
-	return (0);
+	return (free(line), 0);
 }
