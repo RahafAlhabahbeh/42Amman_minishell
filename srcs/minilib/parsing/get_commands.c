@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:55:21 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/21 05:24:25 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/21 12:30:07 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ static int	handle_heredoc_get_cmd(t_minishell *mini, t_token *cur,
 	if (!cur->next || cur->next->type != WORD)
 		return (-1);
 	delimiter = cur->next->value;
-	add_heredoc_to_list(&mini->cmd[cmd_index], delimiter, cur->next->quote);
+	cleanup_previous_heredoc(mini, cmd_index);
 	if (create_heredoc_temp_file_with_quote(mini, delimiter, &temp_filename,
 			cur->next->quote) < 0)
 		return (-1);
@@ -32,7 +32,6 @@ static int	handle_heredoc_get_cmd(t_minishell *mini, t_token *cur,
 		free(temp_filename);
 		return (-1);
 	}
-	free(mini->cmd[cmd_index].input_file_name);
 	mini->cmd[cmd_index].input_file_name = temp_filename;
 	mini->cmd[cmd_index].in_type = HERE_DOC;
 	mini->cmd[cmd_index].input_quote = cur->next->quote;

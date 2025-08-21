@@ -14,30 +14,14 @@
 
 int	handle_heredoc(t_minishell *mini, t_cmd *cmd)
 {
-	int	heredoc_fd;
-	int	result;
-
+	(void)mini;
 	if (cmd->in_type != HERE_DOC)
 		return (0);
-	if (cmd->heredoc_list)
+	if (cmd->heredoc_fd >= 0)
 	{
-		result = process_multiple_heredocs(mini, cmd);
-		if (result >= 0)
-			flush_stdin_after_heredocs();
-		return (result);
-	}
-	if (!cmd->input_file_name)
+		cmd->in_type = REDIR_IN;
 		return (0);
-	heredoc_fd = create_heredoc_temp_file_with_quote(mini,
-			cmd->input_file_name, &cmd->heredoc_temp_file, cmd->input_quote);
-	if (heredoc_fd < 0)
-	{
-		mini->exit_status = 1;
-		return (-1);
 	}
-	cmd->heredoc_fd = heredoc_fd;
-	cmd->in_type = REDIR_IN;
-	flush_stdin_after_heredocs();
 	return (0);
 }
 

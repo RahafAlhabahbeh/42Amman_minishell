@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/31 01:11:13 by rahaf             #+#    #+#             */
-/*   Updated: 2025/08/21 04:29:30 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/21 12:30:07 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,19 +41,14 @@ void	setup_heredoc_signal(struct sigaction *sa, struct sigaction *old_sa)
 	sigaction(SIGINT, sa, old_sa);
 }
 
-static int	process_line(t_minishell *mini, int fd,
-		char *line, int expand_vars)
+static int	handle_input_error(t_minishell *mini, char *line,
+		ssize_t read_size, const char *delimiter)
 {
-	char	*expanded;
-
-	expanded = expand_heredoc_line(mini, line, expand_vars);
+	if (read_size < 0 && !check_sigint_received())
+		return (handle_eof_warning(delimiter, line));
 	free(line);
-	if (!expanded)
-		return (0);
-	write(fd, expanded, ft_strlen(expanded));
-	write(fd, "\n", 1);
-	free(expanded);
-	return (1);
+	mini->exit_status = 130;
+	return (-1);
 }
 
 static int	handle_heredoc_input(t_minishell *mini, int fd,
@@ -70,11 +65,7 @@ static int	handle_heredoc_input(t_minishell *mini, int fd,
 		write(1, "> ", 2);
 		read_size = ft_getline(&line, &line_size, 0);
 		if (read_size < 0 || check_sigint_received())
-		{
-			free(line);
-			mini->exit_status = 130;
-			return (-1);
-		}
+			return (handle_input_error(mini, line, read_size, delimiter));
 		if (line[read_size - 1] == '\n')
 			line[read_size - 1] = '\0';
 		if (ft_strcmp(line, delimiter) == 0)

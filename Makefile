@@ -1,7 +1,6 @@
 CC         = cc
-CFLAGS     = -Wall -Werror -Wextra -g -fno-pie # -fsanitize=address -g
+CFLAGS     = -Wall -Werror -Wextra
 
-# Directories
 OBJ_DIR    = obj
 SRC_DIR   = srcs/minilib
 MAIN_DIR  = srcs/main
@@ -9,7 +8,6 @@ INC_DIR    = include
 LIBFT_DIR  = libft
 
 
-# Source files
 SRC = \
     $(SRC_DIR)/parsing/get_tokens.c  \
     $(SRC_DIR)/parsing/tokenize_loop.c  \
@@ -70,6 +68,7 @@ SRC = \
 	$(SRC_DIR)/redirection/ft_getline.c \
 	$(SRC_DIR)/redirection/create_heredoc_temp_file_with_quote.c \
 	$(SRC_DIR)/redirection/heredoc_quote_utils.c \
+	$(SRC_DIR)/redirection/heredoc_utils.c \
 	$(SRC_DIR)/redirection/heredoc_signal.c \
 	$(SRC_DIR)/redirection/handle_heredoc.c  \
 	$(SRC_DIR)/redirection/expand_heredoc.c \
@@ -86,10 +85,8 @@ SRC = \
 	$(SRC_DIR)/signal/signal_utils3.c
 
 
-# Object files (mirror the SRC tree under obj/)
 OBJ = $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SRC))
 
-# The libft library and our final binary
 LIBFT = $(LIBFT_DIR)/libft.a
 NAME  = minishell
 
@@ -100,16 +97,13 @@ all: $(LIBFT) $(NAME)
 $(NAME): $(OBJ)
 	$(CC) $(CFLAGS) $(OBJ) $(LIBFT) -o $(NAME) -lreadline -lncurses -no-pie
 
-# Compile each .c → .o, creating subdirs as needed
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
 	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -I$(INC_DIR) -I$(LIBFT_DIR) -c $< -o $@
 
-# Top-level obj directory
 $(OBJ_DIR):
 	mkdir -p $(OBJ_DIR)
 
-# Build libft automatically
 $(LIBFT):
 	$(MAKE) -C $(LIBFT_DIR)
 
