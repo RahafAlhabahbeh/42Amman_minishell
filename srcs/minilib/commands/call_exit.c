@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:53:38 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/20 14:10:43 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/21 02:35:57 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,12 +14,10 @@
 
 static void	exit_no_args(t_minishell *mini)
 {
-	if (!is_in_child_process())
+	if (!is_in_child_process(mini))
 	{
 		ft_putstr_fd("exit\n", STDERR_FILENO);
 		rl_clear_history();
-		rl_cleanup_after_signal();
-		rl_deprep_terminal();
 		free_minishell(mini);
 	}
 	else
@@ -35,14 +33,13 @@ static void	exit_with_code(t_minishell *mini, char *arg)
 {
 	long long	code;
 
-	if (!is_in_child_process())
+	if (!is_in_child_process(mini))
 		ft_putstr_fd("exit\n", STDERR_FILENO);
 	code = ft_atoi(arg);
-	if (!is_in_child_process())
+	if (!is_in_child_process(mini))
 	{
 		rl_clear_history();
-		rl_cleanup_after_signal();
-		rl_deprep_terminal();
+
 		free_minishell(mini);
 	}
 	else
@@ -72,11 +69,11 @@ void	call_exit(t_minishell *mini, char **argv)
 {
 	long long	code;
 
-	if (!is_in_child_process())
+	if (!is_in_child_process(mini))
 		ft_putstr_fd("exit\n", STDERR_FILENO);
 	if (!argv[1])
 	{
-		if (!is_in_child_process())
+		if (!is_in_child_process(mini))
 		{
 			rl_clear_history();
 			rl_cleanup_after_signal();
@@ -95,11 +92,10 @@ void	call_exit(t_minishell *mini, char **argv)
 		return ;
 	}
 	code = ft_atoi(argv[1]);
-	if (!is_in_child_process())
+	if (!is_in_child_process(mini))
 	{
 		rl_clear_history();
-		rl_cleanup_after_signal();
-		rl_deprep_terminal();
+
 		free_minishell(mini);
 	}
 	else

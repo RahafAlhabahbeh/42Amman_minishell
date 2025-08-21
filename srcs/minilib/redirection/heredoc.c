@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/31 01:11:13 by rahaf             #+#    #+#             */
-/*   Updated: 2025/08/18 20:57:03 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/21 02:30:07 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,7 +96,7 @@ char	*generate_heredoc_filename(int counter)
 	char	*temp_pid;
 	char	*temp_counter;
 
-	temp_pid = ft_itoa(getpid());
+	temp_pid = ft_itoa(1000 + counter % 9000);
 	if (!temp_pid)
 		return (NULL);
 	temp_counter = ft_itoa(counter);

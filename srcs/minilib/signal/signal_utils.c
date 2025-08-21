@@ -6,19 +6,17 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/12 17:30:00 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/18 12:10:06 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/21 02:49:55 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../../include/minishell.h"
 
-volatile sig_atomic_t	g_child_running = 0;
-volatile sig_atomic_t	g_in_child_process = 0;
-volatile sig_atomic_t	g_in_heredoc = 0;
+
 
 int	check_sigint_received(void)
 {
-	if (g_received_signal == 130)
+	if (g_received_signal == SIGINT)
 	{
 		g_received_signal = 0;
 		return (1);
@@ -28,12 +26,12 @@ int	check_sigint_received(void)
 
 int	peek_sigint_received(void)
 {
-	return (g_received_signal == 130);
+	return (g_received_signal == SIGINT);
 }
 
 int	check_sigquit_received(void)
 {
-	if (g_received_signal == 131)
+	if (g_received_signal == SIGQUIT)
 	{
 		g_received_signal = 0;
 		return (1);

@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:55:21 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/18 22:11:07 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/21 02:30:07 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,15 +76,26 @@ char	*safe_resize_buffer(char *buffer, size_t *capacity, size_t needed)
 {
 	size_t	new_capacity;
 	char	*new_buffer;
+	size_t	i;
 
 	if (needed < *capacity)
 		return (buffer);
 	new_capacity = *capacity;
 	while (new_capacity <= needed)
 		new_capacity *= 2;
-	new_buffer = realloc(buffer, new_capacity);
+	new_buffer = malloc(new_capacity);
 	if (!new_buffer)
 		return (NULL);
+	if (buffer)
+	{
+		i = 0;
+		while (i < *capacity)
+		{
+			new_buffer[i] = buffer[i];
+			i++;
+		}
+		free(buffer);
+	}
 	*capacity = new_capacity;
 	return (new_buffer);
 }

@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/12 00:00:00 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/20 14:24:06 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/21 02:35:57 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 void	handle_child_process2(t_minishell *mini,
 	t_exec_vars *vars, char **child_env)
 {
-	set_in_child_process(1);
+	set_in_child_process(mini, 1);
 	mini->child_env = child_env;
 	signal(SIGINT, SIG_DFL);
 	signal(SIGQUIT, SIG_DFL);
@@ -70,7 +70,7 @@ void	execute_command(t_minishell *mini, char **envp)
 void	handle_child_process2(t_minishell *mini, t_cmd *cmd, int prev_fd,
 	int *pipefd, int i, char **envp)
 {
-	set_in_child_process(1);
+	set_in_child_process(mini, 1);
 	signal(SIGINT, SIG_DFL);
 	signal(SIGQUIT, SIG_DFL);
 	if (handle_redirections(cmd, prev_fd, pipefd,

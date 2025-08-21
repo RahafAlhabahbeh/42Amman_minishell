@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/12 00:00:00 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/20 16:07:32 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/21 02:35:57 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,7 +55,7 @@ static int	handle_parent_and_fork(t_minishell *mini, t_exec_vars *vars,
 		close_pipe_fds(vars->pipefd);
 		if (vars->prev_fd != -1)
 			close(vars->prev_fd);
-		set_child_running(0);
+		set_child_running(mini, 0);
 		perror("fork");
 		mini->exit_status = 1;
 		return (1);

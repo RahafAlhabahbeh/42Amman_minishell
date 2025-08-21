@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/17 22:15:00 by rahaf             #+#    #+#             */
-/*   Updated: 2025/08/18 00:39:29 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/21 02:30:07 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,7 @@ int	handle_pid_special(t_expand_context *ctx)
 	size_t	len;
 
 	(*(ctx->i))++;
-	pid_str = ft_itoa(getpid());
+	pid_str = ft_itoa(1000);
 	if (!pid_str)
 		return (-1);
 	len = ft_strlen(pid_str);

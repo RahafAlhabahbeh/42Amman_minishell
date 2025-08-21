@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   export_utils.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
+/*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/12 17:30:00 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/14 12:31:01 by dal-mahr         ###   ########.fr       */
+/*   Updated: 2025/08/21 02:30:07 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,14 +30,10 @@ int	is_valid_identifier(const char *name)
 	return (1);
 }
 
-static int	cmp_env_key(const void *a, const void *b)
+static int	cmp_env_key(char *s1, char *s2)
 {
-	char	*s1;
-	char	*s2;
-	int		i;
+	int	i;
 
-	s1 = *(char **)a;
-	s2 = *(char **)b;
 	i = 0;
 	while (s1[i] && s1[i] != '=' && s2[i] && s2[i] != '=' && s1[i] == s2[i])
 		i++;
@@ -50,12 +46,36 @@ static int	cmp_env_key(const void *a, const void *b)
 	return ((unsigned char)s1[i] - (unsigned char)s2[i]);
 }
 
+static void	manual_sort_env(char **arr, int count)
+{
+	int		i;
+	int		j;
+	char	*temp;
+
+	i = 0;
+	while (i < count - 1)
+	{
+		j = 0;
+		while (j < count - i - 1)
+		{
+			if (cmp_env_key(arr[j], arr[j + 1]) > 0)
+			{
+				temp = arr[j];
+				arr[j] = arr[j + 1];
+				arr[j + 1] = temp;
+			}
+			j++;
+		}
+		i++;
+	}
+}
+
 void	export_print_sorted_env(char **arr, int count)
 {
 	int		i;
 	char	*eq;
 
-	qsort(arr, count, sizeof(char *), cmp_env_key);
+	manual_sort_env(arr, count);
 	i = 0;
 	while (i < count)
 	{

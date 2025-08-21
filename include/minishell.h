@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/14 00:00:00 by rahaf             #+#    #+#             */
-/*   Updated: 2025/08/20 16:07:32 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/21 02:44:27 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,15 +23,12 @@
 # include <signal.h>
 # include <readline/readline.h>
 # include <readline/history.h>
-# include <pwd.h>
+
 # include <stddef.h>
 
 # include "../libft/libft.h"
 
 extern volatile sig_atomic_t	g_received_signal;
-extern volatile sig_atomic_t	g_child_running;
-extern volatile sig_atomic_t	g_in_child_process;
-extern volatile sig_atomic_t	g_in_heredoc;
 
 typedef struct s_env
 {
@@ -66,6 +63,13 @@ typedef struct s_heredoc
 	struct s_heredoc	*next;
 }	t_heredoc;
 
+typedef struct s_redirection
+{
+	t_token_type			type;
+	char					*filename;
+	struct s_redirection	*next;
+}	t_redirection;
+
 typedef struct s_cmd
 {
 	char			**argv;
@@ -77,6 +81,7 @@ typedef struct s_cmd
 	char			*heredoc_temp_file;
 	int				heredoc_fd;
 	t_heredoc		*heredoc_list;
+	t_redirection	*redirections;
 	struct s_cmd	*next;
 	struct s_cmd	*prev;
 	int				original_stdin;
@@ -97,6 +102,9 @@ typedef struct s_minishell
 	int			fd_out;
 	int			exit_status;
 	char		**child_env;
+	int			child_running;
+	int			in_child_process;
+	int			in_heredoc;
 }	t_minishell;
 
 typedef struct s_pipe_data
@@ -288,8 +296,8 @@ void	execute_piped_commands(t_minishell *minishell, char **envp);
 
 void	handle_sigint(int sig);
 void	setup_signals(void);
-void	set_child_running(int running);
-int		is_child_running(void);
+void	set_child_running(t_minishell *mini, int running);
+int		is_child_running(t_minishell *mini);
 void	set_minishell_pointer(t_minishell *mini);
 int		check_sigint_received(void);
 int		peek_sigint_received(void);
@@ -298,10 +306,10 @@ int		get_received_signal(void);
 void	reset_received_signal(void);
 
 /* Process context functions */
-void	set_in_child_process(int in_child);
-int		is_in_child_process(void);
-void	set_in_heredoc(int in_heredoc);
-int		is_in_heredoc(void);
+void	set_in_child_process(t_minishell *mini, int in_child);
+int		is_in_child_process(t_minishell *mini);
+void	set_in_heredoc(t_minishell *mini, int in_heredoc);
+int		is_in_heredoc(t_minishell *mini);
 void	setup_signal_handling(void);
 void	handle_child_process(t_minishell *mini, t_cmd *cmd, char **envp);
 void	close_pipe_fds(int *pipe_fds);
@@ -311,7 +319,6 @@ void	handle_empty_command(t_minishell *mini, t_cmd *cmd, char **child_env);
 int		execute_parent_process(t_exec_vars *vars, int is_last);
 void	parse_env_entry(t_minishell *mini, char *env_str);
 int		check_received_signal(t_minishell *minishell, char *line);
-extern volatile sig_atomic_t	g_received_signal;
 void	call_exit(t_minishell *mini, char **argv);
 void	child_sig(void);
 

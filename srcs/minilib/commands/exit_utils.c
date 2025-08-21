@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/15 21:00:00 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/20 14:10:43 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/21 02:35:57 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,15 +61,14 @@ int	is_valid_exit_arg(const char *str)
 
 void	handle_invalid_exit_arg(char *arg, t_minishell *mini)
 {
-	if (!is_in_child_process())
+	if (!is_in_child_process(mini))
 	{
 		ft_putstr_fd("exit\n", STDERR_FILENO);
 		ft_putstr_fd("minishell: exit: ", STDERR_FILENO);
 		ft_putstr_fd(arg, STDERR_FILENO);
 		ft_putstr_fd(": numeric argument required\n", STDERR_FILENO);
 		rl_clear_history();
-		rl_cleanup_after_signal();
-		rl_deprep_terminal();
+
 		free_minishell(mini);
 	}
 	else
@@ -83,9 +82,9 @@ void	handle_invalid_exit_arg(char *arg, t_minishell *mini)
 
 void	handle_too_many_args(t_minishell *mini)
 {
-	if (!is_in_child_process())
+	if (!is_in_child_process(mini))
 		ft_putstr_fd("minishell: exit: too many arguments\n", STDERR_FILENO);
-	if (is_in_child_process())
+	if (is_in_child_process(mini))
 	{
 		if (mini->child_env)
 			free_env_array_2(mini->child_env);

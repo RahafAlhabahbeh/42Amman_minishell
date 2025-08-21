@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:55:21 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/19 00:57:40 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/21 02:35:57 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,7 +86,7 @@ static pid_t	*prepare_execution(t_minishell *mini, char **envp, int *count,
 	}
 	*last_cmd_builtin = 0;
 	init_pids_array(pids, *count);
-	set_child_running(1);
+	set_child_running(mini, 1);
 	execute_loop(mini, envp, pids);
 	return (pids);
 }
@@ -105,7 +105,7 @@ void	multiple_command_execution(t_minishell *mini, char **envp)
 		last_command_was_parent_builtin = 1;
 	if (pids)
 		wait_for_processes(mini, pids, count, last_command_was_parent_builtin);
-	set_child_running(0);
+	set_child_running(mini, 0);
 	cleanup_heredoc_files(mini);
 	if (pids)
 	{

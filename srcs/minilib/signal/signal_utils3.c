@@ -6,25 +6,30 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/12 17:30:00 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/20 16:07:32 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/21 02:35:57 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../../include/minishell.h"
 
-int	is_in_child_process(void)
+int	is_in_child_process(t_minishell *mini)
 {
-	return (g_in_child_process);
+	if (!mini)
+		return (0);
+	return (mini->in_child_process);
 }
 
-void	set_in_heredoc(int in_heredoc)
+void	set_in_heredoc(t_minishell *mini, int in_heredoc)
 {
-	g_in_heredoc = in_heredoc;
+	if (mini)
+		mini->in_heredoc = in_heredoc;
 }
 
-int	is_in_heredoc(void)
+int	is_in_heredoc(t_minishell *mini)
 {
-	return (g_in_heredoc);
+	if (!mini)
+		return (0);
+	return (mini->in_heredoc);
 }
 
 void	setup_signal_handling(void)

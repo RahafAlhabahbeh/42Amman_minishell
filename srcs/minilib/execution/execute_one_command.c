@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:55:21 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/20 14:30:57 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/21 02:35:57 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,7 +67,7 @@ void	handle_parent_process(t_minishell *mini, pid_t pid)
 	sigaction(SIGINT, &sa, NULL);
 	status = 0;
 	wait_result = waitpid(pid, &status, 0);
-	set_child_running(0);
+	set_child_running(mini, 0);
 	if (wait_result > 0)
 	{
 		if (WIFEXITED(status))
@@ -114,7 +114,7 @@ void	execute_one_command(t_minishell *mini, char **envp)
 		|| handle_empty_command2(mini, cmd)
 		|| handle_parent_builtin_child(mini, cmd))
 		return ;
-	set_child_running(1);
+	set_child_running(mini, 1);
 	pid = fork();
 	handle_fork_result(mini, cmd, pid);
 	cleanup_heredoc_files(mini);

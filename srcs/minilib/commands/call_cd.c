@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:53:57 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/13 16:23:22 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/21 02:30:07 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,11 +14,11 @@
 
 char	*get_user_home_dir(void)
 {
-	struct passwd	*pw;
+	char	*home;
 
-	pw = getpwuid(getuid());
-	if (pw && pw->pw_dir)
-		return (ft_strdup(pw->pw_dir));
+	home = getenv("HOME");
+	if (home)
+		return (ft_strdup(home));
 	return (NULL);
 }
 

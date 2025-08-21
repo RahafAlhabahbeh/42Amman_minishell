@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/17 22:00:00 by rahaf             #+#    #+#             */
-/*   Updated: 2025/08/18 01:25:56 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/21 02:30:07 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@ int	handle_pid_var(t_expand_context *ctx)
 	char	*temp;
 	size_t	len;
 
-	pid_str = ft_itoa(getpid());
+	pid_str = ft_itoa(1000);
 	if (!pid_str)
 		return (-1);
 	len = ft_strlen(pid_str);

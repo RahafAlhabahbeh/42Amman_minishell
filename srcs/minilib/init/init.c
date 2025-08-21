@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/12 00:00:00 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/20 14:10:43 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/21 02:35:57 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,5 +24,8 @@ void	init(t_minishell *mini)
 	mini->env_list = NULL;
 	mini->exit_status = 0;
 	mini->child_env = NULL;
+	mini->child_running = 0;
+	mini->in_child_process = 0;
+	mini->in_heredoc = 0;
 	ft_memset(mini->buff, 0, sizeof(mini->buff));
 }

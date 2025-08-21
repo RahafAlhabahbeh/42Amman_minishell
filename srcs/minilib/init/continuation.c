@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/16 12:15:00 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/20 14:03:10 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/21 02:55:46 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,16 +63,12 @@ char	*append_continuation_line(char *full_input, char *line)
 
 int	check_received_signal(t_minishell *minishell, char *line)
 {
-	if (g_received_signal == 130)
+	if (g_received_signal == SIGINT)
 	{
 		minishell->exit_status = 130;
 		g_received_signal = 0;
 	}
-	if (g_received_signal == 131)
-	{
-		minishell->exit_status = 131;
-		g_received_signal = 0;
-	}
+
 	if (peek_sigint_received())
 	{
 		if (line)

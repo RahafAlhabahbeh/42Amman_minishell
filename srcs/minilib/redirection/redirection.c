@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:55:21 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/20 14:30:57 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/21 02:44:27 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,46 +66,47 @@ int	redirect_output_append(const char *file)
 	return (0);
 }
 
-static int	handle_input_redirect(t_cmd *cmd, int prev_fd, int *pipe_fds)
+
+
+static int	process_single_redirection(t_redirection *redir)
 {
-	if (cmd->heredoc_fd >= 0)
-		redirect_heredoc_input(cmd);
-	else if (cmd->input_file_name)
-	{
-		if (redirect_input(cmd->input_file_name) < 0)
-		{
-			if (pipe_fds && pipe_fds[0] != -1)
-				close(pipe_fds[0]);
-			if (pipe_fds && pipe_fds[1] != -1)
-				close(pipe_fds[1]);
-			if (prev_fd != -1)
-				close(prev_fd);
-			return (-1);
-		}
-	}
-	else if (prev_fd != -1)
-	{
-		dup2(prev_fd, STDIN_FILENO);
-		close(prev_fd);
-	}
+	if (redir->type == REDIR_IN)
+		return (redirect_input(redir->filename));
+	else if (redir->type == REDIR_OUT)
+		return (redirect_output(redir->filename));
+	else if (redir->type == REDIR_APPEND)
+		return (redirect_output_append(redir->filename));
 	return (0);
 }
 
 int	handle_redirections(t_cmd *cmd, int prev_fd, int *pipe_fds, int is_last)
 {
-	if (handle_input_redirect(cmd, prev_fd, pipe_fds) == -1)
-		return (-1);
-	if (cmd->output_file_name)
+	t_redirection	*current;
+	int				has_input_redir;
+	int				has_output_redir;
+
+	current = cmd->redirections;
+	has_input_redir = 0;
+	has_output_redir = 0;
+	while (current)
 	{
-		if (cmd->out_type == REDIR_APPEND)
-		{
-			if (redirect_output_append(cmd->output_file_name) < 0)
-				return (-1);
-		}
-		else if (redirect_output(cmd->output_file_name) < 0)
+		if (process_single_redirection(current) == -1)
 			return (-1);
+		if (current->type == REDIR_IN)
+			has_input_redir = 1;
+		else if (current->type == REDIR_OUT || current->type == REDIR_APPEND)
+			has_output_redir = 1;
+		current = current->next;
 	}
-	else if (!is_last && pipe_fds && pipe_fds[0] != -1 && pipe_fds[1] != -1)
+	if (!has_input_redir && cmd->heredoc_fd >= 0)
+		redirect_heredoc_input(cmd);
+	else if (!has_input_redir && prev_fd != -1)
+	{
+		dup2(prev_fd, STDIN_FILENO);
+		close(prev_fd);
+	}
+	if (!has_output_redir && !is_last && pipe_fds && pipe_fds[0] != -1
+		&& pipe_fds[1] != -1)
 	{
 		close(pipe_fds[0]);
 		dup2(pipe_fds[1], STDOUT_FILENO);

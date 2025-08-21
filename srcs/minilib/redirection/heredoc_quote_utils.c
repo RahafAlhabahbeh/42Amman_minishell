@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/31 01:11:13 by rahaf             #+#    #+#             */
-/*   Updated: 2025/08/18 21:03:32 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/21 02:30:07 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,7 @@ void	close_all_heredoc_fds(t_minishell *mini)
 
 void	setup_heredoc_signal(struct sigaction *sa, struct sigaction *old_sa)
 {
-	memset(sa, 0, sizeof(*sa));
+	ft_memset(sa, 0, sizeof(*sa));
 	sa->sa_handler = handle_heredoc_sigint;
 	sigemptyset(&sa->sa_mask);
 	sa->sa_flags = 0;
