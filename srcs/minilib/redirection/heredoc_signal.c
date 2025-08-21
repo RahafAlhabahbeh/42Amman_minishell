@@ -15,8 +15,8 @@
 void	handle_heredoc_sigint(int sig)
 {
 	(void)sig;
-	g_received_signal = 130;
-	write(1, "\n", 1);
+	g_received_signal = SIGINT;
+	write(1, "^C\n", 3);
 }
 
 void	append_to_result(char *result, char *value, int *j)
