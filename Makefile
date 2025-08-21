@@ -59,6 +59,7 @@ SRC = \
 	$(SRC_DIR)/execution//execute_child_command.c   \
 	$(SRC_DIR)/execution//execute_loop.c      \
 	$(SRC_DIR)/execution//handle_empty_command.c \
+	$(SRC_DIR)/execution//handle_empty_heredoc.c \
 	$(SRC_DIR)/execution/convert_env_to_array.c \
 	$(SRC_DIR)/redirection/redirection.c \
 	$(SRC_DIR)/redirection/redirection_utils.c \

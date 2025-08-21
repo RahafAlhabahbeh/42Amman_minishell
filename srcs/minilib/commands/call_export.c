@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:54:38 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/15 17:26:27 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/21 15:44:49 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,10 +66,16 @@ static void	export_process_assignment(t_minishell *mini, char *merged)
 	char		*eq;
 	char		*key;
 	char		*value;
+	char		*existing_value;
 
 	eq = ft_strchr(merged, '=');
 	if (!eq)
-		mini->env_list = set_env_value(mini, merged, NULL);
+	{
+		existing_value = get_value_env(mini, merged);
+		if (existing_value)
+			return ;
+		mini->env_list = set_env_value(mini, merged, "");
+	}
 	else
 	{
 		key = ft_substr(merged, 0, eq - merged);

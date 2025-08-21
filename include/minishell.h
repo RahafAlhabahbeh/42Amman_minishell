@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/14 00:00:00 by rahaf             #+#    #+#             */
-/*   Updated: 2025/08/21 12:30:07 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/21 16:05:06 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -144,7 +144,6 @@ typedef struct s_heredoc_context
 	int		counter;
 }	t_heredoc_context;
 
-/* tokenizer */
 t_token	*tokenize(t_minishell *minishell);
 int		tokenize_main_loop(t_minishell *mini, t_tokenize_data *data);
 int		handle_escape_char(t_minishell *mini, size_t *i, char *buf,
@@ -240,7 +239,6 @@ int		process_single_redirection(t_redirection *redir);
 void	handle_pipe_input(int prev_fd, int has_input_redir);
 void	handle_pipe_output(int *pipe_fds, int is_last, int has_output_redir);
 
-/* heredoc functions */
 int		handle_heredoc(t_minishell *mini, t_cmd *cmd);
 void	redirect_heredoc_input(t_cmd *cmd);
 int		create_heredoc_temp_file_with_quote(t_minishell *mini,
@@ -264,6 +262,8 @@ void	close_unused_fds(int start_fd, int max_fd);
 void	close_extra_fds(int prev_fd, int *pipe_fds, int is_last);
 int		process_multiple_heredocs(t_minishell *mini, t_cmd *cmd);
 void	flush_stdin_after_heredocs(void);
+void	handle_empty_heredoc_command(t_minishell *mini, t_exec_vars *vars,
+			char **child_env);
 void	execute_command(t_minishell *minishell, char **envp);
 void	call_env(t_minishell *mini, char **argv);
 void	call_export(t_minishell *mini, char **argv);
@@ -318,7 +318,6 @@ int		check_sigquit_received(void);
 int		get_received_signal(void);
 void	reset_received_signal(void);
 
-/* Process context functions */
 void	set_in_child_process(t_minishell *mini, int in_child);
 int		is_in_child_process(t_minishell *mini);
 void	set_in_heredoc(t_minishell *mini, int in_heredoc);
@@ -339,7 +338,6 @@ void	execute_builtin_cmd(t_minishell *mini, t_cmd *cmd);
 int		is_str_in_set(const char *str, char **set);
 int		ft_strcmp(const char *s1, const char *s2);
 
-/* Debug functions */
 void	print_tokens(t_token *token);
 void	print_commands(t_cmd *cmd);
 
@@ -368,9 +366,8 @@ void	execute_child_command(t_minishell *mini, t_cmd *cmd, int i,
 			char **child_env);
 void	append_to_result(char *result, char *value, int *j);
 
-/* heredoc_quote_utils.c */
 void	setup_heredoc_signal(struct sigaction *sa, struct sigaction *old_sa);
-int		write_heredoc_lines(t_minishell *mini, int fd,
+int		handle_heredoc_input(t_minishell *mini, int fd,
 			const char *delimiter, int expand_vars);
 
 void	save_original_fds(t_cmd *cmd);

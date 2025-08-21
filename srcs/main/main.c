@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/02 22:14:22 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/21 05:50:20 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/21 14:15:07 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,10 @@ static int	process_tokens_and_commands(t_minishell *minishell, char **envp)
 
 	minishell->token = tokenize(minishell);
 	if (!minishell->token)
+	{
+		minishell->exit_status = 2;
 		return (1);
+	}
 	if (!is_valid_syntax(minishell->token))
 	{
 		minishell->exit_status = 2;

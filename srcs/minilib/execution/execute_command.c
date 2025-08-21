@@ -6,28 +6,29 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/12 00:00:00 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/21 02:35:57 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/21 15:44:49 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../../include/minishell.h"
 
-void	handle_child_process2(t_minishell *mini,
-	t_exec_vars *vars, char **child_env)
+static void	setup_child_signals_and_env(t_minishell *mini, char **child_env)
 {
 	set_in_child_process(mini, 1);
 	mini->child_env = child_env;
 	signal(SIGINT, SIG_DFL);
 	signal(SIGQUIT, SIG_DFL);
-	if (handle_redirections(vars->cmd, vars->prev_fd, vars->pipefd,
-			vars->i == mini->pipex_count) < 0)
-	{
-		free_env_array_2(child_env);
-		cleanup_child_process(mini);
-		exit(1);
-	}
+}
+
+static void	handle_empty_argv_cases(t_minishell *mini, t_exec_vars *vars,
+	char **child_env)
+{
 	if (!vars->cmd->argv || !vars->cmd->argv[0])
 	{
+		if (vars->cmd->in_type == HERE_DOC && vars->i < mini->pipex_count)
+		{
+			handle_empty_heredoc_command(mini, vars, child_env);
+		}
 		free_env_array_2(child_env);
 		cleanup_child_process(mini);
 		exit(0);
@@ -37,6 +38,20 @@ void	handle_child_process2(t_minishell *mini,
 	{
 		handle_empty_command(mini, vars->cmd, child_env);
 	}
+}
+
+void	handle_child_process2(t_minishell *mini,
+	t_exec_vars *vars, char **child_env)
+{
+	setup_child_signals_and_env(mini, child_env);
+	if (handle_redirections(vars->cmd, vars->prev_fd, vars->pipefd,
+			vars->i == mini->pipex_count) < 0)
+	{
+		free_env_array_2(child_env);
+		cleanup_child_process(mini);
+		exit(1);
+	}
+	handle_empty_argv_cases(mini, vars, child_env);
 	execute_child_command(mini, vars->cmd, vars->i, child_env);
 }
 

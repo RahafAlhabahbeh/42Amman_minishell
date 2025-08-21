@@ -64,10 +64,19 @@ int	create_heredoc_temp_file_with_quote(t_minishell *mini,
 			temp_filename_ptr, quote_char) < 0)
 		return (-1);
 	setup_heredoc_signal(&sa, &old_sa);
-	if (write_heredoc_lines(mini, ctx.fd, ctx.clean_delim, ctx.expand_vars) < 0)
-		return (cleanup_heredoc_error(&ctx, temp_filename_ptr, &old_sa));
+	if (handle_heredoc_input(mini, ctx.fd,
+			ctx.clean_delim, ctx.expand_vars) < 0)
+				return (cleanup_heredoc_error(&ctx, temp_filename_ptr, &old_sa));
 	close(ctx.fd);
 	free(ctx.clean_delim);
 	sigaction(SIGINT, &old_sa, NULL);
-	return (open(*temp_filename_ptr, O_RDONLY));
+	ctx.fd = open(*temp_filename_ptr, O_RDONLY);
+	if (ctx.fd < 0)
+	{
+		unlink(*temp_filename_ptr);
+		free(*temp_filename_ptr);
+		*temp_filename_ptr = NULL;
+		return (-1);
+	}
+	return (ctx.fd);
 }
