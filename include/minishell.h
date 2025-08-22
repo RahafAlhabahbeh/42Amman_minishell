@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/14 00:00:00 by rahaf             #+#    #+#             */
-/*   Updated: 2025/08/21 20:24:00 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/22 23:53:39 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -266,6 +266,10 @@ void	handle_empty_heredoc_command(t_minishell *mini, t_exec_vars *vars,
 			char **child_env);
 void	execute_command(t_minishell *minishell, char **envp);
 void	call_env(t_minishell *mini, char **argv);
+void	print_env_error(t_minishell *shell, char *cmd, int error_code,
+			char *error_msg);
+void	handle_dir_path(t_minishell *shell, char *cmd, char *orig_name);
+void	handle_file_path(t_minishell *shell, char *cmd);
 void	call_export(t_minishell *mini, char **argv);
 void	call_unset(t_minishell *mini, char **argv);
 void	call_echo(t_minishell *mini, char **argv);

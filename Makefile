@@ -40,11 +40,13 @@ SRC = \
 	$(SRC_DIR)/commands/call_cd.c \
 	$(SRC_DIR)/commands/call_cd2.c \
 	$(SRC_DIR)/commands/call_dot.c \
+	$(SRC_DIR)/commands/call_env_utils.c \
 	$(SRC_DIR)/commands/exit_utils.c \
 	$(SRC_DIR)/utils/resolve_path.c \
 	$(SRC_DIR)/utils/resolve_path_utils.c \
 	$(SRC_DIR)/utils/resolve_path_utils2.c \
 	$(SRC_DIR)/utils/export_utils.c \
+	$(SRC_DIR)/utils/env_utils.c \
 	$(SRC_DIR)/utils/fd_utils.c \
 	$(SRC_DIR)/pipe/pipe_exec.c \
 	$(SRC_DIR)/pipe/pipe_utils.c \

@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:54:23 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/21 20:24:00 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/22 23:53:39 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,22 +30,10 @@ static void	print_env_vars(t_minishell *shell)
 	}
 }
 
-static void	print_env_error(t_minishell *shell, char *cmd, int error_code,
-			char *error_msg)
-{
-	ft_putstr_fd("./minishell: ", STDERR_FILENO);
-	ft_putstr_fd(cmd, STDERR_FILENO);
-	ft_putstr_fd(": ", STDERR_FILENO);
-	ft_putstr_fd(error_msg, STDERR_FILENO);
-	ft_putstr_fd("\n", STDERR_FILENO);
-	shell->exit_status = error_code;
-}
-
 static void	execute_env_command(t_minishell *shell, char **argv)
 {
-	char		*cmd;
-	struct stat	st;
-	int			arg_idx;
+	char	*cmd;
+	int		arg_idx;
 
 	arg_idx = 1;
 	if (argv[1] && ft_strcmp(argv[1], "+") == 0)
@@ -59,31 +47,10 @@ static void	execute_env_command(t_minishell *shell, char **argv)
 	if (cmd[ft_strlen(cmd) - 1] == '/')
 	{
 		cmd[ft_strlen(cmd) - 1] = '\0';
-		if (access(cmd, F_OK) != 0)
-			print_env_error(shell, argv[arg_idx], 127,
-				"No such file or directory");
-		else if (stat(cmd, &st) == 0)
-		{
-			if (S_ISDIR(st.st_mode))
-				print_env_error(shell, argv[arg_idx], 126, "Permission denied");
-			else
-				print_env_error(shell, argv[arg_idx], 126, "Not a directory");
-		}
-		else
-			print_env_error(shell, argv[arg_idx], 127,
-				"No such file or directory");
-	}
-	else if (access(cmd, F_OK) != 0)
-		print_env_error(shell, cmd, 127, "No such file or directory");
-	else if (stat(cmd, &st) == 0)
-	{
-		if (access(cmd, X_OK) != 0)
-			print_env_error(shell, cmd, 126, "Permission denied");
-		else
-			shell->exit_status = 0;
+		handle_dir_path(shell, cmd, argv[arg_idx]);
 	}
 	else
-		print_env_error(shell, cmd, 127, "No such file or directory");
+		handle_file_path(shell, cmd);
 }
 
 void	call_env(t_minishell *shell, char **argv)
@@ -97,33 +64,4 @@ void	call_env(t_minishell *shell, char **argv)
 	{
 		execute_env_command(shell, argv);
 	}
-}
-
-char	*get_value_env(t_minishell *mini, const char *key)
-{
-	t_env	*cur;
-
-	cur = mini->env_list;
-	while (cur)
-	{
-		if (ft_strcmp(cur->key, key) == 0)
-			return (cur->value);
-		cur = cur->next;
-	}
-	return (NULL);
-}
-
-char	*join_path(const char *dir, const char *cmd)
-{
-	char	*dir_slash;
-	char	*full;
-
-	if (!dir || !cmd)
-		return (NULL);
-	dir_slash = ft_strjoin(dir, "/");
-	if (!dir_slash)
-		return (NULL);
-	full = ft_strjoin(dir_slash, cmd);
-	free(dir_slash);
-	return (full);
 }

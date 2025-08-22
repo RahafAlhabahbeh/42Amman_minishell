@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:52:38 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/22 17:59:06 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/22 23:53:39 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,6 +47,23 @@ static void	print_command_error(t_minishell *ms, int i, int status)
 	}
 }
 
+static void	handle_empty_cmd_pipe(t_minishell *ms, int cmd_index)
+{
+	handle_file_redirection(&ms->cmd[cmd_index]);
+	cleanup_child_process(ms);
+	exit(0);
+}
+
+static void	execute_cmd_with_path(t_minishell *ms, t_pipe_data *data,
+	char *path)
+{
+	execve(path, ms->cmd[data->i].argv, data->envp);
+	ft_putstr_fd("minishell: execve error\n", 2);
+	free(path);
+	cleanup_child_process(ms);
+	exit(1);
+}
+
 void	execute_child_command_pipe(t_minishell *ms, t_pipe_data *data)
 {
 	char	*path;
@@ -54,14 +71,9 @@ void	execute_child_command_pipe(t_minishell *ms, t_pipe_data *data)
 
 	setup_child_pipes(data->pipefds, data->i, data->n);
 	close_all_pipes(data->pipefds, data->n);
-	if (!ms->cmd[data->i].argv
-		|| !ms->cmd[data->i].argv[0]
+	if (!ms->cmd[data->i].argv || !ms->cmd[data->i].argv[0]
 		|| ms->cmd[data->i].argv[0][0] == '\0')
-	{
-		handle_file_redirection(&ms->cmd[data->i]);
-		cleanup_child_process(ms);
-		exit(0);
-	}
+		handle_empty_cmd_pipe(ms, data->i);
 	handle_file_redirection(&ms->cmd[data->i]);
 	status = resolve_cmd_path_with_status(ms->cmd[data->i].argv[0], ms, &path);
 	if (status != 0)
@@ -70,9 +82,5 @@ void	execute_child_command_pipe(t_minishell *ms, t_pipe_data *data)
 		cleanup_child_process(ms);
 		exit(status);
 	}
-	execve(path, ms->cmd[data->i].argv, data->envp);
-	ft_putstr_fd("minishell: execve error\n", 2);
-	free(path);
-	cleanup_child_process(ms);
-	exit(1);
+	execute_cmd_with_path(ms, data, path);
 }

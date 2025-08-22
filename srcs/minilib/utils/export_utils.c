@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/12 17:30:00 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/22 17:31:20 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/22 23:53:39 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,47 +91,4 @@ void	export_print_sorted_env(char **arr, int count)
 		i++;
 	}
 	free(arr);
-}
-
-t_env	*find_env_node(t_env *env_list, const char *key)
-{
-	t_env	*cur;
-
-	cur = env_list;
-	while (cur)
-	{
-		if (ft_strcmp(cur->key, key) == 0)
-			return (cur);
-		cur = cur->next;
-	}
-	return (NULL);
-}
-
-char	*merge_args(char **argv, int start, int *consumed)
-{
-	char	*res;
-	char	*tmp;
-	int		i;
-
-	*consumed = 1;
-	if (!argv[start])
-		return (ft_strdup(""));
-	res = ft_strdup(argv[start]);
-	if (!res)
-		return (NULL);
-	i = start + 1;
-	while (argv[i])
-	{
-		if (argv[i][0] == '\0' || ft_strchr(argv[i], '='))
-		{
-			tmp = ft_strjoin(res, argv[i]);
-			free(res);
-			res = tmp;
-			(*consumed)++;
-		}
-		else
-			break ;
-		i++;
-	}
-	return (res);
 }
