@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   merge_equal_sign_tokens.c                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dal-mahr <dal-mahr@student.42amman.com>    +#+  +:+       +#+        */
+/*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:55:21 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/16 12:15:00 by dal-mahr         ###   ########.fr       */
+/*   Updated: 2025/08/22 17:38:48 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,6 +50,8 @@ void	merge_equal_sign_tokens(t_cmd *cmd)
 {
 	int	j;
 
+	if (cmd->argv[0] && ft_strcmp(cmd->argv[0], "export") == 0)
+		return ;
 	j = 0;
 	while (cmd->argv[j] && cmd->argv[j + 1])
 	{

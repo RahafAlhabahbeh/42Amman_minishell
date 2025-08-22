@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:53:57 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/21 21:32:39 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/22 17:06:42 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,6 +91,11 @@ char	*resolve_cd_path(t_minishell *mini, char **argv)
 	path = argv[1];
 	if (!path)
 		return (handle_cd_home(mini));
+	else if (ft_strcmp(path, "-p") == 0)
+	{
+		mini->exit_status = 2;
+		return (NULL);
+	}
 	else if (ft_strcmp(path, "-") == 0)
 		return (handle_cd_oldpwd(mini));
 	else if (path[0] == '~')

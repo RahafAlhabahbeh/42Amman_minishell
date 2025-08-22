@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/12 00:00:00 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/21 16:39:09 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/22 17:59:06 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,9 +81,17 @@ static int	handle_fork_and_execute(t_minishell *mini, t_exec_vars *vars,
 static void	execute_commands_loop(t_minishell *mini, t_exec_vars *vars,
 	pid_t *pids)
 {
+	int	prepare_result;
+
 	while (vars->i <= mini->pipex_count)
 	{
-		if (prepare_pipe_and_sigint(mini, vars))
+		prepare_result = prepare_pipe_and_sigint(mini, vars);
+		if (prepare_result == 1 && vars->i < mini->pipex_count)
+		{
+			vars->i++;
+			continue ;
+		}
+		else if (prepare_result != 0)
 		{
 			cleanup_pipe_fds(vars);
 			return ;

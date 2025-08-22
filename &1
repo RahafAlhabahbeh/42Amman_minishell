@@ -1,3 +1,0 @@
-minishell> echo "Reset SHLVL: $SHLVL"
-Reset SHLVL: 1
-minishell> exit

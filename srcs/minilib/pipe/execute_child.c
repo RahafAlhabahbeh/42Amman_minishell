@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:52:38 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/20 04:07:46 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/22 17:59:06 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,14 +54,15 @@ void	execute_child_command_pipe(t_minishell *ms, t_pipe_data *data)
 
 	setup_child_pipes(data->pipefds, data->i, data->n);
 	close_all_pipes(data->pipefds, data->n);
-	handle_file_redirection(&ms->cmd[data->i]);
 	if (!ms->cmd[data->i].argv
 		|| !ms->cmd[data->i].argv[0]
 		|| ms->cmd[data->i].argv[0][0] == '\0')
 	{
+		handle_file_redirection(&ms->cmd[data->i]);
 		cleanup_child_process(ms);
 		exit(0);
 	}
+	handle_file_redirection(&ms->cmd[data->i]);
 	status = resolve_cmd_path_with_status(ms->cmd[data->i].argv[0], ms, &path);
 	if (status != 0)
 	{
