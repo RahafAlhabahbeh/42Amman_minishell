@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:55:21 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/18 21:43:30 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/22 21:44:27 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,8 +62,6 @@ static void	handle_shlvl(t_minishell *mini)
 static void	init_pwd_env(t_minishell *mini)
 {
 	char	*pwd;
-	char	*oldpwd;
-	char	*current_pwd;
 	char	cwd[1024];
 
 	pwd = get_value_env(mini, "PWD");
@@ -71,15 +69,6 @@ static void	init_pwd_env(t_minishell *mini)
 	{
 		if (getcwd(cwd, sizeof(cwd)) != NULL)
 			set_env_value(mini, "PWD", cwd);
-	}
-	oldpwd = get_value_env(mini, "OLDPWD");
-	if (!oldpwd)
-	{
-		current_pwd = get_value_env(mini, "PWD");
-		if (current_pwd)
-			set_env_value(mini, "OLDPWD", current_pwd);
-		else
-			set_env_value(mini, "OLDPWD", "");
 	}
 }
 

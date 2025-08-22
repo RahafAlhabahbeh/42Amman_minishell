@@ -6,7 +6,7 @@
 /*   By: rahaf <rahaf@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/24 08:53:57 by dal-mahr          #+#    #+#             */
-/*   Updated: 2025/08/22 17:06:42 by rahaf            ###   ########.fr       */
+/*   Updated: 2025/08/22 21:44:27 by rahaf            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,6 +93,8 @@ char	*resolve_cd_path(t_minishell *mini, char **argv)
 		return (handle_cd_home(mini));
 	else if (ft_strcmp(path, "-p") == 0)
 	{
+		ft_putstr_fd("minishell: cd: -p: invalid option\n", STDERR_FILENO);
+		ft_putstr_fd("cd: usage: cd [-L|[-P [-e]] [-@]] [dir]\n", STDERR_FILENO);
 		mini->exit_status = 2;
 		return (NULL);
 	}
