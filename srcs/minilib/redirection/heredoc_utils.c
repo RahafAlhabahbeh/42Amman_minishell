@@ -14,7 +14,7 @@
 
 int	handle_eof_warning(const char *delimiter, char *line)
 {
-	write(2, "minishell: warning: here-document delimited by ", 48);
+	write(2, "\nminishell: warning: here-document delimited by ", 49);
 	write(2, "end-of-file (wanted `", 21);
 	write(2, delimiter, ft_strlen(delimiter));
 	write(2, "')\n", 3);
